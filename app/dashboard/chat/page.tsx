@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import useSWR from "swr";
 import { useAuth } from "@/hooks/use-auth";
 import { ChatPanel } from "@/components/chat-panel";
@@ -10,8 +11,20 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 export default function ApplicantChatPage() {
   const { user } = useAuth();
   const { data, isLoading } = useSWR("/api/applications", fetcher);
+  const markedRef = useRef(false);
 
   const applicationId = data?.application?.id;
+
+  // Auto-mark all chat notifications as read when applicant opens chat page
+  useEffect(() => {
+    if (markedRef.current) return;
+    markedRef.current = true;
+    fetch("/api/notifications", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ markChatRead: true }),
+    });
+  }, []);
 
   if (isLoading) {
     return (

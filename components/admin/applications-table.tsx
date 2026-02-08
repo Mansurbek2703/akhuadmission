@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -28,7 +29,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
-import { Eye, Loader2, ExternalLink } from "lucide-react";
+import { Eye, Loader2, ExternalLink, MessageSquare, Lock, ChevronLeft, ChevronRight } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 import {
   APPLICATION_STATUS_LABELS,
   PROGRAM_LABELS,
@@ -44,6 +46,7 @@ import type {
 interface ApplicationsTableProps {
   applications: Application[];
   onUpdate: () => void;
+  unreadChatMap?: Record<string, number>;
 }
 
 const statusColors: Record<ApplicationStatus, string> = {
@@ -58,10 +61,27 @@ const statusColors: Record<ApplicationStatus, string> = {
 export function ApplicationsTable({
   applications,
   onUpdate,
+  unreadChatMap = {},
 }: ApplicationsTableProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { user } = useAuth();
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 10;
+
+  const totalPages = Math.ceil(applications.length / PAGE_SIZE);
+  const paginatedApps = applications.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
+
+  const navigateToChat = (appId: string) => {
+    const basePath = pathname.startsWith("/superadmin") ? "/superadmin/chat" : "/admin/chat";
+    router.push(`${basePath}?app=${appId}`);
+  };
 
   const openDetail = (app: Application) => {
     setSelectedApp(app);
@@ -166,101 +186,164 @@ export function ApplicationsTable({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {applications.map((app) => (
-                <TableRow key={app.id} className="hover:bg-accent/30">
-                  <TableCell className="font-medium text-foreground">
-                    {app.surname && app.given_name
-                      ? `${app.surname} ${app.given_name}`
-                      : "Not provided"}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {app.user_email}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {app.user_phone || "N/A"}
-                  </TableCell>
-                  <TableCell className="text-foreground">
-                    {app.user_program
-                      ? PROGRAM_LABELS[app.user_program as Program]
-                      : "N/A"}
-                  </TableCell>
-                  <TableCell className="text-foreground">
-                    {app.education_type
-                      ? EDUCATION_TYPE_LABELS[
-                          app.education_type as EducationType
-                        ]
-                      : "N/A"}
-                  </TableCell>
-                  <TableCell>
-                    <Select
-                      value={app.status}
-                      onValueChange={(v) =>
-                        handleStatusChange(
-                          app.id,
-                          v as ApplicationStatus
-                        )
-                      }
-                    >
-                      <SelectTrigger className="h-8 w-[200px] border-0 bg-transparent p-0 text-foreground">
-                        <Badge
-                          variant="outline"
-                          className={
-                            statusColors[app.status as ApplicationStatus] ||
-                            ""
-                          }
+              {paginatedApps.map((app) => {
+                const isAssignedToOther = app.assigned_admin_id && user && app.assigned_admin_id !== user.id;
+                return (
+                  <TableRow key={app.id} className="hover:bg-accent/30">
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <button
+                          type="button"
+                          onClick={() => navigateToChat(app.id)}
+                          className="group flex items-center gap-2 text-left font-medium text-foreground hover:text-primary transition-colors"
                         >
-                          {
-                            APPLICATION_STATUS_LABELS[
-                              app.status as ApplicationStatus
-                            ]
-                          }
-                        </Badge>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(APPLICATION_STATUS_LABELS).map(
-                          ([key, label]) => (
-                            <SelectItem key={key} value={key}>
-                              {label}
-                            </SelectItem>
-                          )
+                          <span className="group-hover:underline">
+                            {app.surname && app.given_name
+                              ? `${app.surname} ${app.given_name}`
+                              : "Not provided"}
+                          </span>
+                          {unreadChatMap[app.id] > 0 && (
+                            <span className="flex items-center gap-1 rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-bold text-destructive-foreground animate-pulse">
+                              <MessageSquare className="h-2.5 w-2.5" />
+                              {unreadChatMap[app.id] === 1
+                                ? "1 new message"
+                                : `${unreadChatMap[app.id]} new messages`}
+                            </span>
+                          )}
+                        </button>
+                        {isAssignedToOther && (
+                          <span className="flex items-center gap-1 text-[10px] text-warning">
+                            <Lock className="h-2.5 w-2.5" />
+                            {(app as Application & { assigned_admin_name?: string }).assigned_admin_name?.trim()
+                              ? `${(app as Application & { assigned_admin_name?: string }).assigned_admin_name} bilan muloqotda`
+                              : "Boshqa admin bilan muloqotda"}
+                          </span>
                         )}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-16 overflow-hidden rounded-full bg-secondary">
-                        <div
-                          className="h-full rounded-full bg-primary transition-all"
-                          style={{
-                            width: `${app.completion_percentage}%`,
-                          }}
-                        />
                       </div>
-                      <span className="text-xs text-muted-foreground">
-                        {app.completion_percentage}%
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {new Date(app.created_at).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => openDetail(app)}
-                      className="gap-1 text-primary hover:text-primary"
-                    >
-                      <Eye className="h-4 w-4" />
-                      View
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {app.user_email}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {app.user_phone || "N/A"}
+                    </TableCell>
+                    <TableCell className="text-foreground">
+                      {app.user_program
+                        ? PROGRAM_LABELS[app.user_program as Program]
+                        : "N/A"}
+                    </TableCell>
+                    <TableCell className="text-foreground">
+                      {app.education_type
+                        ? EDUCATION_TYPE_LABELS[
+                            app.education_type as EducationType
+                          ]
+                        : "N/A"}
+                    </TableCell>
+                    <TableCell>
+                      <Select
+                        value={app.status}
+                        onValueChange={(v) =>
+                          handleStatusChange(
+                            app.id,
+                            v as ApplicationStatus
+                          )
+                        }
+                      >
+                        <SelectTrigger className="h-8 w-[200px] border-0 bg-transparent p-0 text-foreground">
+                          <Badge
+                            variant="outline"
+                            className={
+                              statusColors[app.status as ApplicationStatus] ||
+                              ""
+                            }
+                          >
+                            {
+                              APPLICATION_STATUS_LABELS[
+                                app.status as ApplicationStatus
+                              ]
+                            }
+                          </Badge>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(APPLICATION_STATUS_LABELS).map(
+                            ([key, label]) => (
+                              <SelectItem key={key} value={key}>
+                                {label}
+                              </SelectItem>
+                            )
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-16 overflow-hidden rounded-full bg-secondary">
+                          <div
+                            className="h-full rounded-full bg-primary transition-all"
+                            style={{
+                              width: `${app.completion_percentage}%`,
+                            }}
+                          />
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {app.completion_percentage}%
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {new Date(app.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openDetail(app)}
+                        className="gap-1 text-primary hover:text-primary"
+                      >
+                        <Eye className="h-4 w-4" />
+                        View
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between border-t border-border px-4 py-3">
+            <p className="text-sm text-muted-foreground">
+              {(currentPage - 1) * PAGE_SIZE + 1}-{Math.min(currentPage * PAGE_SIZE, applications.length)} of {applications.length}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="gap-1 bg-transparent border-border text-foreground"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                {currentPage} / {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="gap-1 bg-transparent border-border text-foreground"
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Detail / Edit Dialog */}

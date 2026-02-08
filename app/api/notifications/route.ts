@@ -20,6 +20,27 @@ export async function GET(req: NextRequest) {
       orderClause = "ORDER BY n.is_read ASC, n.created_at DESC";
     }
 
+    // For admin/superadmin: exclude chat_message notifications from the bell
+    // (admins see chat notifications via the Chat nav badge instead)
+    const isAdminRole = session.role === "admin" || session.role === "superadmin";
+    const isSuperadmin = session.role === "superadmin";
+    const chatFilterAliased = isAdminRole ? "AND n.notification_type != 'chat_message'" : "";
+    const chatFilterPlain = isAdminRole ? "AND notification_type != 'chat_message'" : "";
+
+    // For regular admins: show notifications for:
+    // 1. Applications assigned to them (any notification type)
+    // 2. Unassigned applications' chat_message notifications (all admins see unassigned chats)
+    const assignmentFilterAliased = !isSuperadmin && isAdminRole
+      ? "AND (a.assigned_admin_id = $1 OR (a.assigned_admin_id IS NULL AND n.notification_type = 'chat_message'))"
+      : "";
+    const assignmentFilterPlain = !isSuperadmin && isAdminRole
+      ? "AND (assigned_admin_id = $1 OR (assigned_admin_id IS NULL AND notification_type = 'chat_message'))"
+      : "";
+
+    const queryParams = isAdminRole && !isSuperadmin
+      ? [session.userId, limit, offset]
+      : [session.userId, limit, offset];
+
     const result = await query(
       `SELECT n.id, n.user_id, n.application_id, n.message, n.notification_type,
               n.changed_fields, n.is_read, n.created_at,
@@ -27,21 +48,29 @@ export async function GET(req: NextRequest) {
               a.completion_percentage, a.assigned_admin_id
        FROM notifications n
        LEFT JOIN applications a ON n.application_id = a.id
-       WHERE n.user_id = $1
+       WHERE n.user_id = $1 ${chatFilterAliased} ${assignmentFilterAliased}
        ${orderClause}
        LIMIT $2 OFFSET $3`,
-      [session.userId, limit, offset]
+      queryParams
     );
 
+    const countParams = isAdminRole && !isSuperadmin
+      ? [session.userId]
+      : [session.userId];
+
     const totalResult = await query(
-      "SELECT COUNT(*) as count FROM notifications WHERE user_id = $1",
-      [session.userId]
+      `SELECT COUNT(*) as count FROM notifications n
+       LEFT JOIN applications a ON n.application_id = a.id
+       WHERE n.user_id = $1 ${chatFilterPlain} ${assignmentFilterPlain}`,
+      countParams
     );
     const totalCount = parseInt(totalResult.rows[0].count);
 
     const unreadResult = await query(
-      "SELECT COUNT(*) as count FROM notifications WHERE user_id = $1 AND is_read = FALSE",
-      [session.userId]
+      `SELECT COUNT(*) as count FROM notifications n
+       LEFT JOIN applications a ON n.application_id = a.id
+       WHERE n.user_id = $1 AND n.is_read = FALSE ${chatFilterPlain} ${assignmentFilterPlain}`,
+      countParams
     );
     const unreadCount = parseInt(unreadResult.rows[0].count);
 
@@ -71,18 +100,64 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { notificationId, markAll } = body;
+    const { notificationId, markAll, markChatRead } = body;
 
-    if (markAll) {
+    const isAdminRole = session.role === "admin" || session.role === "superadmin";
+
+    // Mark all chat_message notifications as read for this user
+    if (markChatRead) {
       await query(
-        "UPDATE notifications SET is_read = TRUE WHERE user_id = $1",
+        `UPDATE notifications SET is_read = TRUE WHERE user_id = $1 AND notification_type = 'chat_message' AND is_read = FALSE`,
         [session.userId]
       );
+      return NextResponse.json({ success: true });
+    }
+
+    if (markAll) {
+      if (isAdminRole) {
+        // Mark all notifications for all admins/superadmins as read (shared read)
+        const adminIds = await query(
+          "SELECT id FROM users WHERE role IN ('admin', 'superadmin')"
+        );
+        const ids = adminIds.rows.map((r: { id: string }) => r.id);
+        if (ids.length > 0) {
+          await query(
+            `UPDATE notifications SET is_read = TRUE WHERE user_id = ANY($1)`,
+            [ids]
+          );
+        }
+      } else {
+        await query(
+          "UPDATE notifications SET is_read = TRUE WHERE user_id = $1",
+          [session.userId]
+        );
+      }
     } else if (notificationId) {
       await query(
         "UPDATE notifications SET is_read = TRUE WHERE id = $1 AND user_id = $2",
         [notificationId, session.userId]
       );
+      // Shared read: also mark same application's notifications for other admins
+      if (isAdminRole) {
+        const notifResult = await query(
+          "SELECT application_id, notification_type FROM notifications WHERE id = $1",
+          [notificationId]
+        );
+        if (notifResult.rows.length > 0) {
+          const { application_id, notification_type } = notifResult.rows[0];
+          if (application_id) {
+            const adminIds = await query(
+              "SELECT id FROM users WHERE role IN ('admin', 'superadmin')"
+            );
+            const ids = adminIds.rows.map((r: { id: string }) => r.id);
+            await query(
+              `UPDATE notifications SET is_read = TRUE
+               WHERE application_id = $1 AND notification_type = $2 AND user_id = ANY($3) AND is_read = FALSE`,
+              [application_id, notification_type, ids]
+            );
+          }
+        }
+      }
     }
 
     return NextResponse.json({ success: true });

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import useSWR from "swr";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/notification-bell";
@@ -17,11 +18,19 @@ import {
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
 export function AdminNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { data: unreadData } = useSWR(
+    user ? "/api/chat/unread" : null,
+    fetcher,
+    { refreshInterval: 8000 }
+  );
+  const totalUnreadChats: number = unreadData?.totalUnreadChats || 0;
 
   const isSuperadmin = user?.role === "superadmin";
 
@@ -65,13 +74,18 @@ export function AdminNav() {
                   variant="ghost"
                   size="sm"
                   className={cn(
-                    "gap-2 text-muted-foreground hover:text-foreground",
+                    "relative gap-2 text-muted-foreground hover:text-foreground",
                     pathname === item.href &&
                       "bg-accent text-accent-foreground"
                   )}
                 >
                   <item.icon className="h-4 w-4" />
                   {item.label}
+                  {item.icon === MessageSquare && totalUnreadChats > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground animate-pulse">
+                      {totalUnreadChats > 9 ? "9+" : totalUnreadChats}
+                    </span>
+                  )}
                 </Button>
               </Link>
             ))}
@@ -117,13 +131,18 @@ export function AdminNav() {
                 <Button
                   variant="ghost"
                   className={cn(
-                    "w-full justify-start gap-2 text-muted-foreground",
+                    "relative w-full justify-start gap-2 text-muted-foreground",
                     pathname === item.href &&
                       "bg-accent text-accent-foreground"
                   )}
                 >
                   <item.icon className="h-4 w-4" />
                   {item.label}
+                  {item.icon === MessageSquare && totalUnreadChats > 0 && (
+                    <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground animate-pulse">
+                      {totalUnreadChats}
+                    </span>
+                  )}
                 </Button>
               </Link>
             ))}

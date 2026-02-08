@@ -8,6 +8,7 @@ import { ApplicationFilters } from "@/components/admin/application-filters";
 import { Button } from "@/components/ui/button";
 import { Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { UnreadChatMap } from "@/types"; // Declare UnreadChatMap variable
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -17,6 +18,14 @@ interface Filters {
   date_from: string;
   date_to: string;
   search: string;
+}
+
+function useUnreadChatMaps() {
+  const { data } = useSWR("/api/chat/unread", fetcher, { refreshInterval: 8000 });
+  return {
+    allUnread: (data?.allUnreadMap || {}) as Record<string, number>,
+    forMeUnread: (data?.forMeUnreadMap || {}) as Record<string, number>,
+  };
 }
 
 function buildQuery(filters: Filters, forMe: boolean) {
@@ -40,6 +49,7 @@ export default function AdminPage() {
     search: "",
   });
   const [exporting, setExporting] = useState(false);
+  const { allUnread, forMeUnread } = useUnreadChatMaps();
 
   const allQuery = buildQuery(filters, false);
   const forMeQuery = buildQuery(filters, true);
@@ -144,6 +154,7 @@ export default function AdminPage() {
             <ApplicationsTable
               applications={allData?.applications || []}
               onUpdate={mutateData}
+              unreadChatMap={allUnread}
             />
           )}
         </TabsContent>
@@ -156,6 +167,7 @@ export default function AdminPage() {
             <ApplicationsTable
               applications={forMeData?.applications || []}
               onUpdate={mutateData}
+              unreadChatMap={forMeUnread}
             />
           )}
         </TabsContent>

@@ -11,7 +11,7 @@ export async function GET() {
     }
 
     const result = await query(
-      "SELECT id, email, role, created_at FROM users WHERE role IN ('admin', 'superadmin') ORDER BY created_at DESC"
+      "SELECT id, email, role, first_name, last_name, position, created_at FROM users WHERE role IN ('admin', 'superadmin') ORDER BY created_at DESC"
     );
 
     return NextResponse.json({ admins: result.rows });
@@ -32,11 +32,11 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { email, password, role } = body;
+    const { email, password, role, first_name, last_name, position } = body;
 
-    if (!email || !password || !role) {
+    if (!email || !password || !role || !first_name?.trim() || !last_name?.trim() || !position?.trim()) {
       return NextResponse.json(
-        { error: "All fields are required" },
+        { error: "All fields are required (email, password, role, first name, last name, position)" },
         { status: 400 }
       );
     }
@@ -58,10 +58,10 @@ export async function POST(req: NextRequest) {
     const passwordHash = await bcrypt.hash(password, 12);
 
     const result = await query(
-      `INSERT INTO users (email, password_hash, role, email_verified)
-       VALUES ($1, $2, $3, TRUE)
-       RETURNING id, email, role, created_at`,
-      [email.toLowerCase(), passwordHash, role]
+      `INSERT INTO users (email, password_hash, role, first_name, last_name, position, email_verified)
+       VALUES ($1, $2, $3, $4, $5, $6, TRUE)
+       RETURNING id, email, role, first_name, last_name, position, created_at`,
+      [email.toLowerCase(), passwordHash, role, first_name.trim(), last_name.trim(), position.trim()]
     );
 
     await query(

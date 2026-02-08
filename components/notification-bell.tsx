@@ -115,6 +115,9 @@ export function NotificationBell() {
           ? `?highlight=${firstFieldKey}&notif_id=${notification.id}`
           : `?notif_id=${notification.id}`;
         router.push(`/dashboard${query}`);
+      } else if (type === "applicant_update") {
+        // Admin notification - navigate to admin page (application list)
+        router.push("/admin");
       } else {
         router.push("/dashboard");
       }
@@ -133,6 +136,7 @@ export function NotificationBell() {
         return <MessageSquare className="h-3.5 w-3.5 text-blue-500" />;
       case "field_change":
       case "status_change":
+      case "applicant_update":
         return <FileEdit className="h-3.5 w-3.5 text-amber-500" />;
       default:
         return <Bell className="h-3.5 w-3.5 text-muted-foreground" />;
@@ -195,15 +199,12 @@ export function NotificationBell() {
       >
         <div className="flex gap-2">
           <div className="mt-0.5 flex-shrink-0">
-            {!n.is_read ? (
-              <span className="flex h-5 w-5 items-center justify-center">
-                <span className="h-2 w-2 rounded-full bg-primary" />
-              </span>
-            ) : (
-              <span className="flex h-5 w-5 items-center justify-center">
-                {getNotifIcon(n.notification_type)}
-              </span>
-            )}
+            <span className="relative flex h-5 w-5 items-center justify-center">
+              {getNotifIcon(n.notification_type)}
+              {!n.is_read && (
+                <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-primary" />
+              )}
+            </span>
           </div>
           <div className="min-w-0 flex-1">
             <p className={cn("text-sm leading-snug", !n.is_read ? "font-medium text-foreground" : "text-muted-foreground")}>
@@ -216,6 +217,9 @@ export function NotificationBell() {
               {n.notification_type === "status_change" && n.app_status && getStatusBadge(n.app_status)}
               {n.notification_type === "field_change" && (
                 <Badge variant="outline" className="h-4 px-1.5 text-[9px] font-normal text-amber-600 border-amber-200 bg-amber-50">Change</Badge>
+              )}
+              {n.notification_type === "applicant_update" && (
+                <Badge variant="outline" className="h-4 px-1.5 text-[9px] font-normal text-amber-600 border-amber-200 bg-amber-50">Applicant Update</Badge>
               )}
             </div>
             {isDetailExpanded && hasChanges && renderChangedFields(n.changed_fields)}

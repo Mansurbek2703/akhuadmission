@@ -16,6 +16,9 @@ async function runMigrations() {
       ALTER TABLE notifications ADD COLUMN IF NOT EXISTS notification_type VARCHAR(50) DEFAULT 'general';
       ALTER TABLE notifications ADD COLUMN IF NOT EXISTS changed_fields JSONB;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(20);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(100);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name VARCHAR(100);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS position VARCHAR(200);
       ALTER TABLE applications ADD COLUMN IF NOT EXISTS other_achievements_text TEXT;
       ALTER TABLE applications ADD COLUMN IF NOT EXISTS other_achievements_pdf_path VARCHAR(500);
     `);

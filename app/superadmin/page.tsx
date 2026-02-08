@@ -19,6 +19,14 @@ interface Filters {
   search: string;
 }
 
+function useUnreadChatMaps() {
+  const { data } = useSWR("/api/chat/unread", fetcher, { refreshInterval: 8000 });
+  return {
+    allUnread: (data?.allUnreadMap || {}) as Record<string, number>,
+    forMeUnread: (data?.forMeUnreadMap || {}) as Record<string, number>,
+  };
+}
+
 function buildQuery(filters: Filters, forMe: boolean) {
   const params = new URLSearchParams();
   if (forMe) params.set("for_me", "true");
@@ -40,6 +48,7 @@ export default function SuperadminPage() {
     search: "",
   });
   const [exporting, setExporting] = useState(false);
+  const { allUnread, forMeUnread } = useUnreadChatMaps();
 
   const allQuery = buildQuery(filters, false);
   const forMeQuery = buildQuery(filters, true);
@@ -140,6 +149,7 @@ export default function SuperadminPage() {
             <ApplicationsTable
               applications={allData?.applications || []}
               onUpdate={mutateData}
+              unreadChatMap={allUnread}
             />
           )}
         </TabsContent>
@@ -152,10 +162,19 @@ export default function SuperadminPage() {
             <ApplicationsTable
               applications={forMeData?.applications || []}
               onUpdate={mutateData}
+              unreadChatMap={forMeUnread}
             />
           )}
         </TabsContent>
       </Tabs>
     </div>
   );
+}
+
+interface Filters {
+  status: string;
+  education_type: string;
+  date_from: string;
+  date_to: string;
+  search: string;
 }

@@ -30,6 +30,9 @@ interface ChatMessage {
   sender_id: string;
   sender_role: string;
   sender_email?: string;
+  sender_first_name?: string;
+  sender_last_name?: string;
+  sender_position?: string;
   message?: string;
   file_path?: string;
   file_name?: string;
@@ -57,6 +60,8 @@ export function ChatPanel({ applicationId, user }: ChatPanelProps) {
   );
 
   const messages: ChatMessage[] = data?.messages || [];
+  const assignedToOther: boolean = data?.assignedToOther || false;
+  const assignedAdminName: string = data?.assignedAdminName || "";
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -76,11 +81,14 @@ export function ChatPanel({ applicationId, user }: ChatPanelProps) {
           message: message.trim(),
         }),
       });
-      if (!res.ok) throw new Error("Failed to send");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to send");
+      }
       setMessage("");
       mutate();
-    } catch {
-      toast.error("Failed to send message");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to send message");
     } finally {
       setSending(false);
     }
@@ -174,6 +182,15 @@ export function ChatPanel({ applicationId, user }: ChatPanelProps) {
         </div>
       </div>
 
+      {/* Assigned to another admin warning */}
+      {assignedToOther && assignedAdminName && (
+        <div className="border-b border-warning/30 bg-warning/10 px-4 py-2.5">
+          <p className="text-sm font-medium text-warning">
+            This applicant is in communication with {assignedAdminName}
+          </p>
+        </div>
+      )}
+
       {/* Messages */}
       <ScrollArea className="flex-1 px-4" ref={scrollRef}>
         <div className="flex flex-col gap-3 py-4">
@@ -194,6 +211,19 @@ export function ChatPanel({ applicationId, user }: ChatPanelProps) {
                   isMe ? "ml-auto items-end" : "mr-auto items-start"
                 )}
               >
+                {/* Show admin name/position for non-applicant senders */}
+                {!isMe && msg.sender_role !== "applicant" && (msg.sender_first_name || msg.sender_last_name) && (
+                  <div className="flex items-center gap-1.5 px-1">
+                    <span className="text-xs font-semibold text-foreground">
+                      {[msg.sender_first_name, msg.sender_last_name].filter(Boolean).join(" ")}
+                    </span>
+                    {msg.sender_position && (
+                      <span className="text-[10px] text-muted-foreground">
+                        {msg.sender_position}
+                      </span>
+                    )}
+                  </div>
+                )}
                 <div
                   className={cn(
                     "rounded-xl px-4 py-2.5",
@@ -250,42 +280,48 @@ export function ChatPanel({ applicationId, user }: ChatPanelProps) {
 
       {/* Input Area */}
       <div className="border-t border-border px-4 py-3">
-        <div className="flex items-center gap-2">
-          <label className="cursor-pointer">
-            {uploading ? (
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-            ) : (
-              <Paperclip className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
-            )}
-            <input
-              type="file"
-              accept="application/pdf,image/jpeg,image/png"
-              className="hidden"
-              onChange={handleFileUpload}
-              disabled={uploading}
+        {assignedToOther ? (
+          <p className="text-center text-sm text-muted-foreground py-1">
+            You cannot send messages to this applicant
+          </p>
+        ) : (
+          <div className="flex items-center gap-2">
+            <label className="cursor-pointer">
+              {uploading ? (
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              ) : (
+                <Paperclip className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
+              )}
+              <input
+                type="file"
+                accept="application/pdf,image/jpeg,image/png"
+                className="hidden"
+                onChange={handleFileUpload}
+                disabled={uploading}
+              />
+            </label>
+            <Input
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Type your message..."
+              className="flex-1 bg-secondary/50 text-foreground"
+              disabled={sending}
             />
-          </label>
-          <Input
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Type your message..."
-            className="flex-1 bg-secondary/50 text-foreground"
-            disabled={sending}
-          />
-          <Button
-            size="icon"
-            onClick={handleSend}
-            disabled={!message.trim() || sending}
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            {sending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
+            <Button
+              size="icon"
+              onClick={handleSend}
+              disabled={!message.trim() || sending}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {sending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        )}
       </div>
     </Card>
   );

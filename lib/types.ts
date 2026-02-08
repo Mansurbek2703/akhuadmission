@@ -88,13 +88,14 @@ export interface Application {
   other_achievements_text?: string;
   other_achievements_pdf_path?: string;
   assigned_admin_id?: string;
+  assigned_admin_email?: string;
+  assigned_admin_name?: string;
   completion_percentage: number;
   created_at: string;
   updated_at: string;
   user_email?: string;
   user_phone?: string;
   user_program?: Program;
-  assigned_admin_email?: string;
 }
 
 export interface ChatMessage {

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { useAuth } from "@/hooks/use-auth";
 import { ChatPanel } from "@/components/chat-panel";
@@ -17,14 +18,25 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function SuperadminChatPage() {
   const { user } = useAuth();
-  const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const appParam = searchParams.get("app");
+  const [selectedAppId, setSelectedAppId] = useState<string | null>(appParam);
   const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    if (appParam) setSelectedAppId(appParam);
+  }, [appParam]);
 
   const { data, isLoading } = useSWR("/api/applications", fetcher, {
     refreshInterval: 15000,
   });
 
+  const { data: unreadData } = useSWR("/api/chat/unread", fetcher, {
+    refreshInterval: 8000,
+  });
+
   const applications: Application[] = data?.applications || [];
+  const unreadMap = (unreadData?.allUnreadMap || {}) as Record<string, number>;
 
   const filtered = applications.filter((app) => {
     if (!search) return true;
@@ -81,11 +93,18 @@ export default function SuperadminChatPage() {
                       selectedAppId === app.id && "bg-accent"
                     )}
                   >
-                    <span className="text-sm font-medium text-foreground">
-                      {app.surname && app.given_name
-                        ? `${app.surname} ${app.given_name}`
-                        : app.user_email}
-                    </span>
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-sm font-medium text-foreground">
+                        {app.surname && app.given_name
+                          ? `${app.surname} ${app.given_name}`
+                          : app.user_email}
+                      </span>
+                      {unreadMap[app.id] > 0 && (
+                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
+                          {unreadMap[app.id]}
+                        </span>
+                      )}
+                    </div>
                     <span className="text-xs text-muted-foreground">
                       {app.user_email}
                     </span>

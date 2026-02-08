@@ -60,7 +60,8 @@ export async function GET(req: NextRequest) {
 
     let sql = `
       SELECT a.*, u.email as user_email, u.phone as user_phone, u.program as user_program,
-             admin_user.email as assigned_admin_email
+             admin_user.email as assigned_admin_email,
+             TRIM(COALESCE(admin_user.first_name, '') || ' ' || COALESCE(admin_user.last_name, '')) as assigned_admin_name
       FROM applications a
       JOIN users u ON a.user_id = u.id
       LEFT JOIN users admin_user ON a.assigned_admin_id = admin_user.id
@@ -187,6 +188,9 @@ export async function PUT(req: NextRequest) {
       );
       const oldApp = oldResult.rows[0];
 
+      // Check if this is the first admin to open (assign) this application
+      const isFirstAssignment = !oldApp?.assigned_admin_id;
+
       // Auto-transition: if status was "submitted", set to "pending_review" (admin has opened it)
       if (oldApp?.status === "submitted" && !fields.status) {
         setClauses.push(`status = $${idx}`);
@@ -225,6 +229,16 @@ export async function PUT(req: NextRequest) {
         }
       }
 
+      // Get admin display name
+      const adminInfoResult = await query(
+        "SELECT first_name, last_name, position FROM users WHERE id = $1",
+        [session.userId]
+      );
+      const adminInfo = adminInfoResult.rows[0];
+      const adminDisplayName = adminInfo?.first_name && adminInfo?.last_name
+        ? `${adminInfo.first_name} ${adminInfo.last_name}`
+        : "Admin";
+
       // Notify applicant with detailed change info
       const appResult = await query(
         "SELECT a.user_id, a.given_name, a.surname, u.email FROM applications a JOIN users u ON a.user_id = u.id WHERE a.id = $1",
@@ -232,11 +246,27 @@ export async function PUT(req: NextRequest) {
       );
       if (appResult.rows.length > 0) {
         const applicant = appResult.rows[0];
+
+        // Notify applicant that admin has opened/been assigned to their application
+        if (isFirstAssignment) {
+          const adminPositionStr = adminInfo?.position ? ` (${adminInfo.position})` : "";
+          await query(
+            `INSERT INTO notifications (user_id, application_id, message, notification_type)
+             VALUES ($1, $2, $3, $4)`,
+            [
+              applicant.user_id,
+              applicationId,
+              `Your application is now being reviewed by ${adminDisplayName}${adminPositionStr}`,
+              "field_change",
+            ]
+          );
+        }
+
         const changedCount = Object.keys(changedFields).length;
 
         if (changedCount > 0) {
           const changedLabels = Object.values(changedFields).map((f) => f.label).join(", ");
-          const notifMessage = `${changedCount} field(s) updated in your application: ${changedLabels}`;
+          const notifMessage = `${adminDisplayName} updated ${changedCount} field(s) in your application: ${changedLabels}`;
           const notifType = fields.status ? "status_change" : "field_change";
 
           await query(
@@ -258,16 +288,32 @@ export async function PUT(req: NextRequest) {
         }
       }
     } else {
-      // Applicant updated, notify admins
-      const admins = await query(
-        "SELECT id FROM users WHERE role IN ('admin', 'superadmin')"
+      // Applicant updated, notify only the assigned admin (or all admins if none assigned yet)
+      const appCheck = await query(
+        "SELECT assigned_admin_id FROM applications WHERE id = $1",
+        [applicationId]
       );
-      for (const admin of admins.rows) {
+      const assignedAdminId = appCheck.rows[0]?.assigned_admin_id;
+
+      if (assignedAdminId) {
+        // Only notify the assigned admin
         await query(
           `INSERT INTO notifications (user_id, application_id, message, notification_type)
            VALUES ($1, $2, $3, $4)`,
-          [admin.id, applicationId, "Applicant has updated their application", "applicant_update"]
+          [assignedAdminId, applicationId, "Applicant has updated their application", "applicant_update"]
         );
+      } else {
+        // No assigned admin yet, notify all admins
+        const admins = await query(
+          "SELECT id FROM users WHERE role IN ('admin', 'superadmin')"
+        );
+        for (const admin of admins.rows) {
+          await query(
+            `INSERT INTO notifications (user_id, application_id, message, notification_type)
+             VALUES ($1, $2, $3, $4)`,
+            [admin.id, applicationId, "Applicant has updated their application", "applicant_update"]
+          );
+        }
       }
     }
 

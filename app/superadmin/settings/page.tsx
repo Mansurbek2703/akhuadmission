@@ -50,6 +50,9 @@ interface Admin {
   id: string;
   email: string;
   role: string;
+  first_name?: string;
+  last_name?: string;
+  position?: string;
   created_at: string;
 }
 
@@ -66,6 +69,9 @@ export default function SuperadminSettingsPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("admin");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [adminPosition, setAdminPosition] = useState("");
   const [creating, setCreating] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -91,6 +97,10 @@ export default function SuperadminSettingsPage() {
       toast.error("Email and password are required");
       return;
     }
+    if (!firstName.trim() || !lastName.trim() || !adminPosition.trim()) {
+      toast.error("First name, last name, and position are required");
+      return;
+    }
     if (password.length < 8) {
       toast.error("Password must be at least 8 characters");
       return;
@@ -100,7 +110,7 @@ export default function SuperadminSettingsPage() {
       const res = await fetch("/api/admin/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, role }),
+        body: JSON.stringify({ email, password, role, first_name: firstName, last_name: lastName, position: adminPosition }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -108,6 +118,9 @@ export default function SuperadminSettingsPage() {
       setEmail("");
       setPassword("");
       setRole("admin");
+      setFirstName("");
+      setLastName("");
+      setAdminPosition("");
       setDialogOpen(false);
       mutateAdmins();
     } catch (err) {
@@ -190,6 +203,38 @@ export default function SuperadminSettingsPage() {
                     onSubmit={handleCreateAdmin}
                     className="flex flex-col gap-4"
                   >
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-2">
+                        <Label className="text-foreground">First Name <span className="text-destructive">*</span></Label>
+                        <Input
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          placeholder="John"
+                          required
+                          className="bg-card text-foreground"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Label className="text-foreground">Last Name <span className="text-destructive">*</span></Label>
+                        <Input
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          placeholder="Doe"
+                          required
+                          className="bg-card text-foreground"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <Label className="text-foreground">Position <span className="text-destructive">*</span></Label>
+                      <Input
+                        value={adminPosition}
+                        onChange={(e) => setAdminPosition(e.target.value)}
+                        placeholder="Admissions Officer"
+                        required
+                        className="bg-card text-foreground"
+                      />
+                    </div>
                     <div className="flex flex-col gap-2">
                       <Label className="text-foreground">Email</Label>
                       <Input
@@ -257,7 +302,13 @@ export default function SuperadminSettingsPage() {
                   <TableHeader>
                     <TableRow className="hover:bg-transparent">
                       <TableHead className="text-muted-foreground">
+                        Name
+                      </TableHead>
+                      <TableHead className="text-muted-foreground">
                         Email
+                      </TableHead>
+                      <TableHead className="text-muted-foreground">
+                        Position
                       </TableHead>
                       <TableHead className="text-muted-foreground">
                         Role
@@ -274,7 +325,15 @@ export default function SuperadminSettingsPage() {
                     {admins.map((admin) => (
                       <TableRow key={admin.id} className="hover:bg-accent/30">
                         <TableCell className="font-medium text-foreground">
+                          {admin.first_name && admin.last_name
+                            ? `${admin.first_name} ${admin.last_name}`
+                            : "N/A"}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
                           {admin.email}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {admin.position || "N/A"}
                         </TableCell>
                         <TableCell>
                           <Badge
