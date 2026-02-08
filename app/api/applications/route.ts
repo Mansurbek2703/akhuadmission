@@ -23,6 +23,8 @@ const FIELD_LABELS: Record<string, string> = {
   language_cert_date: "Language Certificate Date",
   social_registry: "Social Registry",
   social_registry_pdf_path: "Social Registry PDF",
+  other_achievements_text: "Other Achievements Notes",
+  other_achievements_pdf_path: "Other Achievements PDF",
   status: "Application Status",
   completion_percentage: "Completion Percentage",
 };
@@ -57,7 +59,7 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get("search");
 
     let sql = `
-      SELECT a.*, u.email as user_email, u.program as user_program,
+      SELECT a.*, u.email as user_email, u.phone as user_phone, u.program as user_program,
              admin_user.email as assigned_admin_email
       FROM applications a
       JOIN users u ON a.user_id = u.id
@@ -150,8 +152,9 @@ export async function PUT(req: NextRequest) {
       "card_number", "date_of_birth", "date_of_issue", "date_of_expiry",
       "personal_number", "place_of_birth", "passport_image_path",
       "attestat_pdf_path", "language_cert_type", "language_cert_pdf_path",
-      "language_cert_score", "language_cert_date", "social_registry",
-      "social_registry_pdf_path", "status", "completion_percentage",
+      "language_cert_score", "language_cert_date",       "social_registry",
+      "social_registry_pdf_path", "other_achievements_text",
+      "other_achievements_pdf_path", "status", "completion_percentage",
     ];
 
     const setClauses: string[] = [];

@@ -15,6 +15,9 @@ async function runMigrations() {
     await client.query(`
       ALTER TABLE notifications ADD COLUMN IF NOT EXISTS notification_type VARCHAR(50) DEFAULT 'general';
       ALTER TABLE notifications ADD COLUMN IF NOT EXISTS changed_fields JSONB;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(20);
+      ALTER TABLE applications ADD COLUMN IF NOT EXISTS other_achievements_text TEXT;
+      ALTER TABLE applications ADD COLUMN IF NOT EXISTS other_achievements_pdf_path VARCHAR(500);
     `);
     // Add 'submitted' to status CHECK constraint if missing
     try {

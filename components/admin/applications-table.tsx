@@ -47,6 +47,7 @@ interface ApplicationsTableProps {
 }
 
 const statusColors: Record<ApplicationStatus, string> = {
+  submitted: "bg-muted text-muted-foreground border-border",
   pending_review: "bg-warning/10 text-warning border-warning/20",
   incomplete_document: "bg-destructive/10 text-destructive border-destructive/20",
   approved_to_attend_exam: "bg-primary/10 text-primary border-primary/20",
@@ -145,6 +146,7 @@ export function ApplicationsTable({
               <TableRow className="hover:bg-transparent">
                 <TableHead className="text-muted-foreground">Name</TableHead>
                 <TableHead className="text-muted-foreground">Email</TableHead>
+                <TableHead className="text-muted-foreground">Phone</TableHead>
                 <TableHead className="text-muted-foreground">
                   Program
                 </TableHead>
@@ -173,6 +175,9 @@ export function ApplicationsTable({
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {app.user_email}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {app.user_phone || "N/A"}
                   </TableCell>
                   <TableCell className="text-foreground">
                     {app.user_program
@@ -312,6 +317,12 @@ export function ApplicationsTable({
                       </span>
                     </div>
                     <div>
+                      <span className="text-muted-foreground">Phone: </span>
+                      <span className="font-medium text-foreground">
+                        {selectedApp.user_phone || "N/A"}
+                      </span>
+                    </div>
+                    <div>
                       <span className="text-muted-foreground">Program: </span>
                       <span className="font-medium text-foreground">
                         {selectedApp.user_program
@@ -399,6 +410,30 @@ export function ApplicationsTable({
                   ))}
                 </div>
 
+                {/* Other Achievements */}
+                {(selectedApp.other_achievements_text || selectedApp.other_achievements_pdf_path) && (
+                  <div className="flex flex-col gap-2 rounded-lg border border-border bg-secondary/30 p-4">
+                    <Label className="text-xs font-medium text-muted-foreground">
+                      Other Achievements
+                    </Label>
+                    {selectedApp.other_achievements_text && (
+                      <p className="text-sm text-foreground whitespace-pre-wrap">
+                        {selectedApp.other_achievements_text}
+                      </p>
+                    )}
+                    {selectedApp.other_achievements_pdf_path && (
+                      <a
+                        href={selectedApp.other_achievements_pdf_path}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                      >
+                        View Document <ExternalLink className="h-3 w-3" />
+                      </a>
+                    )}
+                  </div>
+                )}
+
                 {/* Documents */}
                 <div className="flex flex-col gap-3">
                   <Label className="text-xs font-medium text-muted-foreground">
@@ -421,6 +456,10 @@ export function ApplicationsTable({
                       {
                         label: "Social Registry",
                         path: selectedApp.social_registry_pdf_path,
+                      },
+                      {
+                        label: "Other Achievements",
+                        path: selectedApp.other_achievements_pdf_path,
                       },
                     ].map((doc) => (
                       <div

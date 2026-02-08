@@ -26,10 +26,12 @@ import { toast } from "sonner";
 import { GraduationCap, Loader2, Eye, EyeOff } from "lucide-react";
 import { PROGRAM_LABELS } from "@/lib/types";
 import type { Program } from "@/lib/types";
+import { PhoneInput } from "@/components/phone-input";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [program, setProgram] = useState<Program | "">("");
   const [loading, setLoading] = useState(false);
@@ -37,6 +39,10 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!phone.trim()) {
+      toast.error("Please enter your phone number");
+      return;
+    }
     if (!program) {
       toast.error("Please select a program");
       return;
@@ -51,7 +57,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, program }),
+        body: JSON.stringify({ email, phone, password, program }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -94,6 +100,15 @@ export default function RegisterPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="bg-card text-foreground"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="phone" className="text-foreground">
+                Phone Number
+              </Label>
+              <PhoneInput
+                value={phone}
+                onChange={setPhone}
               />
             </div>
             <div className="flex flex-col gap-2">

@@ -85,11 +85,14 @@ export interface Application {
   language_cert_date?: string;
   social_registry: boolean;
   social_registry_pdf_path?: string;
+  other_achievements_text?: string;
+  other_achievements_pdf_path?: string;
   assigned_admin_id?: string;
   completion_percentage: number;
   created_at: string;
   updated_at: string;
   user_email?: string;
+  user_phone?: string;
   user_program?: Program;
   assigned_admin_email?: string;
 }

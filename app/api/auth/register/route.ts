@@ -7,11 +7,11 @@ import { sendVerificationEmail } from "@/lib/email";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { email, password, program } = body;
+    const { email, phone, password, program } = body;
 
-    if (!email || !password || !program) {
+    if (!email || !phone || !password || !program) {
       return NextResponse.json(
-        { error: "All fields are required" },
+        { error: "All fields are required (email, phone, password, program)" },
         { status: 400 }
       );
     }
@@ -37,10 +37,10 @@ export async function POST(req: NextRequest) {
     const verificationToken = randomUUID();
 
     const result = await query(
-      `INSERT INTO users (email, password_hash, role, program, verification_token)
-       VALUES ($1, $2, 'applicant', $3, $4)
-       RETURNING id, email, role, program`,
-      [email.toLowerCase(), passwordHash, program, verificationToken]
+      `INSERT INTO users (email, phone, password_hash, role, program, verification_token)
+       VALUES ($1, $2, $3, 'applicant', $4, $5)
+       RETURNING id, email, phone, role, program`,
+      [email.toLowerCase(), phone.trim(), passwordHash, program, verificationToken]
     );
 
     const user = result.rows[0];
