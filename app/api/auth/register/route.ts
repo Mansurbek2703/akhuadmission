@@ -45,10 +45,10 @@ export async function POST(req: NextRequest) {
 
     const user = result.rows[0];
 
-    // Create application record
+    // Create application record with "submitted" default
     await query(
       `INSERT INTO applications (user_id, status, completion_percentage)
-       VALUES ($1, 'pending_review', 0)`,
+       VALUES ($1, 'submitted', 0)`,
       [user.id]
     );
 
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
       success: true,
       user: { id: user.id, email: user.email, program: user.program },
       message:
-        "Ro'yxatdan o'tish muvaffaqiyatli. Emailingizni tasdiqlash uchun pochtangizni tekshiring.",
+        "Registration successful. Please check your email to verify your account.",
     });
   } catch (error) {
     console.error("Registration error:", error);

@@ -1,24 +1,59 @@
 "use client";
 
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { useAuth } from "@/hooks/use-auth";
 import { ApplicationForm } from "@/components/application-form";
-import { StatusTimeline } from "@/components/status-timeline";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Loader2, FileText, Clock, CheckCircle2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Loader2,
+  Phone,
+  User as UserIcon,
+  AlertTriangle,
+} from "lucide-react";
 import {
   APPLICATION_STATUS_LABELS,
   PROGRAM_LABELS,
 } from "@/lib/types";
 import type { Application, ApplicationStatus, Program } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-export default function DashboardPage() {
+const STATUS_COLORS: Record<string, string> = {
+  submitted: "bg-slate-100 text-slate-800 border-slate-200",
+  pending_review: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  incomplete_document: "bg-red-100 text-red-800 border-red-200",
+  approved_to_attend_exam: "bg-blue-100 text-blue-800 border-blue-200",
+  passed_with_exemption: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  application_approved: "bg-green-100 text-green-800 border-green-200",
+};
+
+/**
+ * Check if the applicant has actually filled out any data in the application.
+ * If all key fields are empty, they haven't applied yet.
+ */
+function hasApplicantFilledForm(app: Application): boolean {
+  return !!(
+    app.surname ||
+    app.given_name ||
+    app.card_number ||
+    app.education_type ||
+    app.language_cert_type ||
+    app.attestat_pdf_path ||
+    app.passport_image_path
+  );
+}
+
+function DashboardContent() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
+  const highlightField = searchParams.get("highlight") || undefined;
+
   const { data, isLoading, mutate } = useSWR("/api/applications", fetcher, {
-    refreshInterval: 15000,
+    refreshInterval: 5000,
   });
 
   const application: Application | null = data?.application || null;
@@ -31,70 +66,103 @@ export default function DashboardPage() {
     );
   }
 
+  // Determine if user has actually submitted the form
+  const hasFilled = application ? hasApplicantFilledForm(application) : false;
+
   return (
     <div className="flex flex-col gap-6">
-      {/* Header Overview */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      {/* Header with status */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            My Application
-          </h1>
+          <h1 className="text-2xl font-bold text-foreground">My Application</h1>
           <p className="mt-1 text-muted-foreground">
             {user?.program
               ? PROGRAM_LABELS[user.program as Program]
-              : "Bachelor Program Application"}
+              : "Bachelor program application"}
           </p>
         </div>
-        {application && (
-          <div className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2">
-            <Clock className="h-4 w-4 text-accent-foreground" />
-            <span className="text-sm font-medium text-accent-foreground">
-              {
-                APPLICATION_STATUS_LABELS[
-                  application.status as ApplicationStatus
-                ]
-              }
+
+        {/* Application Status */}
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted-foreground">Application Status:</span>
+          {application && hasFilled ? (
+            <Badge
+              variant="outline"
+              className={cn(
+                "px-3 py-1.5 text-sm font-semibold",
+                STATUS_COLORS[application.status] || ""
+              )}
+            >
+              {APPLICATION_STATUS_LABELS[application.status as ApplicationStatus]}
+            </Badge>
+          ) : (
+            <span className="inline-flex animate-pulse items-center gap-1.5 rounded-md bg-red-100 px-3 py-1.5 text-sm font-semibold text-red-700 ring-1 ring-red-200">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              {"You haven't applied yet!"}
             </span>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      {/* Progress Card */}
-      {application && (
-        <Card className="border-border bg-card">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base text-foreground">
-              <FileText className="h-4 w-4 text-primary" />
-              Application Completion
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              <Progress
-                value={application.completion_percentage}
-                className="flex-1"
-              />
-              <span className="text-sm font-semibold text-foreground">
-                {application.completion_percentage}%
-              </span>
-            </div>
-            {application.completion_percentage === 100 && (
-              <div className="mt-3 flex items-center gap-2 text-sm text-success">
-                <CheckCircle2 className="h-4 w-4" />
-                Application is complete
+      {/* Admin Contact Info Card - shown when an admin is assigned */}
+      {application && application.assigned_admin_id && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                <UserIcon className="h-5 w-5 text-primary" />
               </div>
-            )}
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  Registrar Office - Your application is being reviewed
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Your application is under review. If you have questions, please contact us.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5 sm:items-end">
+              <div className="flex items-center gap-2 text-sm">
+                <Phone className="h-3.5 w-3.5 text-primary" />
+                <a href="tel:+998622277171" className="font-medium text-foreground hover:text-primary transition-colors">
+                  +998 62 227 71 71
+                </a>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="flex h-3.5 w-3.5 items-center justify-center rounded bg-primary/20 text-[9px] font-bold text-primary">
+                  #
+                </span>
+                <span className="text-muted-foreground">
+                  Extension: <span className="font-medium text-foreground">333</span>
+                </span>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Status Timeline */}
-      {application && <StatusTimeline application={application} />}
-
       {/* Application Form */}
       {application && (
-        <ApplicationForm application={application} onUpdate={mutate} />
+        <ApplicationForm
+          application={application}
+          onUpdate={mutate}
+          highlightField={highlightField}
+        />
       )}
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      }
+    >
+      <DashboardContent />
+    </Suspense>
   );
 }

@@ -29,7 +29,7 @@ export function DashboardNav() {
 
   const handleLogout = async () => {
     await logout();
-    router.push("/login");
+    router.push("/");
   };
 
   return (

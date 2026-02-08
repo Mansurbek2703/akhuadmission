@@ -35,7 +35,7 @@ export function AdminNav() {
 
   const handleLogout = async () => {
     await logout();
-    router.push("/login");
+    router.push("/");
   };
 
   return (

@@ -31,8 +31,8 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS applications (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  status VARCHAR(50) NOT NULL DEFAULT 'pending_review' CHECK (status IN (
-    'pending_review', 'incomplete_document', 'approved_to_attend_exam',
+  status VARCHAR(50) NOT NULL DEFAULT 'submitted' CHECK (status IN (
+    'submitted', 'pending_review', 'incomplete_document', 'approved_to_attend_exam',
     'passed_with_exemption', 'application_approved'
   )),
   education_type VARCHAR(50),
@@ -97,6 +97,8 @@ CREATE TABLE IF NOT EXISTS notifications (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   application_id UUID REFERENCES applications(id) ON DELETE CASCADE,
   message TEXT NOT NULL,
+  notification_type VARCHAR(50) DEFAULT 'general',
+  changed_fields JSONB,
   is_read BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT NOW()
 );

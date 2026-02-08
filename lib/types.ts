@@ -1,6 +1,7 @@
 export type UserRole = "applicant" | "admin" | "superadmin";
 
 export type ApplicationStatus =
+  | "submitted"
   | "pending_review"
   | "incomplete_document"
   | "approved_to_attend_exam"
@@ -8,11 +9,12 @@ export type ApplicationStatus =
   | "application_approved";
 
 export const APPLICATION_STATUS_LABELS: Record<ApplicationStatus, string> = {
+  submitted: "Submitted",
   pending_review: "Pending Review",
   incomplete_document: "Incomplete Document",
   approved_to_attend_exam: "Approved to Attend Exam",
   passed_with_exemption: "Passed with Exemption",
-  application_approved: "Application is Approved",
+  application_approved: "Application Approved",
 };
 
 export type Program =

@@ -30,6 +30,16 @@ async function setupDatabase() {
     await pool.query(sql);
     console.log("  -> All tables and indexes created!\n");
 
+    // Add new columns to notifications (safe migration for existing databases)
+    console.log("[2.5/4] Running migrations...");
+    try {
+      await pool.query(`ALTER TABLE notifications ADD COLUMN IF NOT EXISTS notification_type VARCHAR(50) DEFAULT 'general'`);
+      await pool.query(`ALTER TABLE notifications ADD COLUMN IF NOT EXISTS changed_fields JSONB`);
+      console.log("  -> Migrations applied!\n");
+    } catch {
+      console.log("  -> Migrations already applied or skipped.\n");
+    }
+
     // Create default superadmin
     console.log("[3/4] Creating default superadmin account...");
     const superadminEmail = "admin@alxorazmiy.uz";

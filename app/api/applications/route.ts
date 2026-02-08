@@ -3,6 +3,30 @@ import { getSession } from "@/lib/auth";
 import { query } from "@/lib/db";
 import { sendStatusUpdateEmail } from "@/lib/email";
 
+const FIELD_LABELS: Record<string, string> = {
+  education_type: "Education Type",
+  surname: "Surname",
+  given_name: "Given Name",
+  gender: "Gender",
+  citizenship: "Citizenship",
+  card_number: "Passport Number",
+  date_of_birth: "Date of Birth",
+  date_of_issue: "Date of Issue",
+  date_of_expiry: "Date of Expiry",
+  personal_number: "Personal Number (JSHIR)",
+  place_of_birth: "Place of Birth",
+  passport_image_path: "Passport Image",
+  attestat_pdf_path: "Attestat / Diploma",
+  language_cert_type: "Language Certificate Type",
+  language_cert_pdf_path: "Language Certificate PDF",
+  language_cert_score: "Language Certificate Score",
+  language_cert_date: "Language Certificate Date",
+  social_registry: "Social Registry",
+  social_registry_pdf_path: "Social Registry PDF",
+  status: "Application Status",
+  completion_percentage: "Completion Percentage",
+};
+
 export async function GET(req: NextRequest) {
   try {
     const session = await getSession();
@@ -23,7 +47,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ application: result.rows[0] || null });
     }
 
-    // Admin / Superadmin
+    // Admin / Superadmin - auto transition "submitted" to "pending_review" when they view
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status");
     const educationType = searchParams.get("education_type");
@@ -122,27 +146,12 @@ export async function PUT(req: NextRequest) {
 
     // Build dynamic update
     const allowedFields = [
-      "education_type",
-      "surname",
-      "given_name",
-      "gender",
-      "citizenship",
-      "card_number",
-      "date_of_birth",
-      "date_of_issue",
-      "date_of_expiry",
-      "personal_number",
-      "place_of_birth",
-      "passport_image_path",
-      "attestat_pdf_path",
-      "language_cert_type",
-      "language_cert_pdf_path",
-      "language_cert_score",
-      "language_cert_date",
-      "social_registry",
-      "social_registry_pdf_path",
-      "status",
-      "completion_percentage",
+      "education_type", "surname", "given_name", "gender", "citizenship",
+      "card_number", "date_of_birth", "date_of_issue", "date_of_expiry",
+      "personal_number", "place_of_birth", "passport_image_path",
+      "attestat_pdf_path", "language_cert_type", "language_cert_pdf_path",
+      "language_cert_score", "language_cert_date", "social_registry",
+      "social_registry_pdf_path", "status", "completion_percentage",
     ];
 
     const setClauses: string[] = [];
@@ -168,6 +177,20 @@ export async function PUT(req: NextRequest) {
 
     // If admin edits, assign to them (For Me logic)
     if (session.role === "admin" || session.role === "superadmin") {
+      // Fetch OLD values before update to track changes
+      const oldResult = await query(
+        "SELECT * FROM applications WHERE id = $1",
+        [applicationId]
+      );
+      const oldApp = oldResult.rows[0];
+
+      // Auto-transition: if status was "submitted", set to "pending_review" (admin has opened it)
+      if (oldApp?.status === "submitted" && !fields.status) {
+        setClauses.push(`status = $${idx}`);
+        values.push("pending_review");
+        idx++;
+      }
+
       setClauses.push(`assigned_admin_id = $${idx}`);
       values.push(session.userId);
       idx++;
@@ -175,34 +198,56 @@ export async function PUT(req: NextRequest) {
       // Log admin action
       await query(
         "INSERT INTO admin_logs (admin_id, application_id, action, details) VALUES ($1, $2, $3, $4)",
-        [
-          session.userId,
-          applicationId,
-          "edit_application",
-          JSON.stringify(fields),
-        ]
+        [session.userId, applicationId, "edit_application", JSON.stringify(fields)]
       );
 
-      // Notify applicant
+      // Compute exactly which fields changed (old -> new)
+      const changedFields: Record<string, { old_value: string; new_value: string; label: string }> = {};
+      for (const [key, newVal] of Object.entries(fields)) {
+        if (!allowedFields.includes(key) || key === "completion_percentage") continue;
+        let oldVal = oldApp?.[key];
+        if (oldVal instanceof Date) {
+          oldVal = oldVal.toISOString().split("T")[0];
+        } else if (typeof oldVal === "string" && oldVal.includes("T")) {
+          oldVal = oldVal.split("T")[0];
+        }
+        const oldStr = oldVal != null ? String(oldVal) : "";
+        const newStr = newVal != null ? String(newVal) : "";
+        if (oldStr !== newStr) {
+          changedFields[key] = {
+            old_value: oldStr || "(empty)",
+            new_value: newStr || "(empty)",
+            label: FIELD_LABELS[key] || key,
+          };
+        }
+      }
+
+      // Notify applicant with detailed change info
       const appResult = await query(
         "SELECT a.user_id, a.given_name, a.surname, u.email FROM applications a JOIN users u ON a.user_id = u.id WHERE a.id = $1",
         [applicationId]
       );
       if (appResult.rows.length > 0) {
         const applicant = appResult.rows[0];
-        const statusLabel = fields.status
-          ? `Status changed to: ${fields.status}`
-          : "Your application has been updated by admin";
-        await query(
-          "INSERT INTO notifications (user_id, application_id, message) VALUES ($1, $2, $3)",
-          [applicant.user_id, applicationId, statusLabel]
-        );
+        const changedCount = Object.keys(changedFields).length;
+
+        if (changedCount > 0) {
+          const changedLabels = Object.values(changedFields).map((f) => f.label).join(", ");
+          const notifMessage = `${changedCount} field(s) updated in your application: ${changedLabels}`;
+          const notifType = fields.status ? "status_change" : "field_change";
+
+          await query(
+            `INSERT INTO notifications (user_id, application_id, message, notification_type, changed_fields)
+             VALUES ($1, $2, $3, $4, $5)`,
+            [applicant.user_id, applicationId, notifMessage, notifType, JSON.stringify(changedFields)]
+          );
+        }
 
         // Send email notification on status change
         if (fields.status && applicant.email) {
           sendStatusUpdateEmail(
             applicant.email,
-            `${applicant.given_name || ""} ${applicant.surname || ""}`.trim() || "Abituriyent",
+            `${applicant.given_name || ""} ${applicant.surname || ""}`.trim() || "Applicant",
             fields.status
           ).catch((err) =>
             console.error("[APP] Failed to send status email:", err)
@@ -216,8 +261,9 @@ export async function PUT(req: NextRequest) {
       );
       for (const admin of admins.rows) {
         await query(
-          "INSERT INTO notifications (user_id, application_id, message) VALUES ($1, $2, $3)",
-          [admin.id, applicationId, "Applicant updated their application"]
+          `INSERT INTO notifications (user_id, application_id, message, notification_type)
+           VALUES ($1, $2, $3, $4)`,
+          [admin.id, applicationId, "Applicant has updated their application", "applicant_update"]
         );
       }
     }

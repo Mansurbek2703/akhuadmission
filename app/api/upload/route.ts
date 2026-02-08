@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
     await writeFile(filePath, buffer);
 
-    const publicPath = `/uploads/${session.userId}/${fileName}`;
+    const publicPath = `/api/files/${session.userId}/${fileName}`;
 
     return NextResponse.json({
       success: true,

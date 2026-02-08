@@ -4,47 +4,28 @@ import nodemailer from "nodemailer";
 //  EMAIL CONFIGURATION
 // ============================================================
 //
-//  Environment variables zarur:
+//  Required environment variables:
 //
-//    SMTP_HOST     - SMTP server manzili
-//    SMTP_PORT     - SMTP port (587 yoki 465)
+//    SMTP_HOST     - SMTP server address
+//    SMTP_PORT     - SMTP port (587 or 465)
 //    SMTP_USER     - Email login
-//    SMTP_PASS     - Email parol / App password
-//    SMTP_FROM     - "From" address (optional, SMTP_USER ishlatiladi)
-//    NEXT_PUBLIC_APP_URL - Sayt URL (verification link uchun)
+//    SMTP_PASS     - Email password / App password
+//    SMTP_FROM     - "From" address (optional, uses SMTP_USER)
+//    NEXT_PUBLIC_APP_URL - Site URL (for verification links)
 //
-//  ---- GMAIL UCHUN ----
+//  ---- GMAIL ----
 //    SMTP_HOST=smtp.gmail.com
 //    SMTP_PORT=587
 //    SMTP_USER=your-email@gmail.com
-//    SMTP_PASS=xxxx xxxx xxxx xxxx   (App Password!)
+//    SMTP_PASS=xxxx xxxx xxxx xxxx   (App Password)
 //
-//    Gmail App Password olish:
-//    1. https://myaccount.google.com/security ga kiring
-//    2. "2-Step Verification" yoqilgan bo'lishi kerak
-//    3. "App passwords" bo'limiga kiring
-//    4. "Mail" va "Other (Custom name)" tanlang
-//    5. "Al-Xorazmiy Admissions" deb nom bering
-//    6. Generate tugmasini bosing - 16 belgili parol chiqadi
-//    7. Shu parolni SMTP_PASS ga qo'ying (bo'shliqlari bilan)
-//
-//  ---- YANDEX UCHUN ----
+//  ---- YANDEX ----
 //    SMTP_HOST=smtp.yandex.ru
 //    SMTP_PORT=465
-//    SMTP_USER=your-email@yandex.ru
-//    SMTP_PASS=your-password
-//
-//  ---- MAIL.RU UCHUN ----
-//    SMTP_HOST=smtp.mail.ru
-//    SMTP_PORT=465
-//    SMTP_USER=your-email@mail.ru
-//    SMTP_PASS=your-app-password
 //
 //  ---- CUSTOM (University server) ----
 //    SMTP_HOST=mail.alxorazmiy.uz
 //    SMTP_PORT=587
-//    SMTP_USER=admissions@alxorazmiy.uz
-//    SMTP_PASS=your-password
 //
 // ============================================================
 
@@ -66,21 +47,15 @@ function getTransporter() {
     port,
     secure: port === 465,
     auth: { user, pass },
-    tls: {
-      rejectUnauthorized: false,
-    },
+    tls: { rejectUnauthorized: false },
   });
 }
 
 const FROM_ADDRESS =
-  process.env.SMTP_FROM ||
-  process.env.SMTP_USER ||
-  "noreply@alxorazmiy.uz";
+  process.env.SMTP_FROM || process.env.SMTP_USER || "noreply@alxorazmiy.uz";
 
-const APP_URL =
-  process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-// ---- Send generic email ----
 export async function sendEmail({
   to,
   subject,
@@ -120,49 +95,37 @@ export async function sendEmail({
   }
 }
 
-// ---- Verification email ----
-export async function sendVerificationEmail(
-  to: string,
-  token: string
-) {
+export async function sendVerificationEmail(to: string, token: string) {
   const verifyUrl = `${APP_URL}/api/auth/verify?token=${token}`;
 
   return sendEmail({
     to,
-    subject: "Al-Xorazmiy University - Emailingizni tasdiqlang",
+    subject: "Al-Xorazmiy University - Verify Your Email",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; padding: 20px 0; border-bottom: 2px solid #1e40af;">
           <h1 style="color: #1e40af; margin: 0;">Al-Xorazmiy University</h1>
-          <p style="color: #6b7280; margin: 5px 0 0 0;">Online Qabul Platformasi</p>
+          <p style="color: #6b7280; margin: 5px 0 0 0;">Online Admissions Platform</p>
         </div>
-        
         <div style="padding: 30px 0;">
-          <h2 style="color: #111827;">Assalomu alaykum!</h2>
+          <h2 style="color: #111827;">Welcome!</h2>
           <p style="color: #374151; line-height: 1.6;">
-            Al-Xorazmiy University Online Qabul Platformasiga ro'yxatdan o'tganingiz uchun rahmat.
-            Emailingizni tasdiqlash uchun quyidagi tugmani bosing:
+            Thank you for registering with the Al-Xorazmiy University Online Admissions Platform.
+            Please verify your email address by clicking the button below:
           </p>
-          
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${verifyUrl}" 
-               style="background: #1e40af; color: #ffffff; padding: 14px 40px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">
-              Emailni Tasdiqlash
+            <a href="${verifyUrl}" style="background: #1e40af; color: #ffffff; padding: 14px 40px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">
+              Verify Email
             </a>
           </div>
-          
           <p style="color: #6b7280; font-size: 14px;">
-            Agar tugma ishlamasa, quyidagi havolani brauzeringizga nusxalang:
+            If the button does not work, copy and paste this URL into your browser:
           </p>
-          <p style="color: #1e40af; font-size: 13px; word-break: break-all;">
-            ${verifyUrl}
-          </p>
+          <p style="color: #1e40af; font-size: 13px; word-break: break-all;">${verifyUrl}</p>
         </div>
-        
         <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; text-align: center;">
           <p style="color: #9ca3af; font-size: 12px;">
-            Bu email Al-Xorazmiy University tomonidan yuborilgan. 
-            Agar siz ro'yxatdan o'tmagan bo'lsangiz, bu emailni e'tiborsiz qoldiring.
+            This email was sent by Al-Xorazmiy University. If you did not register, please ignore this email.
           </p>
         </div>
       </div>
@@ -170,18 +133,18 @@ export async function sendVerificationEmail(
   });
 }
 
-// ---- Status update notification email ----
 export async function sendStatusUpdateEmail(
   to: string,
   applicantName: string,
   newStatus: string
 ) {
   const statusLabels: Record<string, string> = {
-    pending_review: "Ko'rib chiqish kutilmoqda",
-    incomplete_document: "Hujjatlar to'liq emas",
-    approved_to_attend_exam: "Imtihonga kirishga ruxsat berildi",
-    passed_with_exemption: "Imtihonsiz qabul qilindi",
-    application_approved: "Ariza tasdiqlandi",
+    submitted: "Submitted",
+    pending_review: "Pending Review",
+    incomplete_document: "Incomplete Document",
+    approved_to_attend_exam: "Approved to Attend Exam",
+    passed_with_exemption: "Passed with Exemption",
+    application_approved: "Application Approved",
   };
 
   const statusLabel = statusLabels[newStatus] || newStatus;
@@ -189,48 +152,33 @@ export async function sendStatusUpdateEmail(
 
   return sendEmail({
     to,
-    subject: `Al-Xorazmiy University - Ariza holati yangilandi: ${statusLabel}`,
+    subject: `Al-Xorazmiy University - Application Status Updated: ${statusLabel}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; padding: 20px 0; border-bottom: 2px solid #1e40af;">
           <h1 style="color: #1e40af; margin: 0;">Al-Xorazmiy University</h1>
         </div>
-        
         <div style="padding: 30px 0;">
-          <h2 style="color: #111827;">Hurmatli ${applicantName},</h2>
-          <p style="color: #374151; line-height: 1.6;">
-            Sizning arizangiz holati yangilandi:
-          </p>
-          
+          <h2 style="color: #111827;">Dear ${applicantName},</h2>
+          <p style="color: #374151; line-height: 1.6;">Your application status has been updated:</p>
           <div style="background: #eff6ff; border-left: 4px solid #1e40af; padding: 15px 20px; margin: 20px 0; border-radius: 0 8px 8px 0;">
-            <p style="margin: 0; color: #1e40af; font-weight: bold; font-size: 18px;">
-              ${statusLabel}
-            </p>
+            <p style="margin: 0; color: #1e40af; font-weight: bold; font-size: 18px;">${statusLabel}</p>
           </div>
-          
-          <p style="color: #374151;">
-            Batafsil ma'lumot uchun shaxsiy kabinetingizga kiring:
-          </p>
-          
+          <p style="color: #374151;">For more details, please visit your personal dashboard:</p>
           <div style="text-align: center; margin: 25px 0;">
-            <a href="${dashboardUrl}" 
-               style="background: #1e40af; color: #ffffff; padding: 12px 35px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">
-              Shaxsiy Kabinetga Kirish
+            <a href="${dashboardUrl}" style="background: #1e40af; color: #ffffff; padding: 12px 35px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">
+              Go to Dashboard
             </a>
           </div>
         </div>
-        
         <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; text-align: center;">
-          <p style="color: #9ca3af; font-size: 12px;">
-            Al-Xorazmiy University Online Qabul Platformasi
-          </p>
+          <p style="color: #9ca3af; font-size: 12px;">Al-Xorazmiy University Online Admissions Platform</p>
         </div>
       </div>
     `,
   });
 }
 
-// ---- Chat message notification email ----
 export async function sendChatNotificationEmail(
   to: string,
   senderName: string
@@ -239,22 +187,19 @@ export async function sendChatNotificationEmail(
 
   return sendEmail({
     to,
-    subject: "Al-Xorazmiy University - Yangi xabar keldi",
+    subject: "Al-Xorazmiy University - New Message Received",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; padding: 20px 0; border-bottom: 2px solid #1e40af;">
           <h1 style="color: #1e40af; margin: 0;">Al-Xorazmiy University</h1>
         </div>
-        
         <div style="padding: 30px 0;">
           <p style="color: #374151; line-height: 1.6;">
-            <strong>${senderName}</strong> sizga yangi xabar yubordi.
+            <strong>${senderName}</strong> has sent you a new message.
           </p>
-          
           <div style="text-align: center; margin: 25px 0;">
-            <a href="${chatUrl}" 
-               style="background: #1e40af; color: #ffffff; padding: 12px 35px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">
-              Xabarni O'qish
+            <a href="${chatUrl}" style="background: #1e40af; color: #ffffff; padding: 12px 35px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">
+              Read Message
             </a>
           </div>
         </div>

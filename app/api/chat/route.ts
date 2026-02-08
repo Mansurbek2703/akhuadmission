@@ -97,16 +97,36 @@ export async function POST(req: NextRequest) {
       sender_email: userResult.rows[0]?.email,
     };
 
-    // Notify the other party
+    // Notify the other party - group chat messages into one notification
     if (session.role === "applicant") {
       const admins = await query(
         "SELECT id FROM users WHERE role IN ('admin', 'superadmin')"
       );
       for (const admin of admins.rows) {
-        await query(
-          "INSERT INTO notifications (user_id, application_id, message) VALUES ($1, $2, $3)",
-          [admin.id, applicationId, "New chat message from applicant"]
+        // Check if there's already an unread chat notification for this application
+        const existing = await query(
+          `SELECT id, message FROM notifications
+           WHERE user_id = $1 AND application_id = $2
+             AND notification_type = 'chat_message' AND is_read = FALSE
+           ORDER BY created_at DESC LIMIT 1`,
+          [admin.id, applicationId]
         );
+        if (existing.rows.length > 0) {
+          // Update existing - increment count in message
+          const current = existing.rows[0].message;
+          const countMatch = current.match(/\((\d+)\)$/);
+          const count = countMatch ? parseInt(countMatch[1]) + 1 : 2;
+          await query(
+            `UPDATE notifications SET message = $1, created_at = NOW() WHERE id = $2`,
+            [`New chat messages from applicant (${count})`, existing.rows[0].id]
+          );
+        } else {
+          await query(
+            `INSERT INTO notifications (user_id, application_id, message, notification_type)
+             VALUES ($1, $2, $3, $4)`,
+            [admin.id, applicationId, "New chat message from applicant", "chat_message"]
+          );
+        }
       }
     } else {
       const app = await query(
@@ -114,14 +134,30 @@ export async function POST(req: NextRequest) {
         [applicationId]
       );
       if (app.rows.length > 0) {
-        await query(
-          "INSERT INTO notifications (user_id, application_id, message) VALUES ($1, $2, $3)",
-          [
-            app.rows[0].user_id,
-            applicationId,
-            "New message from Registrar Office",
-          ]
+        const targetUserId = app.rows[0].user_id;
+        // Check if there's already an unread chat notification for this application
+        const existing = await query(
+          `SELECT id, message FROM notifications
+           WHERE user_id = $1 AND application_id = $2
+             AND notification_type = 'chat_message' AND is_read = FALSE
+           ORDER BY created_at DESC LIMIT 1`,
+          [targetUserId, applicationId]
         );
+        if (existing.rows.length > 0) {
+          const current = existing.rows[0].message;
+          const countMatch = current.match(/\((\d+)\)$/);
+          const count = countMatch ? parseInt(countMatch[1]) + 1 : 2;
+          await query(
+            `UPDATE notifications SET message = $1, created_at = NOW() WHERE id = $2`,
+            [`New messages from Registrar Office (${count})`, existing.rows[0].id]
+          );
+        } else {
+          await query(
+            `INSERT INTO notifications (user_id, application_id, message, notification_type)
+             VALUES ($1, $2, $3, $4)`,
+            [targetUserId, applicationId, "New message from Registrar Office", "chat_message"]
+          );
+        }
       }
     }
 

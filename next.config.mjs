@@ -13,6 +13,14 @@ const nextConfig = {
   },
   turbopack: {},
   serverExternalPackages: ["pg", "pg-native", "bcryptjs", "nodemailer"],
+  async rewrites() {
+    return [
+      {
+        source: "/uploads/:path*",
+        destination: "/api/files/:path*",
+      },
+    ];
+  },
 }
 
 export default nextConfig
