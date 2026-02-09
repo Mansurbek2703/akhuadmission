@@ -24,7 +24,7 @@ export function StatusTimeline({
   );
 
   return (
-    <Card className="border-border bg-card">
+    <Card className="border-border bg-card shadow-sm">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base text-foreground">
           <Clock className="h-4 w-4 text-primary" />

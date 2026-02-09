@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import useSWR from "swr";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/notification-bell";
 import {
-  GraduationCap,
   LayoutDashboard,
   MessageSquare,
   LogOut,
@@ -48,16 +48,20 @@ export function AdminNav() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-md shadow-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-8">
         <div className="flex items-center gap-6">
           <Link
             href={isSuperadmin ? "/superadmin" : "/admin"}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2.5"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <GraduationCap className="h-4 w-4 text-primary-foreground" />
-            </div>
+            <Image
+              src="/logo.png"
+              alt="Al-Xorazmiy University"
+              width={24}
+              height={44}
+              className="h-15 w-24 rounded-lg object-contain"
+            />
             <div className="hidden sm:block">
               <span className="font-bold text-foreground">Admin Panel</span>
               {isSuperadmin && (

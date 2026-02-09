@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react"
-
+import React from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -23,11 +22,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { GraduationCap, Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
+import Image from "next/image";
 import { PROGRAM_LABELS } from "@/lib/types";
 import type { Program } from "@/lib/types";
 import { PhoneInput } from "@/components/phone-input";
-
 export default function RegisterPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -74,11 +73,15 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
-      <Card className="w-full max-w-md border-border shadow-lg">
+      <Card className="w-full max-w-md border-border shadow-xl shadow-primary/5">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary">
-            <GraduationCap className="h-7 w-7 text-primary-foreground" />
-          </div>
+          <Image
+            src="/logo.png"
+            alt="Al-Xorazmiy University"
+            width={56}
+            height={56}
+            className="mx-auto mb-4 h-14 w-14 rounded-xl object-contain"
+          />
           <CardTitle className="text-2xl font-bold text-foreground">
             Create Account
           </CardTitle>

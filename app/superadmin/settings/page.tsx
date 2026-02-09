@@ -41,6 +41,8 @@ import {
   Shield,
   ClipboardList,
   Users,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -75,6 +77,9 @@ export default function SuperadminSettingsPage() {
   const [creating, setCreating] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [adminsPage, setAdminsPage] = useState(1);
+  const [logsPage, setLogsPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   const {
     data: adminsData,
@@ -90,6 +95,19 @@ export default function SuperadminSettingsPage() {
 
   const admins: Admin[] = adminsData?.admins || [];
   const logs: LogEntry[] = logsData?.logs || [];
+
+  // Pagination calculations
+  const adminsTotalPages = Math.ceil(admins.length / PAGE_SIZE);
+  const paginatedAdmins = admins.slice(
+    (adminsPage - 1) * PAGE_SIZE,
+    adminsPage * PAGE_SIZE
+  );
+
+  const logsTotalPages = Math.ceil(logs.length / PAGE_SIZE);
+  const paginatedLogs = logs.slice(
+    (logsPage - 1) * PAGE_SIZE,
+    logsPage * PAGE_SIZE
+  );
 
   const handleCreateAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -322,7 +340,7 @@ export default function SuperadminSettingsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {admins.map((admin) => (
+                    {paginatedAdmins.map((admin) => (
                       <TableRow key={admin.id} className="hover:bg-accent/30">
                         <TableCell className="font-medium text-foreground">
                           {admin.first_name && admin.last_name
@@ -373,6 +391,39 @@ export default function SuperadminSettingsPage() {
                   </TableBody>
                 </Table>
               )}
+              {/* Admins Pagination */}
+              {adminsTotalPages > 1 && !adminsLoading && (
+                <div className="flex items-center justify-between border-t border-border px-4 py-3 mt-4">
+                  <p className="text-sm text-muted-foreground">
+                    {(adminsPage - 1) * PAGE_SIZE + 1}-{Math.min(adminsPage * PAGE_SIZE, admins.length)} of {admins.length}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setAdminsPage((p) => Math.max(1, p - 1))}
+                      disabled={adminsPage === 1}
+                      className="gap-1 bg-transparent border-border text-foreground"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+                    <span className="text-sm text-muted-foreground">
+                      {adminsPage} / {adminsTotalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setAdminsPage((p) => Math.min(adminsTotalPages, p + 1))}
+                      disabled={adminsPage === adminsTotalPages}
+                      className="gap-1 bg-transparent border-border text-foreground"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -417,7 +468,7 @@ export default function SuperadminSettingsPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {logs.map((log) => (
+                      {paginatedLogs.map((log) => (
                         <TableRow
                           key={log.id}
                           className="hover:bg-accent/30"
@@ -447,6 +498,39 @@ export default function SuperadminSettingsPage() {
                     </TableBody>
                   </Table>
                 </ScrollArea>
+              )}
+              {/* Logs Pagination */}
+              {logsTotalPages > 1 && !logsLoading && logs.length > 0 && (
+                <div className="flex items-center justify-between border-t border-border px-4 py-3 mt-4">
+                  <p className="text-sm text-muted-foreground">
+                    {(logsPage - 1) * PAGE_SIZE + 1}-{Math.min(logsPage * PAGE_SIZE, logs.length)} of {logs.length}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setLogsPage((p) => Math.max(1, p - 1))}
+                      disabled={logsPage === 1}
+                      className="gap-1 bg-transparent border-border text-foreground"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+                    <span className="text-sm text-muted-foreground">
+                      {logsPage} / {logsTotalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setLogsPage((p) => Math.min(logsTotalPages, p + 1))}
+                      disabled={logsPage === logsTotalPages}
+                      className="gap-1 bg-transparent border-border text-foreground"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>

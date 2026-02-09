@@ -119,6 +119,8 @@ export interface Notification {
   created_at: string;
 }
 
+export type UnreadChatMap = Record<string, number>;
+
 export interface AdminLog {
   id: string;
   admin_id: string;

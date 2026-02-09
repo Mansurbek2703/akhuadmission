@@ -30,11 +30,12 @@ export async function GET(req: NextRequest) {
     // For regular admins: show notifications for:
     // 1. Applications assigned to them (any notification type)
     // 2. Unassigned applications' chat_message notifications (all admins see unassigned chats)
+    // 3. Unassigned applications' applicant_update notifications (new registrations, field changes)
     const assignmentFilterAliased = !isSuperadmin && isAdminRole
-      ? "AND (a.assigned_admin_id = $1 OR (a.assigned_admin_id IS NULL AND n.notification_type = 'chat_message'))"
+      ? "AND (a.assigned_admin_id = $1 OR (a.assigned_admin_id IS NULL AND n.notification_type IN ('chat_message', 'applicant_update')))"
       : "";
     const assignmentFilterPlain = !isSuperadmin && isAdminRole
-      ? "AND (assigned_admin_id = $1 OR (assigned_admin_id IS NULL AND notification_type = 'chat_message'))"
+      ? "AND (assigned_admin_id = $1 OR (assigned_admin_id IS NULL AND notification_type IN ('chat_message', 'applicant_update')))"
       : "";
 
     const queryParams = isAdminRole && !isSuperadmin

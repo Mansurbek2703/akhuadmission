@@ -58,9 +58,9 @@ export default function AdminChatPage() {
           Communicate with applicants
         </p>
       </div>
-      <div className="flex gap-4" style={{ height: "calc(100vh - 14rem)" }}>
+      <div className="flex flex-col gap-4 md:flex-row" style={{ height: "calc(100vh - 14rem)" }}>
         {/* Conversation List */}
-        <Card className="flex w-80 flex-shrink-0 flex-col border-border bg-card">
+        <Card className="flex w-full flex-shrink-0 flex-col border-border bg-card shadow-sm md:w-80">
           <div className="border-b border-border px-3 py-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -129,7 +129,7 @@ export default function AdminChatPage() {
           {selectedAppId ? (
             <ChatPanel applicationId={selectedAppId} user={user} />
           ) : (
-            <Card className="flex h-full items-center justify-center border-border bg-card">
+            <Card className="flex h-full items-center justify-center border-border bg-card shadow-sm">
               <div className="text-center">
                 <MessageSquare className="mx-auto mb-3 h-12 w-12 text-muted-foreground/30" />
                 <p className="text-muted-foreground">

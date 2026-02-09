@@ -46,11 +46,31 @@ export async function POST(req: NextRequest) {
     const user = result.rows[0];
 
     // Create application record with "submitted" default
-    await query(
+    const appResult = await query(
       `INSERT INTO applications (user_id, status, completion_percentage)
-       VALUES ($1, 'submitted', 0)`,
+       VALUES ($1, 'submitted', 0) RETURNING id`,
       [user.id]
     );
+    const applicationId = appResult.rows[0].id;
+
+    // Notify all admins about new registration
+    const admins = await query(
+      "SELECT id FROM users WHERE role IN ('admin', 'superadmin')"
+    );
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")} ${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
+    for (const admin of admins.rows) {
+      await query(
+        `INSERT INTO notifications (user_id, application_id, message, notification_type)
+         VALUES ($1, $2, $3, $4)`,
+        [
+          admin.id,
+          applicationId,
+          `${user.email} registered at ${timeStr}`,
+          "applicant_update",
+        ]
+      );
+    }
 
     // Send verification email (non-blocking - don't fail registration if email fails)
     sendVerificationEmail(user.email, verificationToken).catch((err) =>

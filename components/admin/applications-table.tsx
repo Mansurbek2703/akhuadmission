@@ -159,7 +159,7 @@ export function ApplicationsTable({
 
   return (
     <>
-      <div className="rounded-lg border border-border bg-card">
+      <div className="rounded-lg border border-border bg-card shadow-sm">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -202,6 +202,11 @@ export function ApplicationsTable({
                               ? `${app.surname} ${app.given_name}`
                               : "Not provided"}
                           </span>
+                          {!app.assigned_admin_id && (
+                            <span className="rounded bg-destructive px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-destructive-foreground">
+                              New
+                            </span>
+                          )}
                           {unreadChatMap[app.id] > 0 && (
                             <span className="flex items-center gap-1 rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-bold text-destructive-foreground animate-pulse">
                               <MessageSquare className="h-2.5 w-2.5" />

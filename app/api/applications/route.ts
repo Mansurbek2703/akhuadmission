@@ -295,12 +295,25 @@ export async function PUT(req: NextRequest) {
       );
       const assignedAdminId = appCheck.rows[0]?.assigned_admin_id;
 
+      // Get applicant name for notification message
+      const applicantInfo = await query(
+        "SELECT a.surname, a.given_name, u.email FROM applications a JOIN users u ON a.user_id = u.id WHERE a.id = $1",
+        [applicationId]
+      );
+      const appInfo = applicantInfo.rows[0];
+      const applicantName = appInfo?.surname && appInfo?.given_name
+        ? `${appInfo.surname} ${appInfo.given_name}`
+        : appInfo?.email || "Applicant";
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")} ${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
+      const updateMsg = `${applicantName} updated their application at ${timeStr}`;
+
       if (assignedAdminId) {
         // Only notify the assigned admin
         await query(
           `INSERT INTO notifications (user_id, application_id, message, notification_type)
            VALUES ($1, $2, $3, $4)`,
-          [assignedAdminId, applicationId, "Applicant has updated their application", "applicant_update"]
+          [assignedAdminId, applicationId, updateMsg, "applicant_update"]
         );
       } else {
         // No assigned admin yet, notify all admins
@@ -311,7 +324,7 @@ export async function PUT(req: NextRequest) {
           await query(
             `INSERT INTO notifications (user_id, application_id, message, notification_type)
              VALUES ($1, $2, $3, $4)`,
-            [admin.id, applicationId, "Applicant has updated their application", "applicant_update"]
+            [admin.id, applicationId, updateMsg, "applicant_update"]
           );
         }
       }

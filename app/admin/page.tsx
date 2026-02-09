@@ -8,7 +8,7 @@ import { ApplicationFilters } from "@/components/admin/application-filters";
 import { Button } from "@/components/ui/button";
 import { Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { UnreadChatMap } from "@/types"; // Declare UnreadChatMap variable
+import { UnreadChatMap } from "@/lib/types";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 

@@ -52,10 +52,10 @@ export function ApplicationFilters({
     filters.search;
 
   return (
-    <Card className="border-border bg-card">
+    <Card className="border-border bg-card shadow-sm">
       <CardContent className="pt-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-          <div className="flex flex-col gap-2 lg:col-span-2">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_0.8fr_1fr_1fr] items-start">
+          <div className="flex flex-col gap-2 lg:col-span-1">
             <Label className="text-xs text-muted-foreground">Search</Label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

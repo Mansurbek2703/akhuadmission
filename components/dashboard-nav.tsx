@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/notification-bell";
 import {
-  GraduationCap,
   FileText,
   MessageSquare,
   LogOut,
@@ -33,13 +33,17 @@ export function DashboardNav() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-md shadow-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-8">
         <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <GraduationCap className="h-4 w-4 text-primary-foreground" />
-            </div>
+          <Link href="/dashboard" className="flex items-center gap-2.5">
+            <Image
+              src="/logo.png"
+              alt="Al-Xorazmiy University"
+              width={32}
+              height={32}
+              className="h-8 w-8 rounded-lg object-contain"
+            />
             <span className="hidden font-bold text-foreground sm:block">
               Admissions Portal
             </span>
