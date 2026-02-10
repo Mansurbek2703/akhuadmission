@@ -97,6 +97,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
+
     response.cookies.set("session", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
