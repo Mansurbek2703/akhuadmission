@@ -37,21 +37,16 @@ export function DashboardNav() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-8">
         <div className="flex items-center gap-6">
           <Link href="/dashboard" className="flex items-center gap-2.5">
-            <Image
-              src="/logo.png"
-              alt="Al-Xorazmiy University"
-              width={32}
-              height={32}
-              className="h-8 w-8 rounded-lg object-contain"
-            />
+            <img alt="Al-Xorazmiy University" loading="lazy" width="200" height="150" decoding="async" data-nimg="1"
+                 className="h-18 w-40 rounded-lg object-contain" src="/logoEdited.png"/>
             <span className="hidden font-bold text-foreground sm:block">
               Admissions Portal
             </span>
           </Link>
           <nav className="hidden items-center gap-1 md:flex">
             {applicantNav.map((item) => (
-              <Link key={item.href} href={item.href}>
-                <Button
+                <Link key={item.href} href={item.href}>
+                  <Button
                   variant="ghost"
                   size="sm"
                   className={cn(

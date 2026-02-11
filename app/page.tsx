@@ -311,13 +311,13 @@ export default function LandingPage() {
             {/* Logo & Description */}
             <div className="space-y-4 sm:col-span-2 lg:col-span-1">
               <Link href="/" className="inline-flex items-center gap-3">
-                <Image
-                  src="/logo1.png"
-                  alt="Al-Xorazmiy University"
-                  width={70}
-                  height={70}
-                  className="rounded-lg"
-                />
+                          <div className="flex items-center justify-center h-20">
+            <img
+              alt="Al-Xorazmiy University"
+              className="h-18 w-40 rounded-lg object-contain"
+              src="/logoEdited.png"
+            />
+          </div>
                 <div>
                   <p className="text-sm font-semibold text-foreground sm:text-base">
                     Al-Khwarizmi University admission portal
