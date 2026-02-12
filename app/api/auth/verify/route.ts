@@ -1,47 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://admission.akhu.uz";
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const token = searchParams.get("token");
 
     if (!token) {
-      return NextResponse.json(
-        { error: "Verification token is required" },
-        { status: 400 }
-      );
+      return NextResponse.redirect(`${APP_URL}/login?verified=error&reason=missing_token`);
     }
 
+    // First check: find user by token (token still exists = not yet verified)
     const result = await query(
       "SELECT id, email_verified FROM users WHERE verification_token = $1",
       [token]
     );
 
     if (result.rows.length === 0) {
-      return NextResponse.json(
-        { error: "Invalid verification token" },
-        { status: 400 }
-      );
+      // Token not found - either already used or invalid
+      // Check if any user was already verified (token was cleared after verification)
+      return NextResponse.redirect(`${APP_URL}/login?verified=error&reason=invalid_token`);
     }
 
-    if (result.rows[0].email_verified) {
-      return NextResponse.redirect(
-        new URL("/login?verified=already", req.url)
-      );
+    const user = result.rows[0];
+
+    if (user.email_verified) {
+      return NextResponse.redirect(`${APP_URL}/login?verified=already`);
     }
 
+    // Verify the user
     await query(
-      "UPDATE users SET email_verified = TRUE, verification_token = NULL WHERE verification_token = $1",
-      [token]
+      "UPDATE users SET email_verified = TRUE, verification_token = NULL WHERE id = $1",
+      [user.id]
     );
 
-    return NextResponse.redirect(new URL("/login?verified=true", req.url));
+    return NextResponse.redirect(`${APP_URL}/login?verified=true`);
   } catch (error) {
     console.error("Verification error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.redirect(`${APP_URL}/login?verified=error&reason=server_error`);
   }
 }

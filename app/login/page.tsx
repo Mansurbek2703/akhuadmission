@@ -31,10 +31,21 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (searchParams.get("registered") === "true") {
-      toast.success("Registration successful! You can now log in.");
+      toast.success("Registration successful! Please check your email and verify before logging in.");
     }
     if (searchParams.get("verified") === "true") {
       toast.success("Email verified successfully! You can now log in.");
+    }
+    if (searchParams.get("verified") === "already") {
+      toast.info("Email is already verified. You can log in.");
+    }
+    if (searchParams.get("verified") === "error") {
+      const reason = searchParams.get("reason");
+      if (reason === "invalid_token") {
+        toast.error("Verification link is invalid or expired. Please register again or contact support.");
+      } else {
+        toast.error("Verification failed. Please try again.");
+      }
     }
   }, [searchParams]);
 
@@ -66,14 +77,13 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
       <Card className="w-full max-w-md border-border shadow-xl shadow-primary/5">
         <CardHeader className="text-center">
-          <div className="flex items-center justify-center h-20">
-            <img
-              alt="Al-Xorazmiy University"
-              className="h-18 w-40 rounded-lg object-contain"
-              src="/logoEdited.png"
-            />
-          </div>
-
+          <Image
+            src="/logo.png"
+            alt="Al-Xorazmiy University"
+            width={56}
+            height={56}
+            className="mx-auto mb-4 h-14 w-14 rounded-xl object-contain"
+          />
           <CardTitle className="text-2xl font-bold text-foreground">
             Sign In
           </CardTitle>
