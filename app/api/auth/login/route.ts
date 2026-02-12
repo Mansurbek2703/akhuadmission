@@ -45,6 +45,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Block login if email not verified
+    if (!user.email_verified) {
+      return NextResponse.json(
+        { error: "Please verify your email before signing in. Check your inbox for the verification link." },
+        { status: 403 }
+      );
+    }
+
     const passwordValid = await bcrypt.compare(password, user.password_hash);
 
     if (!passwordValid) {

@@ -54,7 +54,7 @@ function getTransporter() {
 const FROM_ADDRESS =
   process.env.SMTP_FROM || process.env.SMTP_USER || "noreply@alxorazmiy.uz";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://admission.akhu.uz";
 
 export async function sendEmail({
   to,
@@ -95,8 +95,22 @@ export async function sendEmail({
   }
 }
 
-export async function sendVerificationEmail(to: string, token: string) {
+export async function sendVerificationEmail(to: string, token: string, plainPassword?: string) {
   const verifyUrl = `${APP_URL}/api/auth/verify?token=${token}`;
+  const loginUrl = `${APP_URL}/login`;
+
+  const credentialsBlock = plainPassword
+    ? `
+          <div style="background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px 20px; margin: 20px 0;">
+            <p style="margin: 0 0 8px 0; color: #374151; font-weight: bold;">Your login credentials:</p>
+            <p style="margin: 0 0 4px 0; color: #111827;"><strong>Email:</strong> ${to}</p>
+            <p style="margin: 0; color: #111827;"><strong>Password:</strong> ${plainPassword}</p>
+          </div>
+          <p style="color: #dc2626; font-size: 13px; margin: 0 0 15px 0;">
+            Please save your credentials and delete this email for security.
+          </p>
+    `
+    : "";
 
   return sendEmail({
     to,
@@ -113,6 +127,7 @@ export async function sendVerificationEmail(to: string, token: string) {
             Thank you for registering with the Al-Xorazmiy University Online Admissions Platform.
             Please verify your email address by clicking the button below:
           </p>
+          ${credentialsBlock}
           <div style="text-align: center; margin: 30px 0;">
             <a href="${verifyUrl}" style="background: #1e40af; color: #ffffff; padding: 14px 40px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">
               Verify Email
@@ -122,6 +137,12 @@ export async function sendVerificationEmail(to: string, token: string) {
             If the button does not work, copy and paste this URL into your browser:
           </p>
           <p style="color: #1e40af; font-size: 13px; word-break: break-all;">${verifyUrl}</p>
+          <div style="text-align: center; margin: 25px 0 0 0;">
+            <p style="color: #374151; margin: 0 0 10px 0;">After verifying, sign in here:</p>
+            <a href="${loginUrl}" style="background: #059669; color: #ffffff; padding: 12px 35px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">
+              Go to Login Page
+            </a>
+          </div>
         </div>
         <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; text-align: center;">
           <p style="color: #9ca3af; font-size: 12px;">
