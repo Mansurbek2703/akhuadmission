@@ -31,12 +31,15 @@ export async function POST(req: NextRequest) {
 
     // Check if account is locked
     if (user.locked_until && new Date(user.locked_until) > new Date()) {
-      const remainingMinutes = Math.ceil(
-        (new Date(user.locked_until).getTime() - Date.now()) / 60000
-      );
+      const remainingMs = new Date(user.locked_until).getTime() - Date.now();
+      const remainingHours = Math.floor(remainingMs / 3600000);
+      const remainingMinutes = Math.ceil((remainingMs % 3600000) / 60000);
+      const timeStr = remainingHours > 0
+        ? `${remainingHours} hour(s) ${remainingMinutes} minute(s)`
+        : `${remainingMinutes} minute(s)`;
       return NextResponse.json(
         {
-          error: `Account is locked. Try again in ${remainingMinutes} minute(s).`,
+          error: `Account is locked due to too many failed attempts. Try again in ${timeStr}.`,
         },
         { status: 423 }
       );
@@ -47,13 +50,13 @@ export async function POST(req: NextRequest) {
     if (!passwordValid) {
       const attempts = user.failed_login_attempts + 1;
       if (attempts >= 5) {
-        const lockUntil = new Date(Date.now() + 15 * 60 * 1000);
+        const lockUntil = new Date(Date.now() + 24 * 60 * 60 * 1000);
         await query(
           "UPDATE users SET failed_login_attempts = $1, locked_until = $2 WHERE id = $3",
           [attempts, lockUntil, user.id]
         );
         return NextResponse.json(
-          { error: "Too many failed attempts. Account locked for 15 minutes." },
+          { error: "Too many failed attempts. Account locked for 24 hours." },
           { status: 423 }
         );
       } else {
