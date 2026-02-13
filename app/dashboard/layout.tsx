@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { DashboardNav } from "@/components/dashboard-nav";
+import DashboardBackground from "@/components/dashboard-background";
 import { Loader2 } from "lucide-react";
 
 export default function DashboardLayout({
@@ -36,9 +37,12 @@ export default function DashboardLayout({
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardNav />
-      <main className="mx-auto max-w-7xl px-4 py-6 lg:px-8">{children}</main>
+    <div className="relative min-h-screen bg-background">
+      <DashboardBackground />
+      <div className="relative z-10">
+        <DashboardNav />
+        <main className="mx-auto max-w-7xl px-4 py-6 lg:px-8">{children}</main>
+      </div>
     </div>
   );
 }
