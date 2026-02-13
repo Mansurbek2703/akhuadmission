@@ -36,15 +36,8 @@ const STATUS_COLORS: Record<string, string> = {
  * If all key fields are empty, they haven't applied yet.
  */
 function hasApplicantFilledForm(app: Application): boolean {
-  return !!(
-    app.surname ||
-    app.given_name ||
-    app.card_number ||
-    app.education_type ||
-    app.language_cert_type ||
-    app.attestat_pdf_path ||
-    app.passport_image_path
-  );
+  // Only show status badge after user has actually submitted (agreed to oferta)
+  return !!app.oferta_agreed;
 }
 
 function DashboardContent() {

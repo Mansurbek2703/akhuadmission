@@ -37,7 +37,11 @@ export async function POST(req: NextRequest) {
       passport_image: ["image/jpeg", "image/png"],
       attestat_pdf: ["application/pdf"],
       language_cert_pdf: ["application/pdf"],
+      sat_pdf: ["application/pdf"],
+      cefr_pdf: ["application/pdf"],
+      social_protection_pdf: ["application/pdf"],
       social_registry_pdf: ["application/pdf"],
+      achievements_pdf: ["application/pdf"],
       chat_file: ["application/pdf", "image/jpeg", "image/png"],
     };
 

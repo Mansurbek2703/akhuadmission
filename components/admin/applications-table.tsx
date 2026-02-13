@@ -96,7 +96,18 @@ export function ApplicationsTable({
       date_of_expiry: app.date_of_expiry?.split("T")[0] || "",
       personal_number: app.personal_number || "",
       place_of_birth: app.place_of_birth || "",
+      current_address: app.current_address || "",
+      personal_phone: app.personal_phone || "",
+      parent_phone: app.parent_phone || "",
+      friend_phone: app.friend_phone || "",
+      institution_name: app.institution_name || "",
+      institution_location: app.institution_location || "",
       language_cert_score: app.language_cert_score || "",
+      language_cert_id: app.language_cert_id || "",
+      sat_score: app.sat_score || "",
+      sat_id: app.sat_id || "",
+      cefr_score: app.cefr_score || "",
+      cefr_id: app.cefr_id || "",
     });
   };
 
@@ -453,10 +464,18 @@ export function ApplicationsTable({
                     { key: "card_number", label: "Card Number" },
                     { key: "personal_number", label: "Personal Number" },
                     { key: "place_of_birth", label: "Place of Birth" },
-                    {
-                      key: "language_cert_score",
-                      label: "Language Cert Score",
-                    },
+                    { key: "current_address", label: "Current Address" },
+                    { key: "personal_phone", label: "Personal Phone" },
+                    { key: "parent_phone", label: "Parent Phone" },
+                    { key: "friend_phone", label: "Friend Phone" },
+                    { key: "institution_name", label: "Institution Name" },
+                    { key: "institution_location", label: "Institution Location" },
+                    { key: "language_cert_score", label: "Language Cert Score" },
+                    { key: "language_cert_id", label: "Language Cert ID" },
+                    { key: "sat_score", label: "SAT Score" },
+                    { key: "sat_id", label: "SAT ID" },
+                    { key: "cefr_score", label: "CEFR Level" },
+                    { key: "cefr_id", label: "CEFR ID" },
                   ].map((field) => (
                     <div key={field.key} className="flex flex-col gap-1">
                       <Label className="text-xs text-muted-foreground">

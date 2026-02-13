@@ -33,23 +33,69 @@ export const PROGRAM_LABELS: Record<Program, string> = {
 };
 
 export type EducationType =
-  | "general_school"
-  | "specialized_school"
-  | "presidential_school";
+  | "specialized_agency"
+  | "public_private"
+  | "art_schools";
 
 export const EDUCATION_TYPE_LABELS: Record<EducationType, string> = {
-  general_school: "General school or college",
-  specialized_school: "Specialized or creative school",
-  presidential_school: "Presidential school",
+  specialized_agency:
+    "Specialized schools under the Agency of specialized educational institutions",
+  public_private:
+    "Public or Private Schools / Academic Lyceums / Colleges / Technikums / Universities / Others",
+  art_schools:
+    "Art schools under the Agency of specialized educational institutions",
 };
 
-export type LanguageCertType = "ielts" | "sat" | "national_cefr";
+export type LanguageCertType =
+  | "ielts"
+  | "toefl"
+  | "duolingo"
+  | "cambridge"
+  | "pearson"
+  | "other_lang";
 
 export const LANGUAGE_CERT_LABELS: Record<LanguageCertType, string> = {
   ielts: "IELTS",
-  sat: "SAT",
-  national_cefr: "National CEFR",
+  toefl: "TOEFL iBT",
+  duolingo: "Duolingo English Test",
+  cambridge: "Cambridge (FCE/CAE/CPE)",
+  pearson: "Pearson PTE Academic",
+  other_lang: "Other",
 };
+
+export type Citizenship =
+  | "uzbekistan"
+  | "kazakhstan"
+  | "tajikistan"
+  | "kyrgyzstan"
+  | "turkmenistan"
+  | "other";
+
+export const CITIZENSHIP_LABELS: Record<Citizenship, string> = {
+  uzbekistan: "Uzbekistan",
+  kazakhstan: "Kazakhstan",
+  tajikistan: "Tajikistan",
+  kyrgyzstan: "Kyrgyzstan",
+  turkmenistan: "Turkmenistan",
+  other: "Other",
+};
+
+export const UZBEKISTAN_REGIONS = [
+  "Tashkent City",
+  "Tashkent Region",
+  "Samarkand Region",
+  "Bukhara Region",
+  "Fergana Region",
+  "Andijan Region",
+  "Namangan Region",
+  "Kashkadarya Region",
+  "Surkhandarya Region",
+  "Khorezm Region",
+  "Navoi Region",
+  "Jizzakh Region",
+  "Syrdarya Region",
+  "Republic of Karakalpakstan",
+] as const;
 
 export interface User {
   id: string;
@@ -66,27 +112,55 @@ export interface Application {
   id: string;
   user_id: string;
   status: ApplicationStatus;
-  education_type?: EducationType;
+  // Personal info
   surname?: string;
   given_name?: string;
   gender?: string;
   citizenship?: string;
+  citizenship_other?: string;
   card_number?: string;
   date_of_birth?: string;
   date_of_issue?: string;
   date_of_expiry?: string;
   personal_number?: string;
   place_of_birth?: string;
+  current_address?: string;
   passport_image_path?: string;
+  // Contact
+  personal_phone?: string;
+  parent_phone?: string;
+  friend_phone?: string;
+  // Education
+  education_type?: EducationType;
+  institution_type?: string;
+  institution_location?: string;
+  institution_name?: string;
   attestat_pdf_path?: string;
+  // Language certificates
   language_cert_type?: LanguageCertType;
   language_cert_pdf_path?: string;
   language_cert_score?: string;
+  language_cert_id?: string;
   language_cert_date?: string;
+  // SAT
+  sat_score?: string;
+  sat_id?: string;
+  sat_pdf_path?: string;
+  // CEFR
+  cefr_score?: string;
+  cefr_id?: string;
+  cefr_pdf_path?: string;
+  // Social protection
+  social_protection?: boolean;
+  social_protection_pdf_path?: string;
   social_registry: boolean;
   social_registry_pdf_path?: string;
+  // Olympiad
   other_achievements_text?: string;
   other_achievements_pdf_path?: string;
+  // Submit
+  oferta_agreed?: boolean;
+  // Admin
   assigned_admin_id?: string;
   assigned_admin_email?: string;
   assigned_admin_name?: string;

@@ -33,6 +33,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
   UserPlus,
@@ -43,6 +44,8 @@ import {
   Users,
   ChevronLeft,
   ChevronRight,
+  FileText,
+  Save,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -79,6 +82,9 @@ export default function SuperadminSettingsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [adminsPage, setAdminsPage] = useState(1);
   const [logsPage, setLogsPage] = useState(1);
+  const [ofertaText, setOfertaText] = useState("");
+  const [ofertaSaving, setOfertaSaving] = useState(false);
+  const [ofertaLoaded, setOfertaLoaded] = useState(false);
   const PAGE_SIZE = 10;
 
   const {
@@ -92,6 +98,16 @@ export default function SuperadminSettingsPage() {
     fetcher,
     { refreshInterval: 30000 }
   );
+
+  const { data: ofertaData } = useSWR("/api/settings/oferta", fetcher);
+
+  // Load oferta text once
+  React.useEffect(() => {
+    if (ofertaData?.oferta?.setting_value && !ofertaLoaded) {
+      setOfertaText(ofertaData.oferta.setting_value);
+      setOfertaLoaded(true);
+    }
+  }, [ofertaData, ofertaLoaded]);
 
   const admins: Admin[] = adminsData?.admins || [];
   const logs: LogEntry[] = logsData?.logs || [];
@@ -165,6 +181,28 @@ export default function SuperadminSettingsPage() {
     }
   };
 
+  const handleSaveOferta = async () => {
+    if (!ofertaText.trim()) {
+      toast.error("Oferta text cannot be empty");
+      return;
+    }
+    setOfertaSaving(true);
+    try {
+      const res = await fetch("/api/settings/oferta", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ oferta_text: ofertaText }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      toast.success("Oferta agreement saved successfully");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save oferta");
+    } finally {
+      setOfertaSaving(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -189,6 +227,13 @@ export default function SuperadminSettingsPage() {
           >
             <ClipboardList className="h-4 w-4" />
             System Logs
+          </TabsTrigger>
+          <TabsTrigger
+            value="oferta"
+            className="gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground"
+          >
+            <FileText className="h-4 w-4" />
+            Oferta Agreement
           </TabsTrigger>
         </TabsList>
 
@@ -532,6 +577,49 @@ export default function SuperadminSettingsPage() {
                   </div>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="oferta" className="mt-6">
+          <Card className="border-border bg-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <FileText className="h-5 w-5 text-primary" />
+                Oferta Agreement Text
+              </CardTitle>
+              <CardDescription className="text-muted-foreground">
+                This text will be shown to applicants on the Submit step of their application.
+                They must agree to it before submitting.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-foreground">Agreement Text</Label>
+                <Textarea
+                  rows={15}
+                  value={ofertaText}
+                  onChange={(e) => setOfertaText(e.target.value)}
+                  placeholder="Enter the full oferta agreement text that applicants must agree to before submitting their application..."
+                  className="bg-card text-foreground min-h-[300px] resize-y font-mono text-sm leading-relaxed"
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">
+                  {ofertaText.length} characters
+                </p>
+                <Button
+                  onClick={handleSaveOferta}
+                  disabled={ofertaSaving}
+                  className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  {ofertaSaving ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4" />
+                  )}
+                  {ofertaSaving ? "Saving..." : "Save Oferta"}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
