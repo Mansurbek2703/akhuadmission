@@ -480,7 +480,7 @@ export function ApplicationsTable({
 
                       <SectionCard title="Submission Details">
                         <ReadonlyRow label="How did you hear about us" value={String(appRec.hear_about || "-")} />
-                        <ReadonlyRow label="Sibling at university" value={String(appRec.sibling_study || "-")} />
+
                         <ReadonlyRow label="Info is correct" value={appRec.confirm_info_correct ? "Confirmed" : "Not confirmed"} />
                         <ReadonlyRow label="Final year completed" value={appRec.confirm_final_year ? "Confirmed" : "Not confirmed"} />
                         <ReadonlyRow label="Fake info = disqualification" value={appRec.confirm_fake_disqualify ? "Confirmed" : "Not confirmed"} />

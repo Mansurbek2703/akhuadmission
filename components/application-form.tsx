@@ -414,7 +414,7 @@ export function ApplicationForm({
       ],
       social: ["social_protection", "social_protection_pdf_path"],
       olympiad: ["other_achievements_text", "other_achievements_pdf_path"],
-      submit: ["hear_about", "sibling_study", "confirm_info_correct", "confirm_final_year", "confirm_fake_disqualify", "confirm_fake_cancel", "oferta_agreed"],
+      submit: ["hear_about", "confirm_info_correct", "confirm_final_year", "confirm_fake_disqualify", "confirm_fake_cancel", "oferta_agreed"],
       status: [],
     };
     const keys = stepFieldMap[currentStep] || [];
@@ -1435,7 +1435,7 @@ export function ApplicationForm({
   const renderSubmit = () => {
     const allConfirmed = !!formData.confirm_info_correct && !!formData.confirm_final_year
       && !!formData.confirm_fake_disqualify && !!formData.confirm_fake_cancel;
-    const allFieldsFilled = !!formData.hear_about && !!formData.sibling_study && allConfirmed;
+    const allFieldsFilled = !!formData.hear_about && allConfirmed;
 
     const handleSubmit = async () => {
       // Check personal info is 100% filled
@@ -1456,18 +1456,14 @@ export function ApplicationForm({
         toast.error("Please select how you heard about the university.");
         return;
       }
-      if (!formData.sibling_study) {
-        toast.error("Please select whether your sibling studies at the university.");
-        return;
-      }
+
       if (!allConfirmed) {
         toast.error("You must check all confirmation checkboxes to submit.");
         return;
       }
-      await saveFields({
-        hear_about: formData.hear_about,
-        sibling_study: formData.sibling_study,
-        confirm_info_correct: true,
+  await saveFields({
+  hear_about: formData.hear_about,
+  confirm_info_correct: true,
         confirm_final_year: true,
         confirm_fake_disqualify: true,
         confirm_fake_cancel: true,
@@ -1508,26 +1504,6 @@ export function ApplicationForm({
           {!formData.hear_about && (
             <p className="text-xs text-destructive">Question required</p>
           )}
-        </div>
-
-        {/* Sibling study */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">
-            Does your sibling study at Al-Khwarizmi University? <span className="text-destructive">*</span>
-          </Label>
-          <Select
-            value={str("sibling_study")}
-            onValueChange={(val) => setField("sibling_study", val)}
-          >
-            <SelectTrigger className={cn(!formData.sibling_study && "text-muted-foreground")}>
-              <SelectValue placeholder="Select your response..." />
-            </SelectTrigger>
-            <SelectContent>
-              {SIBLING_OPTIONS.map((opt) => (
-                <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
 
         {/* Confirmation checkboxes */}
@@ -1682,7 +1658,7 @@ export function ApplicationForm({
       ]},
       { section: "Submission Details", fields: [
         { label: "How did you hear about us", value: str("hear_about") || "-" },
-        { label: "Sibling at university", value: str("sibling_study") || "-" },
+
         { label: "Info is correct", value: formData.confirm_info_correct ? "Confirmed" : "Not confirmed" },
         { label: "Final year completed", value: formData.confirm_final_year ? "Confirmed" : "Not confirmed" },
         { label: "Fake info = disqualification", value: formData.confirm_fake_disqualify ? "Confirmed" : "Not confirmed" },

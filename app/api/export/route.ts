@@ -187,7 +187,6 @@ export async function GET(req: NextRequest) {
       "Achievements PDF": row.other_achievements_pdf_path ? "Uploaded" : "Not uploaded",
       // Misc
       "Hear About": row.hear_about || "",
-      "Sibling Study": row.sibling_study || "",
       "Info Confirmed": row.confirm_info_correct ? "Yes" : "No",
       "Oferta Agreed": row.oferta_agreed ? "Yes" : "No",
       // Admin
