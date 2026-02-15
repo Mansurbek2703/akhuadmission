@@ -9,7 +9,8 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Search, MessageSquare } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, Search, MessageSquare, ArrowLeft } from "lucide-react";
 import { PROGRAM_LABELS } from "@/lib/types";
 import type { Application, Program } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -38,6 +39,13 @@ export default function SuperadminChatPage() {
   const applications: Application[] = data?.applications || [];
   const unreadMap = (unreadData?.allUnreadMap || {}) as Record<string, number>;
 
+  const selectedApplication = applications.find((a) => a.id === selectedAppId);
+  const selectedAppName = selectedApplication
+    ? selectedApplication.surname && selectedApplication.given_name
+      ? `${selectedApplication.surname} ${selectedApplication.given_name}`
+      : selectedApplication.user_email || "Applicant"
+    : "";
+
   const filtered = applications.filter((app) => {
     if (!search) return true;
     const q = search.toLowerCase();
@@ -52,14 +60,44 @@ export default function SuperadminChatPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
+      <div className="md:block hidden">
         <h1 className="text-2xl font-bold text-foreground">Chat</h1>
         <p className="mt-1 text-muted-foreground">
           Communicate with applicants (Superadmin)
         </p>
       </div>
+      {/* Mobile header: show applicant name + back button when chat is open */}
+      <div className="md:hidden">
+        {selectedAppId ? (
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="shrink-0"
+              onClick={() => setSelectedAppId(null)}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="min-w-0">
+              <h1 className="text-lg font-bold text-foreground truncate">{selectedAppName}</h1>
+              <p className="text-xs text-muted-foreground truncate">{selectedApplication?.user_email}</p>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Chat</h1>
+            <p className="mt-1 text-muted-foreground">
+              Communicate with applicants (Superadmin)
+            </p>
+          </div>
+        )}
+      </div>
       <div className="flex flex-col gap-4 md:flex-row" style={{ height: "calc(100vh - 14rem)" }}>
-        <Card className="flex w-full flex-shrink-0 flex-col border-border bg-card shadow-sm md:w-80">
+        {/* Conversation List - hidden on mobile when chat is open */}
+        <Card className={cn(
+          "flex w-full flex-shrink-0 flex-col border-border bg-card shadow-sm md:w-80 md:flex",
+          selectedAppId ? "hidden md:flex" : "flex"
+        )}>
           <div className="border-b border-border px-3 py-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -122,11 +160,17 @@ export default function SuperadminChatPage() {
             )}
           </ScrollArea>
         </Card>
-        <div className="flex-1">
+        {/* Chat Panel - always visible on desktop, shown on mobile only when selected */}
+        <div className={cn(
+          "flex-1",
+          selectedAppId ? "flex md:flex" : "hidden md:flex"
+        )}>
           {selectedAppId ? (
-            <ChatPanel applicationId={selectedAppId} user={user} />
+            <div className="w-full">
+              <ChatPanel applicationId={selectedAppId} user={user} />
+            </div>
           ) : (
-            <Card className="flex h-full items-center justify-center border-border bg-card shadow-sm">
+            <Card className="flex h-full w-full items-center justify-center border-border bg-card shadow-sm">
               <div className="text-center">
                 <MessageSquare className="mx-auto mb-3 h-12 w-12 text-muted-foreground/30" />
                 <p className="text-muted-foreground">

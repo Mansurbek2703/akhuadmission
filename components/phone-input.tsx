@@ -80,6 +80,9 @@ export function PhoneInput({ value, onChange, className }: PhoneInputProps) {
   const handleNumberChange = (num: string) => {
     // Only allow digits and spaces
     const cleaned = num.replace(/[^\d\s]/g, "");
+    // Limit to 10 digits (not counting spaces)
+    const digitsOnly = cleaned.replace(/\s/g, "");
+    if (digitsOnly.length > 10) return;
     setLocalNumber(cleaned);
     onChange(`${selectedCountry.dial} ${cleaned}`.trim());
   };
@@ -109,8 +112,7 @@ export function PhoneInput({ value, onChange, className }: PhoneInputProps) {
         onClick={() => setOpen(!open)}
         className="flex items-center gap-1.5 rounded-l-md border border-r-0 border-input bg-secondary px-3 py-2 text-sm text-foreground hover:bg-secondary/80 transition-colors shrink-0"
       >
-        <span className="text-base leading-none">{selectedCountry.flag}</span>
-        <span className="font-medium text-xs text-muted-foreground">{selectedCountry.code}</span>
+        <span className="text-lg leading-none">{selectedCountry.flag}</span>
         <ChevronDown className="h-3 w-3 text-muted-foreground" />
       </button>
 
