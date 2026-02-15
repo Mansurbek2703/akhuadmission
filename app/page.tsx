@@ -79,7 +79,7 @@ export default function LandingPage() {
           <Link href="/" className="flex items-center gap-2.5">
             <Image
               src="/logoEdited.png"
-              alt="Al-Xorazmiy University"
+              alt="Al-Khwarizmi University"
               width={200}
               height={150}
               className="h-18 w-40 rounded-lg object-contain"
@@ -354,7 +354,7 @@ export default function LandingPage() {
               <Link href="/" className="inline-flex items-center gap-3">
                 <div className="flex h-20 items-center justify-center">
                   <img
-                    alt="Al-Xorazmiy University"
+                    alt="Al-Khwarizmi University"
                     className="h-18 w-40 rounded-lg object-contain"
                     src="/logoEdited.png"
                   />

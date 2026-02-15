@@ -56,11 +56,11 @@ export function AdminNav() {
             className="flex items-center gap-2.5"
           >
             <Image
-              src="/logo.png"
-              alt="Al-Xorazmiy University"
-              width={24}
-              height={44}
-              className="h-15 w-24 rounded-lg object-contain"
+              src="/logoEdited.png"
+              alt="Al-Khwarizmi University"
+              width={200}
+              height={150}
+              className="h-18 w-40 rounded-lg object-contain"
             />
             <div className="hidden sm:block">
               <span className="font-bold text-foreground">Admin Panel</span>

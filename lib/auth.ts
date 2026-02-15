@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import type { UserRole } from "./types";
 
 const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "al-xorazmiy-secret-key-2025-change-in-production"
+  process.env.JWT_SECRET || "al-khwarizmi-secret-key-2025-change-in-production"
 );
 
 export interface TokenPayload {

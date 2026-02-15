@@ -24,7 +24,7 @@ import nodemailer from "nodemailer";
 //    SMTP_PORT=465
 //
 //  ---- CUSTOM (University server) ----
-//    SMTP_HOST=mail.alxorazmiy.uz
+//    SMTP_HOST=mail.alkhwarizmi.uz
 //    SMTP_PORT=587
 //
 // ============================================================
@@ -52,9 +52,12 @@ function getTransporter() {
 }
 
 const FROM_ADDRESS =
-  process.env.SMTP_FROM || process.env.SMTP_USER || "noreply@alxorazmiy.uz";
+  process.env.SMTP_FROM || process.env.SMTP_USER || "noreply@alkhwarizmi.uz";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://admission.akhu.uz";
+const APP_URL =
+  process.env.APP_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  "https://admission.akhu.uz";
 
 export async function sendEmail({
   to,
@@ -81,7 +84,7 @@ export async function sendEmail({
 
   try {
     const info = await transporter.sendMail({
-      from: `"Al-Xorazmiy University" <${FROM_ADDRESS}>`,
+      from: `"Al-Khwarizmi University" <${FROM_ADDRESS}>`,
       to,
       subject,
       html,
@@ -114,17 +117,17 @@ export async function sendVerificationEmail(to: string, token: string, plainPass
 
   return sendEmail({
     to,
-    subject: "Al-Xorazmiy University - Verify Your Email",
+    subject: "Al-Khwarizmi University - Verify Your Email",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; padding: 20px 0; border-bottom: 2px solid #1e40af;">
-          <h1 style="color: #1e40af; margin: 0;">Al-Xorazmiy University</h1>
+          <h1 style="color: #1e40af; margin: 0;">Al-Khwarizmi University</h1>
           <p style="color: #6b7280; margin: 5px 0 0 0;">Online Admissions Platform</p>
         </div>
         <div style="padding: 30px 0;">
           <h2 style="color: #111827;">Welcome!</h2>
           <p style="color: #374151; line-height: 1.6;">
-            Thank you for registering with the Al-Xorazmiy University Online Admissions Platform.
+            Thank you for registering with the Al-Khwarizmi University Online Admissions Platform.
             Please verify your email address by clicking the button below:
           </p>
           ${credentialsBlock}
@@ -146,7 +149,7 @@ export async function sendVerificationEmail(to: string, token: string, plainPass
         </div>
         <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; text-align: center;">
           <p style="color: #9ca3af; font-size: 12px;">
-            This email was sent by Al-Xorazmiy University. If you did not register, please ignore this email.
+            This email was sent by Al-Khwarizmi University. If you did not register, please ignore this email.
           </p>
         </div>
       </div>
@@ -173,11 +176,11 @@ export async function sendStatusUpdateEmail(
 
   return sendEmail({
     to,
-    subject: `Al-Xorazmiy University - Application Status Updated: ${statusLabel}`,
+    subject: `Al-Khwarizmi University - Application Status Updated: ${statusLabel}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; padding: 20px 0; border-bottom: 2px solid #1e40af;">
-          <h1 style="color: #1e40af; margin: 0;">Al-Xorazmiy University</h1>
+          <h1 style="color: #1e40af; margin: 0;">Al-Khwarizmi University</h1>
         </div>
         <div style="padding: 30px 0;">
           <h2 style="color: #111827;">Dear ${applicantName},</h2>
@@ -193,7 +196,57 @@ export async function sendStatusUpdateEmail(
           </div>
         </div>
         <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; text-align: center;">
-          <p style="color: #9ca3af; font-size: 12px;">Al-Xorazmiy University Online Admissions Platform</p>
+          <p style="color: #9ca3af; font-size: 12px;">Al-Khwarizmi University Online Admissions Platform</p>
+        </div>
+      </div>
+    `,
+  });
+}
+
+export async function sendDocumentVerificationEmail(
+  to: string,
+  applicantName: string,
+  documentName: string,
+  action: "verified" | "invalid"
+) {
+  const dashboardUrl = `${APP_URL}/dashboard`;
+  const isVerified = action === "verified";
+  const actionLabel = isVerified ? "Verified" : "Marked as Invalid";
+  const color = isVerified ? "#059669" : "#dc2626";
+  const bgColor = isVerified ? "#ecfdf5" : "#fef2f2";
+  const borderColor = isVerified ? "#059669" : "#dc2626";
+
+  return sendEmail({
+    to,
+    subject: `Al-Khwarizmi University - Document ${actionLabel}: ${documentName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; padding: 20px 0; border-bottom: 2px solid #1e40af;">
+          <h1 style="color: #1e40af; margin: 0;">Al-Khwarizmi University</h1>
+        </div>
+        <div style="padding: 30px 0;">
+          <h2 style="color: #111827;">Dear ${applicantName},</h2>
+          <p style="color: #374151; line-height: 1.6;">
+            Your document <strong>${documentName}</strong> has been reviewed by the admissions team:
+          </p>
+          <div style="background: ${bgColor}; border-left: 4px solid ${borderColor}; padding: 15px 20px; margin: 20px 0; border-radius: 0 8px 8px 0;">
+            <p style="margin: 0; color: ${color}; font-weight: bold; font-size: 18px;">${actionLabel}</p>
+          </div>
+          ${!isVerified ? `
+          <p style="color: #dc2626; line-height: 1.6;">
+            The information in your document was found to be incorrect or invalid. Please review your application and contact the admissions office if you believe this is an error.
+          </p>` : `
+          <p style="color: #059669; line-height: 1.6;">
+            Your document has been successfully verified. No further action is needed for this document.
+          </p>`}
+          <div style="text-align: center; margin: 25px 0;">
+            <a href="${dashboardUrl}" style="background: #1e40af; color: #ffffff; padding: 12px 35px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">
+              Go to Dashboard
+            </a>
+          </div>
+        </div>
+        <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; text-align: center;">
+          <p style="color: #9ca3af; font-size: 12px;">Al-Khwarizmi University Online Admissions Platform</p>
         </div>
       </div>
     `,
@@ -208,11 +261,11 @@ export async function sendChatNotificationEmail(
 
   return sendEmail({
     to,
-    subject: "Al-Xorazmiy University - New Message Received",
+    subject: "Al-Khwarizmi University - New Message Received",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; padding: 20px 0; border-bottom: 2px solid #1e40af;">
-          <h1 style="color: #1e40af; margin: 0;">Al-Xorazmiy University</h1>
+          <h1 style="color: #1e40af; margin: 0;">Al-Khwarizmi University</h1>
         </div>
         <div style="padding: 30px 0;">
           <p style="color: #374151; line-height: 1.6;">
@@ -228,6 +281,3 @@ export async function sendChatNotificationEmail(
     `,
   });
 }
-
-
-

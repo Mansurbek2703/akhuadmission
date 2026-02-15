@@ -159,7 +159,22 @@ export interface Application {
   other_achievements_text?: string;
   other_achievements_pdf_path?: string;
   // Submit
+  hear_about?: string;
+  sibling_study?: string;
+  confirm_info_correct?: boolean;
+  confirm_final_year?: boolean;
+  confirm_fake_disqualify?: boolean;
+  confirm_fake_cancel?: boolean;
   oferta_agreed?: boolean;
+  // Verification (admin)
+  language_cert_verified?: boolean;
+  language_cert_invalid?: boolean;
+  sat_verified?: boolean;
+  sat_invalid?: boolean;
+  cefr_verified?: boolean;
+  cefr_invalid?: boolean;
+  attestat_verified?: boolean;
+  attestat_invalid?: boolean;
   // Admin
   assigned_admin_id?: string;
   assigned_admin_email?: string;

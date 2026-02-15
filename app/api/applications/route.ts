@@ -180,7 +180,13 @@ export async function PUT(req: NextRequest) {
       "social_protection", "social_protection_pdf_path",
       "social_registry", "social_registry_pdf_path",
       "other_achievements_text", "other_achievements_pdf_path",
+      "hear_about", "sibling_study",
+      "confirm_info_correct", "confirm_final_year", "confirm_fake_disqualify", "confirm_fake_cancel",
       "oferta_agreed", "status", "completion_percentage",
+      "language_cert_verified", "language_cert_invalid",
+      "sat_verified", "sat_invalid",
+      "cefr_verified", "cefr_invalid",
+      "attestat_verified", "attestat_invalid",
     ];
 
     const setClauses: string[] = [];

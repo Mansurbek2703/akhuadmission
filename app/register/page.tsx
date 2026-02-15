@@ -75,18 +75,18 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
       <Card className="w-full max-w-md border-border shadow-xl shadow-primary/5">
         <CardHeader className="text-center">
-          <div className="flex items-center justify-center h-20">
-            <img
-              alt="Al-Xorazmiy University"
-              className="h-18 w-40 rounded-lg object-contain"
-              src="/logoEdited.png"
-            />
-          </div>
+          <Image
+            src="/logoEdited.png"
+            alt="Al-Khwarizmi University"
+            width={200}
+            height={150}
+            className="mx-auto mb-4 h-18 w-40 rounded-lg object-contain"
+          />
           <CardTitle className="text-2xl font-bold text-foreground">
             Create Account
           </CardTitle>
           <CardDescription className="text-muted-foreground">
-            Apply for Bachelor programs at Al-Xorazmiy University
+            Apply for Bachelor programs at Al-Khwarizmi University
           </CardDescription>
         </CardHeader>
         <CardContent>

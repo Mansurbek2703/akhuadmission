@@ -304,7 +304,7 @@ export default function SuperadminSettingsPage() {
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="admin@alxorazmiy.uz"
+                        placeholder="admin@alkhwarizmi.uz"
                         required
                         className="bg-card text-foreground"
                       />

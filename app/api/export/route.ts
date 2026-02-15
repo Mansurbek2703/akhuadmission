@@ -72,57 +72,110 @@ export async function GET(req: NextRequest) {
 
     const result = await query(sql, params);
 
-    const data = result.rows.map(
-      (row: {
-        id: string;
-        surname?: string;
-        given_name?: string;
-        user_email: string;
-        user_program?: Program;
-        education_type?: EducationType;
-        status: ApplicationStatus;
-        created_at: string;
-        updated_at: string;
-        assigned_admin_email?: string;
-        attestat_pdf_path?: string;
-        language_cert_pdf_path?: string;
-      }) => ({
-        "Applicant ID": row.id.slice(0, 8),
-        "Full Name": `${row.surname || ""} ${row.given_name || ""}`.trim() || "Not provided",
-        Email: row.user_email,
-        Program: row.user_program
-          ? PROGRAM_LABELS[row.user_program]
-          : "N/A",
-        "Initial Education Type": row.education_type
-          ? EDUCATION_TYPE_LABELS[row.education_type]
-          : "N/A",
-        Status: APPLICATION_STATUS_LABELS[row.status],
-        "Submission Date": new Date(row.created_at).toLocaleDateString(),
-        "Last Updated": new Date(row.updated_at).toLocaleDateString(),
-        "Assigned Admin": row.assigned_admin_email || "Unassigned",
-        "Missing Documents":
-          !row.attestat_pdf_path || !row.language_cert_pdf_path
-            ? "Yes"
-            : "No",
-      })
-    );
+    const LANG_CERT_LABELS: Record<string, string> = {
+      ielts: "IELTS",
+      toefl: "TOEFL iBT",
+      duolingo: "Duolingo English Test",
+      cambridge: "Cambridge (FCE/CAE/CPE)",
+      pearson: "Pearson PTE Academic",
+      other_lang: "Other",
+    };
+
+    const CITIZENSHIP_MAP: Record<string, string> = {
+      uzbekistan: "Uzbekistan",
+      kazakhstan: "Kazakhstan",
+      tajikistan: "Tajikistan",
+      kyrgyzstan: "Kyrgyzstan",
+      turkmenistan: "Turkmenistan",
+      other: "Other",
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data = result.rows.map((row: any) => ({
+      "Applicant ID": row.id?.slice(0, 8) || "",
+      "Surname": row.surname || "",
+      "Given Name": row.given_name || "",
+      "Email": row.user_email || "",
+      "Program": row.user_program ? PROGRAM_LABELS[row.user_program as Program] : "N/A",
+      "Status": APPLICATION_STATUS_LABELS[row.status as ApplicationStatus] || row.status,
+      "Completion %": row.completion_percentage ?? 0,
+      // Personal info
+      "Gender": row.gender || "",
+      "Citizenship": row.citizenship ? (CITIZENSHIP_MAP[row.citizenship] || row.citizenship) : "",
+      "Citizenship (Other)": row.citizenship_other || "",
+      "Card / Passport Number": row.card_number || "",
+      "Date of Birth": row.date_of_birth || "",
+      "Date of Issue": row.date_of_issue || "",
+      "Date of Expiry": row.date_of_expiry || "",
+      "Personal Number": row.personal_number || "",
+      "Place of Birth": row.place_of_birth || "",
+      "Current Address": row.current_address || "",
+      "Passport Image": row.passport_image_path ? "Uploaded" : "Not uploaded",
+      // Contact
+      "Personal Phone": row.personal_phone || "",
+      "Parent Phone": row.parent_phone || "",
+      "Friend Phone": row.friend_phone || "",
+      // Education
+      "Education Type": row.education_type ? (EDUCATION_TYPE_LABELS[row.education_type as EducationType] || row.education_type) : "",
+      "Institution Type": row.institution_type || "",
+      "Institution Location": row.institution_location || "",
+      "Institution Name": row.institution_name || "",
+      "Attestat PDF": row.attestat_pdf_path ? "Uploaded" : "Not uploaded",
+      "Attestat Verified": row.attestat_verified ? "Yes" : row.attestat_invalid ? "Invalid" : "Pending",
+      // Language cert
+      "Language Cert Type": row.language_cert_type ? (LANG_CERT_LABELS[row.language_cert_type] || row.language_cert_type) : "",
+      "Language Cert Score": row.language_cert_score || "",
+      "Language Cert ID": row.language_cert_id || "",
+      "Language Cert Date": row.language_cert_date || "",
+      "Language Cert PDF": row.language_cert_pdf_path ? "Uploaded" : "Not uploaded",
+      "Language Cert Verified": row.language_cert_verified ? "Yes" : row.language_cert_invalid ? "Invalid" : "Pending",
+      // SAT
+      "SAT Score": row.sat_score || "",
+      "SAT ID": row.sat_id || "",
+      "SAT PDF": row.sat_pdf_path ? "Uploaded" : "Not uploaded",
+      "SAT Verified": row.sat_verified ? "Yes" : row.sat_invalid ? "Invalid" : "Pending",
+      // CEFR
+      "CEFR Score": row.cefr_score || "",
+      "CEFR ID": row.cefr_id || "",
+      "CEFR PDF": row.cefr_pdf_path ? "Uploaded" : "Not uploaded",
+      "CEFR Verified": row.cefr_verified ? "Yes" : row.cefr_invalid ? "Invalid" : "Pending",
+      // Social protection
+      "Social Protection": row.social_protection ? "Yes" : "No",
+      "Social Protection PDF": row.social_protection_pdf_path ? "Uploaded" : "Not uploaded",
+      "Social Registry": row.social_registry ? "Yes" : "No",
+      "Social Registry PDF": row.social_registry_pdf_path ? "Uploaded" : "Not uploaded",
+      // Achievements
+      "Other Achievements": row.other_achievements_text || "",
+      "Achievements PDF": row.other_achievements_pdf_path ? "Uploaded" : "Not uploaded",
+      // Misc
+      "Hear About": row.hear_about || "",
+      "Sibling Study": row.sibling_study || "",
+      "Info Confirmed": row.confirm_info_correct ? "Yes" : "No",
+      "Oferta Agreed": row.oferta_agreed ? "Yes" : "No",
+      // Admin
+      "Assigned Admin": row.assigned_admin_email || "Unassigned",
+      "Submission Date": row.created_at ? new Date(row.created_at).toLocaleDateString() : "",
+      "Last Updated": row.updated_at ? new Date(row.updated_at).toLocaleDateString() : "",
+    }));
 
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(data);
 
-    // Set column widths
-    ws["!cols"] = [
-      { wch: 12 },
-      { wch: 25 },
-      { wch: 30 },
-      { wch: 30 },
-      { wch: 25 },
-      { wch: 22 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 25 },
-      { wch: 18 },
+    // Set column widths for all columns
+    const colWidths = [
+      12, 20, 20, 30, 28, 24, 12,
+      10, 16, 20, 22, 14, 14, 14, 18, 20, 30, 14,
+      16, 16, 16,
+      45, 20, 20, 30, 14, 14,
+      22, 16, 18, 14, 14, 14,
+      12, 12, 14, 14,
+      12, 12, 14, 14,
+      16, 14, 14, 14,
+      30, 14,
+      20, 16, 14, 14,
+      25, 15, 15,
     ];
+    ws["!cols"] = colWidths.map(w => ({ wch: w }));
 
     XLSX.utils.book_append_sheet(wb, ws, "Applications");
     const buffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });

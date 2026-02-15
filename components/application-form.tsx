@@ -393,7 +393,7 @@ export function ApplicationForm({
       ],
       social: ["social_protection", "social_protection_pdf_path"],
       olympiad: ["other_achievements_text", "other_achievements_pdf_path"],
-      submit: ["oferta_agreed"],
+      submit: ["hear_about", "sibling_study", "confirm_info_correct", "confirm_final_year", "confirm_fake_disqualify", "confirm_fake_cancel", "oferta_agreed"],
       status: [],
     };
     const keys = stepFieldMap[currentStep] || [];
@@ -1195,30 +1195,25 @@ export function ApplicationForm({
     </div>
   );
 
-  const renderSubmit = () => {
-    const agreed = !!formData.oferta_agreed;
+  const HEAR_ABOUT_OPTIONS = [
+    "Social Media (Instagram, Telegram, etc.)",
+    "Friends or Family",
+    "School / Teacher recommendation",
+    "University website",
+    "Education fair / Exhibition",
+    "News / Media",
+    "Other",
+  ];
 
-    const summaryFields = [
-      { label: "Surname", value: formData.surname },
-      { label: "Given Name", value: formData.given_name },
-      { label: "Gender", value: formData.gender },
-      { label: "Citizenship", value: str("citizenship") === "other" ? formData.citizenship_other : CITIZENSHIP_LABELS[str("citizenship") as Citizenship] },
-      { label: "Passport Number", value: formData.card_number },
-      { label: "Personal Number", value: formData.personal_number },
-      { label: "Date of Birth", value: formData.date_of_birth },
-      { label: "Place of Birth", value: formData.place_of_birth },
-      { label: "Current Address", value: formData.current_address },
-      { label: "Personal Phone", value: formData.personal_phone },
-      { label: "Parent Phone", value: formData.parent_phone },
-      { label: "Friend Phone", value: formData.friend_phone },
-      { label: "Education Type", value: str("education_type") ? EDUCATION_TYPE_LABELS[str("education_type") as EducationType] : "" },
-      { label: "Institution", value: formData.institution_name },
-      { label: "Language Cert", value: str("language_cert_type") ? LANGUAGE_CERT_LABELS[str("language_cert_type") as LanguageCertType] : "N/A" },
-      { label: "Lang Score", value: formData.language_cert_score || "N/A" },
-      { label: "SAT Score", value: formData.sat_score || "N/A" },
-      { label: "CEFR Level", value: formData.cefr_score || "N/A" },
-      { label: "Social Protection", value: formData.social_protection ? "Yes" : "No" },
-    ];
+  const SIBLING_OPTIONS = [
+    "Yes",
+    "No",
+  ];
+
+  const renderSubmit = () => {
+    const allConfirmed = !!formData.confirm_info_correct && !!formData.confirm_final_year
+      && !!formData.confirm_fake_disqualify && !!formData.confirm_fake_cancel;
+    const allFieldsFilled = !!formData.hear_about && !!formData.sibling_study && allConfirmed;
 
     const handleSubmit = async () => {
       // Check personal info is 100% filled
@@ -1235,11 +1230,25 @@ export function ApplicationForm({
         toast.error("Contact information is not fully completed. Please go back and fill in all required fields.");
         return;
       }
-      if (!agreed) {
-        toast.error("You must agree to the terms to submit");
+      if (!formData.hear_about) {
+        toast.error("Please select how you heard about the university.");
+        return;
+      }
+      if (!formData.sibling_study) {
+        toast.error("Please select whether your sibling studies at the university.");
+        return;
+      }
+      if (!allConfirmed) {
+        toast.error("You must check all confirmation checkboxes to submit.");
         return;
       }
       await saveFields({
+        hear_about: formData.hear_about,
+        sibling_study: formData.sibling_study,
+        confirm_info_correct: true,
+        confirm_final_year: true,
+        confirm_fake_disqualify: true,
+        confirm_fake_cancel: true,
         oferta_agreed: true,
         status: "submitted",
         completion_percentage: completionPct,
@@ -1248,67 +1257,118 @@ export function ApplicationForm({
     };
 
     return (
-      <div className="space-y-5">
+      <div className="space-y-6">
         <div>
           <h3 className="text-lg font-semibold text-foreground">Review & Submit</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            Review your information and agree to the terms before submitting
+            Answer the questions below and confirm your declarations before submitting.
           </p>
         </div>
 
-        {/* Summary */}
-        <div className="rounded-lg border border-border bg-muted/30 p-4">
-          <h4 className="mb-3 text-sm font-semibold text-foreground">Application Summary</h4>
-          <div className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
-            {summaryFields.map((sf) => (
-              <div key={sf.label} className="flex gap-1.5">
-                <span className="whitespace-nowrap text-muted-foreground">{sf.label}:</span>
-                <span className="font-medium text-foreground">{(sf.value as string) || "-"}</span>
-              </div>
-            ))}
-          </div>
+        {/* How did you hear about us */}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">
+            How did you first hear about the university and the course you are applying for? <span className="text-destructive">*</span>
+          </Label>
+          <Select
+            value={str("hear_about")}
+            onValueChange={(val) => setField("hear_about", val)}
+          >
+            <SelectTrigger className={cn(!formData.hear_about && "text-muted-foreground")}>
+              <SelectValue placeholder="Select your response..." />
+            </SelectTrigger>
+            <SelectContent>
+              {HEAR_ABOUT_OPTIONS.map((opt) => (
+                <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {!formData.hear_about && (
+            <p className="text-xs text-destructive">Question required</p>
+          )}
         </div>
 
-        {/* Oferta */}
-        <div className="rounded-lg border border-border p-4">
-          <h4 className="mb-2 text-sm font-semibold text-foreground">Oferta Agreement</h4>
-          {ofertaLoading ? (
-            <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" /> Loading agreement...
-            </div>
-          ) : ofertaContent ? (
-            <div className="mb-3 max-h-60 overflow-y-auto rounded border border-border bg-background p-3 text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap">
-              {ofertaContent}
-            </div>
-          ) : (
-            <p className="mb-3 text-sm text-muted-foreground">
-              By submitting this application, you confirm that all information provided is accurate and complete.
-              You agree to the university admission rules and regulations.
-            </p>
-          )}
+        {/* Sibling study */}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">
+            Does your sibling study at Al-Khwarizmi University? <span className="text-destructive">*</span>
+          </Label>
+          <Select
+            value={str("sibling_study")}
+            onValueChange={(val) => setField("sibling_study", val)}
+          >
+            <SelectTrigger className={cn(!formData.sibling_study && "text-muted-foreground")}>
+              <SelectValue placeholder="Select your response..." />
+            </SelectTrigger>
+            <SelectContent>
+              {SIBLING_OPTIONS.map((opt) => (
+                <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-          <div className="flex items-start gap-2">
+        {/* Confirmation checkboxes */}
+        <div className="space-y-3 rounded-lg border border-border p-4">
+          <Label className="text-sm font-medium">
+            I hereby confirm that: <span className="text-destructive">*</span>
+          </Label>
+
+          <div className="flex items-start gap-2.5">
             <Checkbox
-              id="oferta-agree"
-              checked={agreed}
-              onCheckedChange={(checked) => setField("oferta_agreed", !!checked)}
+              id="confirm-info"
+              checked={!!formData.confirm_info_correct}
+              onCheckedChange={(checked) => setField("confirm_info_correct", !!checked)}
             />
-            <Label htmlFor="oferta-agree" className="cursor-pointer text-sm leading-tight">
-              I have read and agree to all terms and conditions
+            <Label htmlFor="confirm-info" className="cursor-pointer text-sm leading-relaxed font-normal">
+              All information provided by me in this application is correct and accurate.
+            </Label>
+          </div>
+
+          <div className="flex items-start gap-2.5">
+            <Checkbox
+              id="confirm-final"
+              checked={!!formData.confirm_final_year}
+              onCheckedChange={(checked) => setField("confirm_final_year", !!checked)}
+            />
+            <Label htmlFor="confirm-final" className="cursor-pointer text-sm leading-relaxed font-normal">
+              I have completed, or am in my final year of, secondary school, academic lyceum, or college.
+            </Label>
+          </div>
+
+          <div className="flex items-start gap-2.5">
+            <Checkbox
+              id="confirm-disqualify"
+              checked={!!formData.confirm_fake_disqualify}
+              onCheckedChange={(checked) => setField("confirm_fake_disqualify", !!checked)}
+            />
+            <Label htmlFor="confirm-disqualify" className="cursor-pointer text-sm leading-relaxed font-normal">
+              If any information is found to be fake or incorrect at any stage of the admission process, my application will be rejected, and I will be disqualified from applying to any program.
+            </Label>
+          </div>
+
+          <div className="flex items-start gap-2.5">
+            <Checkbox
+              id="confirm-cancel"
+              checked={!!formData.confirm_fake_cancel}
+              onCheckedChange={(checked) => setField("confirm_fake_cancel", !!checked)}
+            />
+            <Label htmlFor="confirm-cancel" className="cursor-pointer text-sm leading-relaxed font-normal">
+              If fake information is found after exam results are announced, my results will be canceled.
             </Label>
           </div>
         </div>
 
         <Button
           onClick={handleSubmit}
-          disabled={!agreed || saving}
+          disabled={!allFieldsFilled || saving}
           className="w-full"
           size="lg"
         >
           {saving ? (
             <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...</>
           ) : (
-            <><Send className="mr-2 h-4 w-4" /> Submit Application</>
+            <><CheckCircle2 className="mr-2 h-4 w-4" /> Save changes and submit</>
           )}
         </Button>
       </div>
@@ -1347,6 +1407,10 @@ export function ApplicationForm({
     const statusInfo = STATUS_LABELS[statusKey] || STATUS_LABELS.submitted;
 
     const summaryRows = [
+      { section: "Account", fields: [
+        { label: "Email", value: application.user_email || "-" },
+        { label: "Program", value: application.user_program || "-" },
+      ]},
       { section: "Personal Information", fields: [
         { label: "Surname", value: str("surname") },
         { label: "Given Name", value: str("given_name") },
@@ -1368,6 +1432,7 @@ export function ApplicationForm({
       ]},
       { section: "Education", fields: [
         { label: "Education Type", value: str("education_type") ? EDUCATION_TYPE_LABELS[str("education_type") as EducationType] : "-" },
+        { label: "Institution Type", value: str("institution_type") || "-" },
         { label: "Institution Location", value: str("institution_location") },
         { label: "Institution Name", value: str("institution_name") },
         { label: "Attestat / Diploma", value: str("attestat_pdf_path") ? "Uploaded" : "Not uploaded" },
@@ -1376,6 +1441,7 @@ export function ApplicationForm({
         { label: "Language Certificate", value: str("language_cert_type") ? LANGUAGE_CERT_LABELS[str("language_cert_type") as LanguageCertType] : "N/A" },
         { label: "Language Score", value: str("language_cert_score") || "N/A" },
         { label: "Language Cert ID", value: str("language_cert_id") || "N/A" },
+        { label: "Language Cert Date", value: str("language_cert_date") || "N/A" },
         { label: "Language Cert PDF", value: str("language_cert_pdf_path") ? "Uploaded" : "N/A" },
         { label: "SAT Score", value: str("sat_score") || "N/A" },
         { label: "SAT ID", value: str("sat_id") || "N/A" },
@@ -1392,12 +1458,20 @@ export function ApplicationForm({
         { label: "Achievements", value: str("other_achievements_text") || "None" },
         { label: "Achievements PDF", value: str("other_achievements_pdf_path") ? "Uploaded" : "N/A" },
       ]},
+      { section: "Submission Details", fields: [
+        { label: "How did you hear about us", value: str("hear_about") || "-" },
+        { label: "Sibling at university", value: str("sibling_study") || "-" },
+        { label: "Info is correct", value: formData.confirm_info_correct ? "Confirmed" : "Not confirmed" },
+        { label: "Final year completed", value: formData.confirm_final_year ? "Confirmed" : "Not confirmed" },
+        { label: "Fake info = disqualification", value: formData.confirm_fake_disqualify ? "Confirmed" : "Not confirmed" },
+        { label: "Fake info = cancellation", value: formData.confirm_fake_cancel ? "Confirmed" : "Not confirmed" },
+      ]},
     ];
 
     return (
       <div className="space-y-6">
         {/* Status badge + Edit button */}
-        <div className="rounded-xl border border-border bg-muted/20 p-5 text-center">
+        <div className="rounded-xl border border-border bg-muted/20 p-4 text-center sm:p-5">
           <p className="mb-2 text-sm text-muted-foreground">Application Status</p>
           <span className={cn("inline-block rounded-full px-5 py-2 text-base font-bold", statusInfo.color)}>
             {statusInfo.label}
@@ -1457,14 +1531,14 @@ export function ApplicationForm({
         {/* Full readonly summary */}
         {summaryRows.map((section) => (
           <div key={section.section} className="rounded-lg border border-border overflow-hidden">
-            <div className="bg-muted/50 px-4 py-2.5 border-b border-border">
+            <div className="bg-muted/50 px-3 py-2.5 border-b border-border sm:px-4">
               <h4 className="text-sm font-semibold text-foreground">{section.section}</h4>
             </div>
             <div className="divide-y divide-border">
               {section.fields.map((f) => (
-                <div key={f.label} className="flex items-center justify-between px-4 py-2.5 text-sm">
-                  <span className="text-muted-foreground">{f.label}</span>
-                  <span className="font-medium text-foreground text-right max-w-[60%] truncate">{f.value || "-"}</span>
+                <div key={f.label} className="flex flex-col gap-0.5 px-3 py-2 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-4 sm:py-2.5">
+                  <span className="text-xs text-muted-foreground sm:text-sm">{f.label}</span>
+                  <span className="font-medium text-foreground sm:text-right sm:max-w-[60%] sm:truncate break-words">{f.value || "-"}</span>
                 </div>
               ))}
             </div>

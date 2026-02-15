@@ -7,9 +7,9 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Al-Xorazmiy University | Bachelor Admissions",
+  title: "Al-Khwarizmi University | Bachelor Admissions",
   description:
-    "Apply for Bachelor programs at Al-Xorazmiy University. Online admissions platform for Software Engineering, AI, Cybersecurity, and more.",
+    "Apply for Bachelor programs at Al-Khwarizmi University. Online admissions platform for Software Engineering, AI, Cybersecurity, and more.",
 };
 
 export const viewport: Viewport = {
