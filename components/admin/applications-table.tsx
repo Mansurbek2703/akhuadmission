@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { formatAddress } from "@/lib/address-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -411,8 +412,24 @@ export function ApplicationsTable({
                         <EditableRow label="Date of Birth" fieldKey="date_of_birth" displayValue={selectedApp.date_of_birth?.split("T")[0] || "-"} />
                         <EditableRow label="Date of Issue" fieldKey="date_of_issue" displayValue={selectedApp.date_of_issue?.split("T")[0] || "-"} />
                         <EditableRow label="Date of Expiry" fieldKey="date_of_expiry" displayValue={selectedApp.date_of_expiry?.split("T")[0] || "-"} />
-                        <EditableRow label="Place of Birth" fieldKey="place_of_birth" />
-                        <EditableRow label="Current Address" fieldKey="current_address" />
+                        <EditableRow
+                          label="Place of Birth"
+                          fieldKey="place_of_birth"
+                          displayValue={
+                            selectedApp.birth_country
+                              ? formatAddress(selectedApp.birth_country, selectedApp.birth_region, selectedApp.birth_district, selectedApp.birth_street)
+                              : selectedApp.place_of_birth || "-"
+                          }
+                        />
+                        <EditableRow
+                          label="Current Address"
+                          fieldKey="current_address"
+                          displayValue={
+                            selectedApp.address_country
+                              ? formatAddress(selectedApp.address_country, selectedApp.address_region, selectedApp.address_district, selectedApp.address_street)
+                              : selectedApp.current_address || "-"
+                          }
+                        />
                         <DocRow label="Passport Photo" path={selectedApp.passport_image_path} />
                       </SectionCard>
 

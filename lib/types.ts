@@ -125,6 +125,15 @@ export interface Application {
   personal_number?: string;
   place_of_birth?: string;
   current_address?: string;
+  // Structured address fields
+  birth_country?: string;
+  birth_region?: string;
+  birth_district?: string;
+  birth_street?: string;
+  address_country?: string;
+  address_region?: string;
+  address_district?: string;
+  address_street?: string;
   passport_image_path?: string;
   // Contact
   personal_phone?: string;

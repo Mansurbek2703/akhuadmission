@@ -108,8 +108,16 @@ export async function GET(req: NextRequest) {
       "Date of Issue": row.date_of_issue || "",
       "Date of Expiry": row.date_of_expiry || "",
       "Personal Number": row.personal_number || "",
-      "Place of Birth": row.place_of_birth || "",
-      "Current Address": row.current_address || "",
+      "Place of Birth (Combined)": row.place_of_birth || "",
+      "Birth Country": row.birth_country === "uzbekistan" ? "Uzbekistan" : row.birth_country === "other" ? "Other" : (row.birth_country || ""),
+      "Birth Region": row.birth_region || "",
+      "Birth District": row.birth_district || "",
+      "Birth Street/House": row.birth_street || "",
+      "Current Address (Combined)": row.current_address || "",
+      "Address Country": row.address_country === "uzbekistan" ? "Uzbekistan" : row.address_country === "other" ? "Other" : (row.address_country || ""),
+      "Address Region": row.address_region || "",
+      "Address District": row.address_district || "",
+      "Address Street/House": row.address_street || "",
       "Passport Image": row.passport_image_path ? "Uploaded" : "Not uploaded",
       // Contact
       "Personal Phone": row.personal_phone || "",
@@ -164,16 +172,19 @@ export async function GET(req: NextRequest) {
     // Set column widths for all columns
     const colWidths = [
       12, 20, 20, 30, 28, 24, 12,
-      10, 16, 20, 22, 14, 14, 14, 18, 20, 30, 14,
-      16, 16, 16,
-      45, 20, 20, 30, 14, 14,
-      22, 16, 18, 14, 14, 14,
-      12, 12, 14, 14,
-      12, 12, 14, 14,
-      16, 14, 14, 14,
-      30, 14,
-      20, 16, 14, 14,
-      25, 15, 15,
+      10, 16, 20, 22, 14, 14, 14, 18,
+      30, 16, 25, 20, 22, // birth address (combined, country, region, district, street)
+      30, 16, 25, 20, 22, // current address (combined, country, region, district, street)
+      14, // passport image
+      16, 16, 16, // phones
+      45, 20, 20, 30, 14, 14, // education
+      22, 16, 18, 14, 14, 14, // lang cert
+      12, 12, 14, 14, // sat
+      12, 12, 14, 14, // cefr
+      16, 14, 14, 14, // social
+      30, 14, // achievements
+      20, 16, 14, 14, // misc
+      25, 15, 15, // admin/dates
     ];
     ws["!cols"] = colWidths.map(w => ({ wch: w }));
 

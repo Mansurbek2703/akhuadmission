@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { REGIONS_DISTRICTS, REGION_LIST, formatAddress } from "@/lib/address-data";
 import {
   Save,
   Upload,
@@ -316,8 +317,26 @@ export function ApplicationForm({
       if (doiErr) { newErrors.date_of_issue = doiErr; valid = false; }
       const doeErr = validateDateOfExpiry(str("date_of_expiry"));
       if (doeErr) { newErrors.date_of_expiry = doeErr; valid = false; }
-      if (!str("place_of_birth").trim()) { newErrors.place_of_birth = "Required"; valid = false; }
-      if (!str("current_address").trim()) { newErrors.current_address = "Required"; valid = false; }
+      // Place of birth validation
+      if (!str("birth_country")) {
+        newErrors.place_of_birth = "Select a country"; valid = false;
+      } else if (str("birth_country") === "uzbekistan") {
+        if (!str("birth_region")) { newErrors.place_of_birth = "Select a region"; valid = false; }
+        else if (!str("birth_district")) { newErrors.place_of_birth = "Select a district"; valid = false; }
+        else if (!str("birth_street").trim()) { newErrors.place_of_birth = "Enter street/house"; valid = false; }
+      } else if (!str("birth_street").trim()) {
+        newErrors.place_of_birth = "Enter full address"; valid = false;
+      }
+      // Current address validation
+      if (!str("address_country")) {
+        newErrors.current_address = "Select a country"; valid = false;
+      } else if (str("address_country") === "uzbekistan") {
+        if (!str("address_region")) { newErrors.current_address = "Select a region"; valid = false; }
+        else if (!str("address_district")) { newErrors.current_address = "Select a district"; valid = false; }
+        else if (!str("address_street").trim()) { newErrors.current_address = "Enter street/house"; valid = false; }
+      } else if (!str("address_street").trim()) {
+        newErrors.current_address = "Enter full address"; valid = false;
+      }
       if (!str("passport_image_path")) { newErrors.passport_image_path = "Passport photo required"; valid = false; }
     }
 
@@ -379,6 +398,8 @@ export function ApplicationForm({
         "surname", "given_name", "gender", "citizenship", "citizenship_other",
         "card_number", "date_of_birth", "date_of_issue", "date_of_expiry",
         "personal_number", "place_of_birth", "current_address", "passport_image_path",
+        "birth_country", "birth_region", "birth_district", "birth_street",
+        "address_country", "address_region", "address_district", "address_street",
       ],
       contact: ["personal_phone", "parent_phone", "friend_phone"],
       education: [
@@ -407,6 +428,21 @@ export function ApplicationForm({
     // For social step: always include social_protection boolean (even false)
     if (currentStep === "social") {
       result.social_protection = !!formData.social_protection;
+    }
+    // Auto-compose legacy address fields from structured fields
+    if (currentStep === "personal") {
+      result.place_of_birth = formatAddress(
+        formData.birth_country as string,
+        formData.birth_region as string,
+        formData.birth_district as string,
+        formData.birth_street as string,
+      );
+      result.current_address = formatAddress(
+        formData.address_country as string,
+        formData.address_region as string,
+        formData.address_district as string,
+        formData.address_street as string,
+      );
     }
     return result;
   }, [currentStep, formData]);
@@ -790,25 +826,211 @@ export function ApplicationForm({
         </div>
       </div>
 
-      <div className="space-y-1.5">
-        <Label>Place of Birth <span className="text-red-500">*</span></Label>
-        <Input
-          value={str("place_of_birth")}
-          onChange={(e) => setField("place_of_birth", e.target.value)}
-          placeholder="City, Country"
-          className={errors.place_of_birth ? "border-red-500" : ""}
-        />
+      {/* Place of Birth */}
+      <div className="space-y-3 rounded-lg border border-border p-3">
+        <Label className="text-sm font-semibold">Place of Birth <span className="text-red-500">*</span></Label>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Country</Label>
+            <Select
+              value={str("birth_country") || ""}
+              onValueChange={(v) => {
+                setField("birth_country", v);
+                setField("birth_region", "");
+                setField("birth_district", "");
+                setField("birth_street", "");
+                setField("place_of_birth", v === "uzbekistan" ? "Uzbekistan" : "");
+              }}
+            >
+              <SelectTrigger className={errors.place_of_birth && !str("birth_country") ? "border-red-500" : ""}>
+                <SelectValue placeholder="Select country" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="uzbekistan">Uzbekistan</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {str("birth_country") === "uzbekistan" && (
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Region (Viloyat)</Label>
+              <Select
+                value={str("birth_region") || ""}
+                onValueChange={(v) => {
+                  setField("birth_region", v);
+                  setField("birth_district", "");
+                  setField("birth_street", "");
+                }}
+              >
+                <SelectTrigger className={errors.place_of_birth && !str("birth_region") ? "border-red-500" : ""}>
+                  <SelectValue placeholder="Select region" />
+                </SelectTrigger>
+                <SelectContent>
+                  {REGION_LIST.map((r) => (
+                    <SelectItem key={r} value={r}>{r}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {str("birth_country") === "uzbekistan" && str("birth_region") && (
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">District (Tuman)</Label>
+              <Select
+                value={str("birth_district") || ""}
+                onValueChange={(v) => {
+                  setField("birth_district", v);
+                  setField("birth_street", "");
+                }}
+              >
+                <SelectTrigger className={errors.place_of_birth && !str("birth_district") ? "border-red-500" : ""}>
+                  <SelectValue placeholder="Select district" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(REGIONS_DISTRICTS[str("birth_region")] || []).map((d) => (
+                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {str("birth_country") === "uzbekistan" && str("birth_district") && (
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Street / House</Label>
+              <Input
+                value={str("birth_street")}
+                onChange={(e) => {
+                  setField("birth_street", e.target.value);
+                  setField("place_of_birth", formatAddress("uzbekistan", str("birth_region"), str("birth_district"), e.target.value));
+                }}
+                placeholder="Street name, house number"
+                className={errors.place_of_birth && !str("birth_street") ? "border-red-500" : ""}
+              />
+            </div>
+          )}
+
+          {str("birth_country") === "other" && (
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label className="text-xs text-muted-foreground">Full Address</Label>
+              <Input
+                value={str("birth_street")}
+                onChange={(e) => {
+                  setField("birth_street", e.target.value);
+                  setField("place_of_birth", e.target.value);
+                }}
+                placeholder="Enter full place of birth"
+                className={errors.place_of_birth && !str("birth_street") ? "border-red-500" : ""}
+              />
+            </div>
+          )}
+        </div>
         <FieldError field="place_of_birth" />
       </div>
 
-      <div className="space-y-1.5">
-        <Label>Current Address <span className="text-red-500">*</span></Label>
-        <Input
-          value={str("current_address")}
-          onChange={(e) => setField("current_address", e.target.value)}
-          placeholder="Full current living address"
-          className={errors.current_address ? "border-red-500" : ""}
-        />
+      {/* Current Address */}
+      <div className="space-y-3 rounded-lg border border-border p-3">
+        <Label className="text-sm font-semibold">Current Address <span className="text-red-500">*</span></Label>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Country</Label>
+            <Select
+              value={str("address_country") || ""}
+              onValueChange={(v) => {
+                setField("address_country", v);
+                setField("address_region", "");
+                setField("address_district", "");
+                setField("address_street", "");
+                setField("current_address", v === "uzbekistan" ? "Uzbekistan" : "");
+              }}
+            >
+              <SelectTrigger className={errors.current_address && !str("address_country") ? "border-red-500" : ""}>
+                <SelectValue placeholder="Select country" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="uzbekistan">Uzbekistan</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {str("address_country") === "uzbekistan" && (
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Region (Viloyat)</Label>
+              <Select
+                value={str("address_region") || ""}
+                onValueChange={(v) => {
+                  setField("address_region", v);
+                  setField("address_district", "");
+                  setField("address_street", "");
+                }}
+              >
+                <SelectTrigger className={errors.current_address && !str("address_region") ? "border-red-500" : ""}>
+                  <SelectValue placeholder="Select region" />
+                </SelectTrigger>
+                <SelectContent>
+                  {REGION_LIST.map((r) => (
+                    <SelectItem key={r} value={r}>{r}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {str("address_country") === "uzbekistan" && str("address_region") && (
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">District (Tuman)</Label>
+              <Select
+                value={str("address_district") || ""}
+                onValueChange={(v) => {
+                  setField("address_district", v);
+                  setField("address_street", "");
+                }}
+              >
+                <SelectTrigger className={errors.current_address && !str("address_district") ? "border-red-500" : ""}>
+                  <SelectValue placeholder="Select district" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(REGIONS_DISTRICTS[str("address_region")] || []).map((d) => (
+                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {str("address_country") === "uzbekistan" && str("address_district") && (
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Street / House</Label>
+              <Input
+                value={str("address_street")}
+                onChange={(e) => {
+                  setField("address_street", e.target.value);
+                  setField("current_address", formatAddress("uzbekistan", str("address_region"), str("address_district"), e.target.value));
+                }}
+                placeholder="Street name, house number"
+                className={errors.current_address && !str("address_street") ? "border-red-500" : ""}
+              />
+            </div>
+          )}
+
+          {str("address_country") === "other" && (
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label className="text-xs text-muted-foreground">Full Address</Label>
+              <Input
+                value={str("address_street")}
+                onChange={(e) => {
+                  setField("address_street", e.target.value);
+                  setField("current_address", e.target.value);
+                }}
+                placeholder="Enter full current address"
+                className={errors.current_address && !str("address_street") ? "border-red-500" : ""}
+              />
+            </div>
+          )}
+        </div>
         <FieldError field="current_address" />
       </div>
 
