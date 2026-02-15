@@ -127,9 +127,18 @@ export async function GET(req: NextRequest) {
     }
 
     if (search) {
-      sql += ` AND (u.email ILIKE $${paramIndex} OR a.surname ILIKE $${paramIndex} OR a.given_name ILIKE $${paramIndex})`;
-      params.push(`%${search}%`);
-      paramIndex++;
+      const isNumericSearch = /^\d+$/.test(search.trim());
+      if (isNumericSearch) {
+        sql += ` AND (u.email ILIKE $${paramIndex} OR a.surname ILIKE $${paramIndex} OR a.given_name ILIKE $${paramIndex} OR a.unikal_id = $${paramIndex + 1})`;
+        params.push(`%${search}%`);
+        paramIndex++;
+        params.push(parseInt(search.trim(), 10));
+        paramIndex++;
+      } else {
+        sql += ` AND (u.email ILIKE $${paramIndex} OR a.surname ILIKE $${paramIndex} OR a.given_name ILIKE $${paramIndex})`;
+        params.push(`%${search}%`);
+        paramIndex++;
+      }
     }
 
     sql += " ORDER BY a.updated_at DESC";

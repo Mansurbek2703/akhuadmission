@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://admission.akhu.uz";
+const APP_URL =
+  process.env.APP_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  "https://admission.akhu.uz";
 
 export async function GET(req: NextRequest) {
   try {
@@ -34,6 +37,16 @@ export async function GET(req: NextRequest) {
     await query(
       "UPDATE users SET email_verified = TRUE, verification_token = NULL WHERE id = $1",
       [user.id]
+    );
+
+    // Assign sequential unikal_id to the applicant's application
+    const maxResult = await query(
+      "SELECT COALESCE(MAX(unikal_id), 0) as max_id FROM applications WHERE unikal_id IS NOT NULL"
+    );
+    const nextId = (maxResult.rows[0].max_id || 0) + 1;
+    await query(
+      "UPDATE applications SET unikal_id = $1 WHERE user_id = $2 AND unikal_id IS NULL",
+      [nextId, user.id]
     );
 
     return NextResponse.redirect(`${APP_URL}/login?verified=true`);

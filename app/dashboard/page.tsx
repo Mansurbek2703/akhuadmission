@@ -73,6 +73,11 @@ function DashboardContent() {
               ? PROGRAM_LABELS[user.program as Program]
               : "Bachelor program application"}
           </p>
+          {application?.unikal_id && (
+            <p className="mt-1.5 text-sm font-semibold text-primary">
+              Your Applicant ID: #{application.unikal_id}
+            </p>
+          )}
         </div>
 
         {/* Application Status */}

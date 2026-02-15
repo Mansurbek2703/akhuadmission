@@ -248,6 +248,11 @@ export function ApplicationsTable({
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <div className="flex-1 min-w-0">
+                {selectedApp.unikal_id && (
+                  <p className="text-xs font-semibold text-primary mb-0.5">
+                    Applicant ID: #{selectedApp.unikal_id}
+                  </p>
+                )}
                 <h2 className="text-xl font-bold text-foreground sm:text-2xl text-balance">
                   {selectedApp.surname && selectedApp.given_name
                     ? `${selectedApp.surname} ${selectedApp.given_name}`
@@ -499,6 +504,7 @@ export function ApplicationsTable({
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
+                <TableHead className="text-muted-foreground min-w-[50px]">ID</TableHead>
                 <TableHead className="text-muted-foreground min-w-[180px]">Name</TableHead>
                 <TableHead className="text-muted-foreground min-w-[180px]">Email</TableHead>
                 <TableHead className="text-muted-foreground min-w-[120px]">Program</TableHead>
@@ -511,6 +517,7 @@ export function ApplicationsTable({
             <TableBody>
               {paginatedApps.map((app) => (
                 <TableRow key={app.id} className="hover:bg-accent/30">
+                  <TableCell className="text-xs font-semibold text-primary">{app.unikal_id ? `#${app.unikal_id}` : "-"}</TableCell>
                   <TableCell>{renderNameCell(app)}</TableCell>
                   <TableCell className="text-muted-foreground text-sm truncate max-w-[200px]">{app.user_email}</TableCell>
                   <TableCell className="text-foreground text-sm">
@@ -558,6 +565,9 @@ export function ApplicationsTable({
       <div className="flex flex-col gap-3 lg:hidden">
         {paginatedApps.map((app) => (
           <div key={app.id} className="rounded-lg border border-border bg-card p-3 shadow-sm">
+            {app.unikal_id && (
+              <span className="text-[10px] font-semibold text-primary">ID: #{app.unikal_id}</span>
+            )}
             <div className="flex items-start justify-between gap-2">
               {renderNameCell(app)}
               <Button variant="ghost" size="icon" onClick={() => openDetail(app)} className="shrink-0 text-primary h-8 w-8">

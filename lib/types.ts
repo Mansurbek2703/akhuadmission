@@ -111,6 +111,7 @@ export interface User {
 export interface Application {
   id: string;
   user_id: string;
+  unikal_id?: number;
   status: ApplicationStatus;
   // Personal info
   surname?: string;

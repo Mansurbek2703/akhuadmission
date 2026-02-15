@@ -90,9 +90,39 @@ export async function GET(req: NextRequest) {
       other: "Other",
     };
 
+    // Helper: parse combined address "Uzbekistan, Region, District, Street" into parts
+    function parseAddress(combined: string | undefined, country?: string, region?: string, district?: string, street?: string) {
+      // If structured fields exist, use them
+      if (country) {
+        return {
+          country: country === "uzbekistan" ? "Uzbekistan" : country === "other" ? "Other" : country,
+          region: region || "",
+          district: district || "",
+          street: street || "",
+        };
+      }
+      // Fallback: parse from combined string
+      if (!combined) return { country: "", region: "", district: "", street: "" };
+      const parts = combined.split(", ").map((s: string) => s.trim());
+      if (parts.length >= 2 && parts[0].toLowerCase() === "uzbekistan") {
+        return {
+          country: "Uzbekistan",
+          region: parts[1] || "",
+          district: parts[2] || "",
+          street: parts.slice(3).join(", ") || "",
+        };
+      }
+      // "Other" country - full address stored as-is
+      return { country: "Other", region: "", district: "", street: combined };
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const data = result.rows.map((row: any) => ({
-      "Applicant ID": row.id?.slice(0, 8) || "",
+    const data = result.rows.map((row: any) => {
+      const birth = parseAddress(row.place_of_birth, row.birth_country, row.birth_region, row.birth_district, row.birth_street);
+      const addr = parseAddress(row.current_address, row.address_country, row.address_region, row.address_district, row.address_street);
+
+      return {
+      "Applicant ID": row.unikal_id || "",
       "Surname": row.surname || "",
       "Given Name": row.given_name || "",
       "Email": row.user_email || "",
@@ -109,15 +139,15 @@ export async function GET(req: NextRequest) {
       "Date of Expiry": row.date_of_expiry || "",
       "Personal Number": row.personal_number || "",
       "Place of Birth (Combined)": row.place_of_birth || "",
-      "Birth Country": row.birth_country === "uzbekistan" ? "Uzbekistan" : row.birth_country === "other" ? "Other" : (row.birth_country || ""),
-      "Birth Region": row.birth_region || "",
-      "Birth District": row.birth_district || "",
-      "Birth Street/House": row.birth_street || "",
+      "Birth Country": birth.country,
+      "Birth Region": birth.region,
+      "Birth District": birth.district,
+      "Birth Street/House": birth.street,
       "Current Address (Combined)": row.current_address || "",
-      "Address Country": row.address_country === "uzbekistan" ? "Uzbekistan" : row.address_country === "other" ? "Other" : (row.address_country || ""),
-      "Address Region": row.address_region || "",
-      "Address District": row.address_district || "",
-      "Address Street/House": row.address_street || "",
+      "Address Country": addr.country,
+      "Address Region": addr.region,
+      "Address District": addr.district,
+      "Address Street/House": addr.street,
       "Passport Image": row.passport_image_path ? "Uploaded" : "Not uploaded",
       // Contact
       "Personal Phone": row.personal_phone || "",
@@ -164,7 +194,8 @@ export async function GET(req: NextRequest) {
       "Assigned Admin": row.assigned_admin_email || "Unassigned",
       "Submission Date": row.created_at ? new Date(row.created_at).toLocaleDateString() : "",
       "Last Updated": row.updated_at ? new Date(row.updated_at).toLocaleDateString() : "",
-    }));
+    };
+    });
 
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(data);
