@@ -8,7 +8,7 @@ export const REGIONS_DISTRICTS: Record<string, string[]> = {
   "Xorazm viloyati": [
     "Bog'ot tumani", "Gurlan tumani", "Xonqa tumani", "Hazorasp tumani",
     "Xiva tumani", "Qo'shko'pir tumani", "Shovot tumani", "Urganch tumani",
-    "Yangiariq tumani", "Yangibozor tumani", "Tuproqqal'a tumani",
+    "Yangiariq tumani", "Yangibozor tumani", "Tuproqqal'a tumani", "Urganch shahri", "Xiva Shahri",
   ],
   "Navoiy viloyati": [
     "Konimex tumani", "Karmana tumani", "Qiziltepa tumani", "Xatirchi tumani",
