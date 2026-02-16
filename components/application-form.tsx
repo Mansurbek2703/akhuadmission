@@ -765,7 +765,7 @@ export function ApplicationForm({
           <p className="text-xs text-muted-foreground">2 letters + 7 digits</p>
         </div>
         <div className="space-y-1.5">
-          <Label>Personal Number (JSHIR) <span className="text-red-500">*</span></Label>
+          <Label>Personal Number (JSHSHIR) <span className="text-red-500">*</span></Label>
           <Input
             value={str("personal_number")}
             onChange={(e) => {

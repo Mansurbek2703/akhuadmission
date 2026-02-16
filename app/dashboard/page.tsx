@@ -112,7 +112,7 @@ function DashboardContent() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">
-                  Registrar Office - Your application is being reviewed
+                  Admission Department - Your application is being reviewed
                 </p>
                 <p className="text-xs text-muted-foreground">
                   Your application is under review. If you have questions, please contact us.
@@ -131,7 +131,7 @@ function DashboardContent() {
                   #
                 </span>
                 <span className="text-muted-foreground">
-                  Extension: <span className="font-medium text-foreground">333</span>
+                  Inner Extension: <span className="font-medium text-foreground">333</span>
                 </span>
               </div>
             </div>
