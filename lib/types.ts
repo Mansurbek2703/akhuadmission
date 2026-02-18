@@ -116,6 +116,7 @@ export interface Application {
   // Personal info
   surname?: string;
   given_name?: string;
+  middle_name?: string;
   gender?: string;
   citizenship?: string;
   citizenship_other?: string;

@@ -69,8 +69,8 @@ type StepId = (typeof STEPS)[number]["id"];
 
 const STEP_REQUIRED_FIELDS: Record<StepId, string[]> = {
   personal: [
-    "surname", "given_name", "gender", "citizenship", "card_number",
-    "date_of_birth", "date_of_issue", "date_of_expiry", "personal_number",
+  "surname", "given_name", "middle_name", "gender", "citizenship", "card_number",
+  "date_of_birth", "date_of_issue", "date_of_expiry", "personal_number",
     "place_of_birth", "current_address", "passport_image_path",
   ],
   contact: ["personal_phone", "parent_phone", "friend_phone"],
@@ -300,8 +300,9 @@ export function ApplicationForm({
     let valid = true;
 
     if (currentStep === "personal") {
-      if (!str("surname").trim()) { newErrors.surname = "Required"; valid = false; }
-      if (!str("given_name").trim()) { newErrors.given_name = "Required"; valid = false; }
+  if (!str("surname").trim()) { newErrors.surname = "Required"; valid = false; }
+  if (!str("given_name").trim()) { newErrors.given_name = "Required"; valid = false; }
+  if (!str("middle_name").trim()) { newErrors.middle_name = "Required"; valid = false; }
       if (!str("gender")) { newErrors.gender = "Required"; valid = false; }
       if (!str("citizenship")) { newErrors.citizenship = "Required"; valid = false; }
       if (str("citizenship") === "other" && !str("citizenship_other").trim()) {
@@ -395,8 +396,8 @@ export function ApplicationForm({
   const getStepFields = useCallback((): Record<string, unknown> => {
     const stepFieldMap: Record<StepId, string[]> = {
       personal: [
-        "surname", "given_name", "gender", "citizenship", "citizenship_other",
-        "card_number", "date_of_birth", "date_of_issue", "date_of_expiry",
+  "surname", "given_name", "middle_name", "gender", "citizenship", "citizenship_other",
+  "card_number", "date_of_birth", "date_of_issue", "date_of_expiry",
         "personal_number", "place_of_birth", "current_address", "passport_image_path",
         "birth_country", "birth_region", "birth_district", "birth_street",
         "address_country", "address_region", "address_district", "address_street",
@@ -676,7 +677,7 @@ export function ApplicationForm({
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <div className="space-y-1.5">
           <Label>Surname <span className="text-red-500">*</span></Label>
           <Input
@@ -696,6 +697,16 @@ export function ApplicationForm({
             className={errors.given_name ? "border-red-500" : ""}
           />
           <FieldError field="given_name" />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Middle Name <span className="text-red-500">*</span></Label>
+          <Input
+            value={str("middle_name")}
+            onChange={(e) => setField("middle_name", e.target.value.toUpperCase())}
+            placeholder="MIDDLENAME"
+            className={errors.middle_name ? "border-red-500" : ""}
+          />
+          <FieldError field="middle_name" />
         </div>
       </div>
 
@@ -765,7 +776,7 @@ export function ApplicationForm({
           <p className="text-xs text-muted-foreground">2 letters + 7 digits</p>
         </div>
         <div className="space-y-1.5">
-          <Label>Personal Number (JSHSHIR) <span className="text-red-500">*</span></Label>
+          <Label>Personal Number (JSHIR) <span className="text-red-500">*</span></Label>
           <Input
             value={str("personal_number")}
             onChange={(e) => {
@@ -797,17 +808,7 @@ export function ApplicationForm({
           <Input
             type="date"
             value={str("date_of_issue")}
-            onChange={(e) => {
-              const issueDate = e.target.value;
-              setField("date_of_issue", issueDate);
-              // Auto-set expiry to 10 years after issue
-              if (issueDate) {
-                const d = new Date(issueDate);
-                d.setFullYear(d.getFullYear() + 10);
-                const expiry = d.toISOString().split("T")[0];
-                setField("date_of_expiry", expiry);
-              }
-            }}
+            onChange={(e) => setField("date_of_issue", e.target.value)}
             className={errors.date_of_issue ? "border-red-500" : ""}
           />
           <FieldError field="date_of_issue" />
@@ -819,10 +820,8 @@ export function ApplicationForm({
             value={str("date_of_expiry")}
             onChange={(e) => setField("date_of_expiry", e.target.value)}
             className={errors.date_of_expiry ? "border-red-500" : ""}
-            readOnly
           />
           <FieldError field="date_of_expiry" />
-          <p className="text-xs text-muted-foreground">Auto-calculated: 10 years after issue date</p>
         </div>
       </div>
 
@@ -1610,8 +1609,9 @@ export function ApplicationForm({
         { label: "Program", value: application.user_program || "-" },
       ]},
       { section: "Personal Information", fields: [
-        { label: "Surname", value: str("surname") },
-        { label: "Given Name", value: str("given_name") },
+  { label: "Surname", value: str("surname") },
+  { label: "Given Name", value: str("given_name") },
+  { label: "Middle Name", value: str("middle_name") },
         { label: "Gender", value: str("gender") },
         { label: "Citizenship", value: str("citizenship") === "other" ? str("citizenship_other") : (CITIZENSHIP_LABELS[str("citizenship") as Citizenship] || str("citizenship")) },
         { label: "Passport Number", value: str("card_number") },
@@ -1677,7 +1677,7 @@ export function ApplicationForm({
           <p className="mt-3 text-xs text-muted-foreground">
             Submitted on {application.updated_at ? new Date(application.updated_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "-"}
           </p>
-          {!editMode && (
+          {!editMode && application.status === "incomplete_document" && (
             <Button
               className="mt-4"
               variant="outline"

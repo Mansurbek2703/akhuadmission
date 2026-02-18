@@ -410,10 +410,11 @@ export function ApplicationsTable({
                       <SectionCard title="Personal Information">
                         <EditableRow label="Surname" fieldKey="surname" />
                         <EditableRow label="Given Name" fieldKey="given_name" />
+                        <EditableRow label="Middle Name" fieldKey="middle_name" />
                         <EditableRow label="Gender" fieldKey="gender" />
                         <EditableRow label="Citizenship" fieldKey="citizenship" displayValue={citizenshipDisplay} />
                         <EditableRow label="Passport Number" fieldKey="card_number" />
-                        <EditableRow label="Personal Number(JSHSHIR)" fieldKey="personal_number" />
+                        <EditableRow label="JSHIR" fieldKey="personal_number" />
                         <EditableRow label="Date of Birth" fieldKey="date_of_birth" displayValue={selectedApp.date_of_birth?.split("T")[0] || "-"} />
                         <EditableRow label="Date of Issue" fieldKey="date_of_issue" displayValue={selectedApp.date_of_issue?.split("T")[0] || "-"} />
                         <EditableRow label="Date of Expiry" fieldKey="date_of_expiry" displayValue={selectedApp.date_of_expiry?.split("T")[0] || "-"} />

@@ -125,6 +125,7 @@ export async function GET(req: NextRequest) {
       "Applicant ID": row.unikal_id || "",
       "Surname": row.surname || "",
       "Given Name": row.given_name || "",
+      "Middle Name": row.middle_name || "",
       "Email": row.user_email || "",
       "Program": row.user_program ? PROGRAM_LABELS[row.user_program as Program] : "N/A",
       "Status": APPLICATION_STATUS_LABELS[row.status as ApplicationStatus] || row.status,

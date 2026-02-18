@@ -6,6 +6,7 @@ import { sendStatusUpdateEmail } from "@/lib/email";
 const FIELD_LABELS: Record<string, string> = {
   surname: "Surname",
   given_name: "Given Name",
+  middle_name: "Middle Name",
   gender: "Gender",
   citizenship: "Citizenship",
   citizenship_other: "Citizenship (Other)",
@@ -184,9 +185,11 @@ export async function PUT(req: NextRequest) {
 
     // Build dynamic update
     const allowedFields = [
-      "surname", "given_name", "gender", "citizenship", "citizenship_other",
+      "surname", "given_name", "middle_name", "gender", "citizenship", "citizenship_other",
       "card_number", "date_of_birth", "date_of_issue", "date_of_expiry",
       "personal_number", "place_of_birth", "current_address", "passport_image_path",
+      "birth_country", "birth_region", "birth_district", "birth_street",
+      "address_country", "address_region", "address_district", "address_street",
       "personal_phone", "parent_phone", "friend_phone",
       "education_type", "institution_type", "institution_location", "institution_name",
       "attestat_pdf_path",
