@@ -214,8 +214,8 @@ export function ApplicationForm({
         }
       }
       // Auto-fill personal_phone from user's registration phone if empty
-      if (!data.personal_phone && application.user_phone) {
-        data.personal_phone = application.user_phone;
+      if ((!data.personal_phone || data.personal_phone === "") && application.user_phone) {
+        data.personal_phone = formatPhone(application.user_phone);
       }
 
       // Merge with existing formData so local edits are not wiped by stale server data
@@ -1694,10 +1694,9 @@ export function ApplicationForm({
     { label: "Parent One Phone", value: str("parent_phone") },
     { label: "Parent Two Phone", value: str("friend_phone") },
       ]},
-      { section: "Education", fields: [
-        { label: "Education Type", value: str("education_type") ? EDUCATION_TYPE_LABELS[str("education_type") as EducationType] : "-" },
-        { label: "Institution Type", value: str("institution_type") || "-" },
-        { label: "Institution Location", value: str("institution_location") },
+    { section: "Education", fields: [
+    { label: "Education Type", value: str("education_type") ? EDUCATION_TYPE_LABELS[str("education_type") as EducationType] : "-" },
+    { label: "Institution Location", value: str("institution_location") },
         { label: "Institution Name", value: str("institution_name") },
         { label: "Attestat / Diploma", value: str("attestat_pdf_path") ? "Uploaded" : "Not uploaded" },
       ]},

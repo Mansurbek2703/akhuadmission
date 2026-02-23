@@ -34,12 +34,15 @@ export const PROGRAM_LABELS: Record<Program, string> = {
 
 export type EducationType =
   | "specialized_agency"
+  | "presidential_schools"
   | "public_private"
   | "art_schools";
 
 export const EDUCATION_TYPE_LABELS: Record<EducationType, string> = {
   specialized_agency:
     "Specialized schools under the Agency of specialized educational institutions",
+  presidential_schools:
+    "Presidential schools under the Agency of specialized educational institutions",
   public_private:
     "Public or Private Schools / Academic Lyceums / Colleges / Technikums / Universities / Others",
   art_schools:
