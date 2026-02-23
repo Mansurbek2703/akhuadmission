@@ -156,11 +156,10 @@ export async function GET(req: NextRequest) {
       "Passport Image": row.passport_image_path ? "Uploaded" : "Not uploaded",
       // Contact
       "Personal Phone": row.personal_phone || "",
-      "Parent Phone": row.parent_phone || "",
-      "Friend Phone": row.friend_phone || "",
+      "Parent One Phone": row.parent_phone || "",
+      "Parent Two Phone": row.friend_phone || "",
       // Education
       "Education Type": row.education_type ? (EDUCATION_TYPE_LABELS[row.education_type as EducationType] || row.education_type) : "",
-      "Institution Type": row.institution_type || "",
       "Institution Location": row.institution_location || "",
       "Institution Name": row.institution_name || "",
       "Attestat PDF": row.attestat_pdf_path ? "Uploaded" : "Not uploaded",

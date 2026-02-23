@@ -27,8 +27,8 @@ const FIELD_LABELS: Record<string, string> = {
   address_street: "Address Street/House",
   passport_image_path: "Passport Image",
   personal_phone: "Personal Phone",
-  parent_phone: "Parent Phone",
-  friend_phone: "Friend Phone",
+  parent_phone: "Parent One Phone",
+  friend_phone: "Parent Two Phone",
   education_type: "Education Type",
   institution_type: "Institution Type",
   institution_location: "Institution Location",
@@ -94,9 +94,17 @@ export async function GET(req: NextRequest) {
     const forMe = searchParams.get("for_me");
     const search = searchParams.get("search");
 
+    // Check if profile_photo_path column exists (safe for pre-migration DBs)
+    let hasProfilePhotoCol = true;
+    try {
+      await query("SELECT profile_photo_path FROM users LIMIT 0");
+    } catch {
+      hasProfilePhotoCol = false;
+    }
+
     let sql = `
       SELECT a.*, u.email as user_email, u.phone as user_phone, u.program as user_program,
-             u.profile_photo_path as user_profile_photo,
+             ${hasProfilePhotoCol ? "u.profile_photo_path as user_profile_photo," : ""}
              admin_user.email as assigned_admin_email,
              TRIM(COALESCE(admin_user.first_name, '') || ' ' || COALESCE(admin_user.last_name, '')) as assigned_admin_name
       FROM applications a
@@ -353,13 +361,17 @@ export async function PUT(req: NextRequest) {
           );
         }
 
-        // Log status change to status_change_logs
+        // Log status change to status_change_logs (safe if table not yet created)
         if (fields.status && fields.status !== oldApp?.status) {
-          await query(
-            `INSERT INTO status_change_logs (admin_id, application_id, old_status, new_status)
-             VALUES ($1, $2, $3, $4)`,
-            [session.userId, applicationId, oldApp?.status || null, fields.status]
-          );
+          try {
+            await query(
+              `INSERT INTO status_change_logs (admin_id, application_id, old_status, new_status)
+               VALUES ($1, $2, $3, $4)`,
+              [session.userId, applicationId, oldApp?.status || null, fields.status]
+            );
+          } catch (logErr) {
+            console.error("[APP] Failed to log status change:", logErr);
+          }
         }
       }
     } else {

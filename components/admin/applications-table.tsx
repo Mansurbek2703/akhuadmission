@@ -547,8 +547,8 @@ export function ApplicationsTable({
 
                       <SectionCard title="Contact">
                         <EditableRow label="Personal Phone" fieldKey="personal_phone" />
-                        <EditableRow label="Parent Phone" fieldKey="parent_phone" />
-                        <EditableRow label="Friend Phone" fieldKey="friend_phone" />
+                        <EditableRow label="Parent One Phone" fieldKey="parent_phone" />
+                        <EditableRow label="Parent Two Phone" fieldKey="friend_phone" />
                       </SectionCard>
                     </div>
 
@@ -556,7 +556,6 @@ export function ApplicationsTable({
                     <div className="flex flex-col gap-4">
                       <SectionCard title="Education">
                         <ReadonlyRow label="Education Type" value={selectedApp.education_type ? EDUCATION_TYPE_LABELS[selectedApp.education_type as EducationType] : "-"} />
-                        <EditableRow label="Institution Type" fieldKey="institution_type" />
                         <EditableRow label="Institution Location" fieldKey="institution_location" />
                         <EditableRow label="Institution Name" fieldKey="institution_name" />
                         <DocRow label="Attestat / Diploma" path={selectedApp.attestat_pdf_path} verifiedField="attestat_verified" invalidField="attestat_invalid" />

@@ -145,18 +145,24 @@ function validateDateOfExpiry(v: string): string | null {
   return null;
 }
 
-function formatPhone(raw: string): string {
+  function formatPhone(raw: string): string {
   let v = raw;
   if (!v.startsWith("+")) {
-    const digits = v.replace(/\D/g, "");
-    v = "+" + digits;
+  const digits = v.replace(/\D/g, "");
+  v = "+" + digits;
   }
   // remove non-digit except leading +
-  const clean = "+" + v.slice(1).replace(/\D/g, "");
-  // limit length
-  if (clean.length > MAX_PHONE_LEN) return clean.slice(0, MAX_PHONE_LEN);
-  return clean;
-}
+  const digits = v.slice(1).replace(/\D/g, "");
+  // limit to 12 digits (e.g. 998901234567)
+  const limited = digits.slice(0, MAX_PHONE_LEN - 1);
+  // Format: +998-90-123-45-67
+  let formatted = "+";
+  for (let i = 0; i < limited.length; i++) {
+    if (i === 3 || i === 5 || i === 8 || i === 10) formatted += "-";
+    formatted += limited[i];
+  }
+  return formatted;
+  }
 
 /* ------------------------------------------------------------------ */
 /*  Props                                                              */
@@ -1076,29 +1082,29 @@ export function ApplicationForm({
             type="tel"
             value={str("personal_phone")}
             onChange={(e) => setField("personal_phone", formatPhone(e.target.value))}
-            placeholder="+998901234567"
+            placeholder="+998-90-123-45-67"
             className={errors.personal_phone ? "border-red-500" : ""}
           />
           <FieldError field="personal_phone" />
         </div>
         <div className="space-y-1.5">
-          <Label>Parent / Guardian Phone <span className="text-red-500">*</span></Label>
+          <Label>Parent One Phone <span className="text-red-500">*</span></Label>
           <Input
             type="tel"
             value={str("parent_phone")}
             onChange={(e) => setField("parent_phone", formatPhone(e.target.value))}
-            placeholder="+998901234567"
+            placeholder="+998-90-123-45-67"
             className={errors.parent_phone ? "border-red-500" : ""}
           />
           <FieldError field="parent_phone" />
         </div>
         <div className="space-y-1.5">
-          <Label>Close Friend Phone <span className="text-red-500">*</span></Label>
+          <Label>Parent Two Phone <span className="text-red-500">*</span></Label>
           <Input
             type="tel"
             value={str("friend_phone")}
             onChange={(e) => setField("friend_phone", formatPhone(e.target.value))}
-            placeholder="+998901234567"
+            placeholder="+998-90-123-45-67"
             className={errors.friend_phone ? "border-red-500" : ""}
           />
           <FieldError field="friend_phone" />
@@ -1685,8 +1691,8 @@ export function ApplicationForm({
       ]},
       { section: "Contact", fields: [
         { label: "Personal Phone", value: str("personal_phone") },
-        { label: "Parent / Guardian Phone", value: str("parent_phone") },
-        { label: "Close Friend Phone", value: str("friend_phone") },
+    { label: "Parent One Phone", value: str("parent_phone") },
+    { label: "Parent Two Phone", value: str("friend_phone") },
       ]},
       { section: "Education", fields: [
         { label: "Education Type", value: str("education_type") ? EDUCATION_TYPE_LABELS[str("education_type") as EducationType] : "-" },
