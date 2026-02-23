@@ -1253,30 +1253,14 @@ export function ApplicationForm({
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <Label>
-                      {str("language_cert_type") === "cefr" ? "CEFR Level" : "Score / Band"} <span className="text-red-500">*</span>
+                      {str("language_cert_type") === "cefr" ? "Overall Score" : "Score / Band"} <span className="text-red-500">*</span>
                     </Label>
-                    {str("language_cert_type") === "cefr" ? (
-                      <Select
-                        value={str("language_cert_score")}
-                        onValueChange={(v) => setField("language_cert_score", v)}
-                      >
-                        <SelectTrigger className={errors.language_cert_score ? "border-red-500" : ""}>
-                          <SelectValue placeholder="Select level" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {["A1", "A2", "B1", "B2", "C1", "C2"].map((l) => (
-                            <SelectItem key={l} value={l}>{l}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <Input
-                        value={str("language_cert_score")}
-                        onChange={(e) => setField("language_cert_score", e.target.value)}
-                        placeholder={str("language_cert_type") === "ielts" ? "e.g. 7.0" : str("language_cert_type") === "toefl" ? "e.g. 100" : "Enter score"}
-                        className={errors.language_cert_score ? "border-red-500" : ""}
-                      />
-                    )}
+                    <Input
+                      value={str("language_cert_score")}
+                      onChange={(e) => setField("language_cert_score", e.target.value)}
+                      placeholder={str("language_cert_type") === "ielts" ? "e.g. 7.0" : str("language_cert_type") === "toefl" ? "e.g. 100" : str("language_cert_type") === "cefr" ? "e.g. 51" : "Enter score"}
+                      className={errors.language_cert_score ? "border-red-500" : ""}
+                    />
                     <FieldError field="language_cert_score" />
                   </div>
                   <div className="space-y-1.5">

@@ -365,7 +365,7 @@ export function ApplicationsTable({
                   return (
                     <div
                       className="flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-accent/40 transition-colors"
-                      onDoubleClick={() => startEdit(fieldKey, rawVal)}
+                      onDoubleClick={() => startEdit(fieldKey, rawVal || (displayValue && displayValue !== "-" ? displayValue : ""))}
                       title="Double-click to edit"
                     >
                       <span className="text-sm text-muted-foreground">{label}</span>
@@ -546,7 +546,7 @@ export function ApplicationsTable({
                       </SectionCard>
 
                       <SectionCard title="Contact">
-                        <EditableRow label="Personal Phone" fieldKey="personal_phone" />
+                        <EditableRow label="Personal Phone" fieldKey="personal_phone" displayValue={selectedApp.personal_phone || selectedApp.user_phone || "-"} />
                         <EditableRow label="Parent One Phone" fieldKey="parent_phone" />
                         <EditableRow label="Parent Two Phone" fieldKey="friend_phone" />
                       </SectionCard>
