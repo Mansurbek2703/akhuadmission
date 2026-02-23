@@ -8,6 +8,16 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/notification-bell";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   LayoutDashboard,
   MessageSquare,
   LogOut,
@@ -25,6 +35,7 @@ export function AdminNav() {
   const router = useRouter();
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const { data: unreadData } = useSWR(
     user ? "/api/chat/unread" : null,
     fetcher,
@@ -47,120 +58,142 @@ export function AdminNav() {
     router.push("/");
   };
 
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setLeaveDialogOpen(true);
+  };
+
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-md shadow-sm">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-8">
-        <div className="flex items-center gap-6">
-          <Link
-            href={isSuperadmin ? "/superadmin" : "/admin"}
-            className="flex items-center gap-2.5"
-          >
-            <Image
-              src="/logoEdited.png"
-              alt="Al-Khwarizmi University"
-              width={200}
-              height={150}
-              className="h-18 w-40 rounded-lg object-contain"
-            />
-            <div className="hidden sm:block">
-              <span className="font-bold text-foreground">Admin Panel</span>
-              {isSuperadmin && (
-                <span className="ml-2 rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                  Superadmin
-                </span>
-              )}
-            </div>
-          </Link>
-          <nav className="hidden items-center gap-1 md:flex">
-            {navItems.map((item) => (
-              <Link key={item.href} href={item.href}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    "relative gap-2 text-muted-foreground hover:text-foreground",
-                    pathname === item.href &&
-                      "bg-accent text-accent-foreground"
-                  )}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-                  {item.icon === MessageSquare && totalUnreadChats > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground animate-pulse">
-                      {totalUnreadChats > 9 ? "9+" : totalUnreadChats}
-                    </span>
-                  )}
-                </Button>
-              </Link>
-            ))}
-          </nav>
-        </div>
-        <div className="flex items-center gap-3">
-          <NotificationBell />
-          <span className="hidden text-sm text-muted-foreground lg:block">
-            {user?.email}
-          </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleLogout}
-            className="hidden gap-2 text-muted-foreground hover:text-foreground md:flex"
-          >
-            <LogOut className="h-4 w-4" />
-            Sign Out
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setMobileOpen(!mobileOpen)}
-          >
-            {mobileOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
-          </Button>
-        </div>
-      </div>
-      {mobileOpen && (
-        <div className="border-t border-border bg-card px-4 py-3 md:hidden">
-          <nav className="flex flex-col gap-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-              >
-                <Button
-                  variant="ghost"
-                  className={cn(
-                    "relative w-full justify-start gap-2 text-muted-foreground",
-                    pathname === item.href &&
-                      "bg-accent text-accent-foreground"
-                  )}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-                  {item.icon === MessageSquare && totalUnreadChats > 0 && (
-                    <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground animate-pulse">
-                      {totalUnreadChats}
-                    </span>
-                  )}
-                </Button>
-              </Link>
-            ))}
+    <>
+      <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-md shadow-sm">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-8">
+          <div className="flex items-center gap-6">
+            <a href="/" onClick={handleLogoClick} className="flex items-center gap-2.5 cursor-pointer">
+              <Image
+                src="/logoEdited.png"
+                alt="Al-Khwarizmi University"
+                width={200}
+                height={150}
+                className="h-18 w-40 rounded-lg object-contain"
+              />
+              <div className="hidden sm:block">
+                <span className="font-bold text-foreground">Admin Panel</span>
+                {isSuperadmin && (
+                  <span className="ml-2 rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                    Superadmin
+                  </span>
+                )}
+              </div>
+            </a>
+            <nav className="hidden items-center gap-1 md:flex">
+              {navItems.map((item) => (
+                <Link key={item.href} href={item.href}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      "relative gap-2 text-muted-foreground hover:text-foreground",
+                      pathname === item.href &&
+                        "bg-accent text-accent-foreground"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.label}
+                    {item.icon === MessageSquare && totalUnreadChats > 0 && (
+                      <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground animate-pulse">
+                        {totalUnreadChats > 9 ? "9+" : totalUnreadChats}
+                      </span>
+                    )}
+                  </Button>
+                </Link>
+              ))}
+            </nav>
+          </div>
+          <div className="flex items-center gap-3">
+            <NotificationBell />
+            <span className="hidden text-sm text-muted-foreground lg:block">
+              {user?.email}
+            </span>
             <Button
               variant="ghost"
+              size="sm"
               onClick={handleLogout}
-              className="w-full justify-start gap-2 text-muted-foreground"
+              className="hidden gap-2 text-muted-foreground hover:text-foreground md:flex"
             >
               <LogOut className="h-4 w-4" />
               Sign Out
             </Button>
-          </nav>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setMobileOpen(!mobileOpen)}
+            >
+              {mobileOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
+            </Button>
+          </div>
         </div>
-      )}
-    </header>
+        {mobileOpen && (
+          <div className="border-t border-border bg-card px-4 py-3 md:hidden">
+            <nav className="flex flex-col gap-1">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "relative w-full justify-start gap-2 text-muted-foreground",
+                      pathname === item.href &&
+                        "bg-accent text-accent-foreground"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.label}
+                    {item.icon === MessageSquare && totalUnreadChats > 0 && (
+                      <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground animate-pulse">
+                        {totalUnreadChats}
+                      </span>
+                    )}
+                  </Button>
+                </Link>
+              ))}
+              <Button
+                variant="ghost"
+                onClick={handleLogout}
+                className="w-full justify-start gap-2 text-muted-foreground"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </Button>
+            </nav>
+          </div>
+        )}
+      </header>
+
+      {/* Leave confirmation dialog */}
+      <AlertDialog open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you leaving your account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You are about to leave the admin panel and go to the main page. Your session will remain active.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>No, stay here</AlertDialogCancel>
+            <AlertDialogAction onClick={() => router.push("/")}>
+              Yes, go to main page
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

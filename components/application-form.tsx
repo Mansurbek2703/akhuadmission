@@ -207,6 +207,11 @@ export function ApplicationForm({
           data[key] = appRecord[key];
         }
       }
+      // Auto-fill personal_phone from user's registration phone if empty
+      if (!data.personal_phone && application.user_phone) {
+        data.personal_phone = application.user_phone;
+      }
+
       // Merge with existing formData so local edits are not wiped by stale server data
       setFormData((prev) => {
         const merged = { ...prev };

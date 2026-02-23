@@ -10,7 +10,7 @@ export async function GET() {
     }
 
     const result = await query(
-      "SELECT id, email, role, program, email_verified FROM users WHERE id = $1",
+      "SELECT id, email, phone, role, program, email_verified, profile_photo_path, first_name, last_name FROM users WHERE id = $1",
       [session.userId]
     );
 

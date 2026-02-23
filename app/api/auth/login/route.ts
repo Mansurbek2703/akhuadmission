@@ -175,10 +175,10 @@ export async function POST(req: NextRequest) {
     );
     await resetIpAttempts(ip);
 
-    // Log activity
+    // Log activity with IP
     await query(
-      "INSERT INTO activity_logs (user_id, action, details) VALUES ($1, $2, $3)",
-      [user.id, "login", "User logged in"]
+      "INSERT INTO activity_logs (user_id, action, details, ip_address) VALUES ($1, $2, $3, $4)",
+      [user.id, "login", "User logged in", ip]
     );
 
     const token = await createToken({

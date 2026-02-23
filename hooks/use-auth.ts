@@ -8,9 +8,13 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 export interface AuthUser {
   id: string;
   email: string;
+  phone?: string;
   role: "applicant" | "admin" | "superadmin";
   program?: string;
   email_verified: boolean;
+  profile_photo_path?: string;
+  first_name?: string;
+  last_name?: string;
 }
 
 export function useAuth() {

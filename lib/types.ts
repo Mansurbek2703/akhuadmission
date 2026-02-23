@@ -212,6 +212,7 @@ export interface Application {
   user_email?: string;
   user_phone?: string;
   user_program?: Program;
+  user_profile_photo?: string;
 }
 
 export interface ChatMessage {

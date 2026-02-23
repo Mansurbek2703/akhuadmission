@@ -23,7 +23,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Eye, Loader2, ExternalLink, MessageSquare, Lock, ChevronLeft, ChevronRight, Check, X, ShieldCheck, ShieldAlert, ArrowLeft } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Eye, Loader2, ExternalLink, MessageSquare, Lock, ChevronLeft, ChevronRight, Check, X, ShieldCheck, ShieldAlert, ArrowLeft, User, Download, Upload, ZoomIn } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import {
   APPLICATION_STATUS_LABELS,
@@ -92,6 +93,8 @@ export function ApplicationsTable({
   const [editingCell, setEditingCell] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState("");
   const [verifyLoading, setVerifyLoading] = useState<string | null>(null);
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
 
   const openDetail = (app: Application) => {
     setSelectedApp(app);
@@ -144,6 +147,40 @@ export function ApplicationsTable({
     } finally {
       setVerifyLoading(null);
     }
+  };
+
+  const handleAdminPhotoUpload = async (file: File) => {
+    if (!selectedApp) return;
+    setPhotoUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("userId", selectedApp.user_id);
+      const res = await fetch("/api/profile/photo", {
+        method: "PUT",
+        body: formData,
+      });
+      if (!res.ok) throw new Error("Failed to upload");
+      const data = await res.json();
+      setSelectedApp({ ...selectedApp, user_profile_photo: data.profile_photo_path } as Application);
+      toast.success("Profile photo updated");
+      onUpdate();
+    } catch {
+      toast.error("Failed to upload photo");
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
+
+  const handlePhotoDownload = () => {
+    if (!selectedApp?.user_profile_photo) return;
+    const url = `/api/files/${selectedApp.user_profile_photo}`;
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `profile_${selectedApp.surname || "applicant"}_${selectedApp.given_name || ""}.jpg`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const handleStatusChange = async (
@@ -236,6 +273,7 @@ export function ApplicationsTable({
 
   if (selectedApp) {
     return (
+      <>
         <div className="rounded-lg border border-border bg-card shadow-sm">
           {/* Header with name and back button */}
           <div className="border-b border-border px-4 py-4 sm:px-6">
@@ -402,6 +440,73 @@ export function ApplicationsTable({
                     {/* Left column */}
                     <div className="flex flex-col gap-4">
                       <SectionCard title="Account">
+                        <div className="flex items-center gap-3 px-3 py-2">
+                          <button
+                            type="button"
+                            onClick={() => selectedApp.user_profile_photo && setPhotoModalOpen(true)}
+                            className="relative group shrink-0"
+                            disabled={!selectedApp.user_profile_photo}
+                          >
+                            <Avatar className="h-14 w-14 border-2 border-border">
+                              <AvatarImage
+                                src={selectedApp.user_profile_photo ? `/api/files/${selectedApp.user_profile_photo}` : undefined}
+                                alt="Applicant photo"
+                              />
+                              <AvatarFallback className="bg-primary/10 text-primary">
+                                <User className="h-6 w-6" />
+                              </AvatarFallback>
+                            </Avatar>
+                            {selectedApp.user_profile_photo && (
+                              <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <ZoomIn className="h-5 w-5 text-white" />
+                              </div>
+                            )}
+                          </button>
+                          <div className="flex flex-col gap-1">
+                            <span className="text-sm font-semibold text-foreground">
+                              {selectedApp.surname && selectedApp.given_name
+                                ? `${selectedApp.surname} ${selectedApp.given_name}`
+                                : selectedApp.user_email || "Applicant"}
+                            </span>
+                            {!selectedApp.user_profile_photo && (
+                              <span className="text-xs text-destructive">No profile photo uploaded</span>
+                            )}
+                            <div className="flex items-center gap-1.5">
+                              {selectedApp.user_profile_photo && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-6 px-2 text-xs gap-1"
+                                  onClick={handlePhotoDownload}
+                                >
+                                  <Download className="h-3 w-3" /> Download
+                                </Button>
+                              )}
+                              <label
+                                className="inline-flex items-center gap-1 h-6 px-2 text-xs font-medium rounded-md border border-input bg-background hover:bg-accent cursor-pointer"
+                              >
+                                {photoUploading ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <Upload className="h-3 w-3" />
+                                )}
+                                {selectedApp.user_profile_photo ? "Change" : "Upload"}
+                                <input
+                                  type="file"
+                                  className="sr-only"
+                                  accept="image/jpeg,image/png"
+                                  onChange={(e) => {
+                                    const f = e.target.files?.[0];
+                                    if (f) handleAdminPhotoUpload(f);
+                                    e.target.value = "";
+                                  }}
+                                  disabled={photoUploading}
+                                />
+                              </label>
+                            </div>
+                          </div>
+                        </div>
                         <ReadonlyRow label="Email" value={selectedApp.user_email || "-"} />
                         <ReadonlyRow label="Program" value={selectedApp.user_program ? PROGRAM_LABELS[selectedApp.user_program as Program] : "-"} />
                         <ReadonlyRow label="Completion" value={`${selectedApp.completion_percentage}%`} />
@@ -510,6 +615,76 @@ export function ApplicationsTable({
             </div>
           </div>
         </div>
+
+        {/* Photo Preview Modal */}
+        {photoModalOpen && selectedApp.user_profile_photo && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+            onClick={() => setPhotoModalOpen(false)}
+          >
+            <div
+              className="relative max-w-[90vw] max-h-[90vh] rounded-xl overflow-hidden bg-card shadow-2xl border border-border"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/50">
+                <span className="text-sm font-semibold text-foreground">
+                  {selectedApp.surname && selectedApp.given_name
+                    ? `${selectedApp.surname} ${selectedApp.given_name} - Profile Photo`
+                    : "Applicant Profile Photo"}
+                </span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 text-xs"
+                    onClick={handlePhotoDownload}
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    Download
+                  </Button>
+                  <label
+                    className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium rounded-md border border-input bg-background hover:bg-accent cursor-pointer"
+                  >
+                    {photoUploading ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Upload className="h-3.5 w-3.5" />
+                    )}
+                    Replace
+                    <input
+                      type="file"
+                      className="sr-only"
+                      accept="image/jpeg,image/png"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) handleAdminPhotoUpload(f);
+                        e.target.value = "";
+                      }}
+                      disabled={photoUploading}
+                    />
+                  </label>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setPhotoModalOpen(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <div className="flex items-center justify-center p-4 bg-black/5">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/api/files/${selectedApp.user_profile_photo}`}
+                  alt="Applicant profile photo"
+                  className="max-w-[80vw] max-h-[75vh] object-contain rounded-lg"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </>
     );
   }
 

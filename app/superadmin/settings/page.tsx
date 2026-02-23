@@ -46,7 +46,12 @@ import {
   ChevronRight,
   FileText,
   Save,
+  Globe,
+  ArrowRightLeft,
+  Search,
 } from "lucide-react";
+import { APPLICATION_STATUS_LABELS } from "@/lib/types";
+import type { ApplicationStatus } from "@/lib/types";
 import { formatDistanceToNow } from "date-fns";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -69,6 +74,32 @@ interface LogEntry {
   created_at: string;
 }
 
+interface SecurityLogEntry {
+  id: string;
+  user_id: string;
+  user_email: string;
+  user_role: string;
+  user_name: string;
+  action: string;
+  details: string;
+  ip_address: string;
+  created_at: string;
+}
+
+interface StatusLogEntry {
+  id: string;
+  admin_id: string;
+  admin_email: string;
+  admin_name: string;
+  application_id: string;
+  applicant_unikal_id: number;
+  applicant_name: string;
+  applicant_email: string;
+  old_status: string;
+  new_status: string;
+  created_at: string;
+}
+
 export default function SuperadminSettingsPage() {
   const [tab, setTab] = useState("admins");
   const [email, setEmail] = useState("");
@@ -85,6 +116,9 @@ export default function SuperadminSettingsPage() {
   const [ofertaText, setOfertaText] = useState("");
   const [ofertaSaving, setOfertaSaving] = useState(false);
   const [ofertaLoaded, setOfertaLoaded] = useState(false);
+  const [securityLogsPage, setSecurityLogsPage] = useState(1);
+  const [statusLogsPage, setStatusLogsPage] = useState(1);
+  const [statusLogsSearch, setStatusLogsSearch] = useState("");
   const PAGE_SIZE = 10;
 
   const {
@@ -100,6 +134,18 @@ export default function SuperadminSettingsPage() {
   );
 
   const { data: ofertaData } = useSWR("/api/settings/oferta", fetcher);
+
+  const { data: securityLogsData, isLoading: securityLogsLoading } = useSWR(
+    tab === "security" ? "/api/admin/security-logs" : null,
+    fetcher,
+    { refreshInterval: 30000 }
+  );
+
+  const { data: statusLogsData, isLoading: statusLogsLoading } = useSWR(
+    tab === "status_logs" ? `/api/admin/status-logs?search=${encodeURIComponent(statusLogsSearch)}` : null,
+    fetcher,
+    { refreshInterval: 30000 }
+  );
 
   // Load oferta text once
   React.useEffect(() => {
@@ -123,6 +169,20 @@ export default function SuperadminSettingsPage() {
   const paginatedLogs = logs.slice(
     (logsPage - 1) * PAGE_SIZE,
     logsPage * PAGE_SIZE
+  );
+
+  const securityLogs: SecurityLogEntry[] = securityLogsData?.logs || [];
+  const securityLogsTotalPages = Math.ceil(securityLogs.length / PAGE_SIZE);
+  const paginatedSecurityLogs = securityLogs.slice(
+    (securityLogsPage - 1) * PAGE_SIZE,
+    securityLogsPage * PAGE_SIZE
+  );
+
+  const statusLogs: StatusLogEntry[] = statusLogsData?.logs || [];
+  const statusLogsTotalPages = Math.ceil(statusLogs.length / PAGE_SIZE);
+  const paginatedStatusLogs = statusLogs.slice(
+    (statusLogsPage - 1) * PAGE_SIZE,
+    statusLogsPage * PAGE_SIZE
   );
 
   const handleCreateAdmin = async (e: React.FormEvent) => {
@@ -234,6 +294,20 @@ export default function SuperadminSettingsPage() {
           >
             <FileText className="h-4 w-4" />
             Oferta Agreement
+          </TabsTrigger>
+          <TabsTrigger
+            value="security"
+            className="gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground"
+          >
+            <Globe className="h-4 w-4" />
+            Security Logs
+          </TabsTrigger>
+          <TabsTrigger
+            value="status_logs"
+            className="gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground"
+          >
+            <ArrowRightLeft className="h-4 w-4" />
+            Status Logs
           </TabsTrigger>
         </TabsList>
 
@@ -620,6 +694,250 @@ export default function SuperadminSettingsPage() {
                   {ofertaSaving ? "Saving..." : "Save Oferta"}
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Security Logs Tab */}
+        <TabsContent value="security" className="mt-6">
+          <Card className="border-border bg-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <Globe className="h-5 w-5 text-primary" />
+                Security / Login Logs
+              </CardTitle>
+              <CardDescription className="text-muted-foreground">
+                All login attempts with IP address, user role, and timestamps
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {securityLogsLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : securityLogs.length === 0 ? (
+                <div className="flex items-center justify-center py-12 text-muted-foreground">
+                  No login logs found
+                </div>
+              ) : (
+                <ScrollArea className="max-h-[60vh]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="hover:bg-transparent">
+                        <TableHead className="text-muted-foreground">User</TableHead>
+                        <TableHead className="text-muted-foreground">Role</TableHead>
+                        <TableHead className="text-muted-foreground">IP Address</TableHead>
+                        <TableHead className="text-muted-foreground">Status</TableHead>
+                        <TableHead className="text-muted-foreground">Date / Time</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedSecurityLogs.map((log) => (
+                        <TableRow key={log.id} className="hover:bg-accent/30">
+                          <TableCell>
+                            <div className="flex flex-col">
+                              <span className="font-medium text-foreground text-sm">{log.user_email}</span>
+                              {log.user_name.trim() && (
+                                <span className="text-xs text-muted-foreground">{log.user_name}</span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={
+                              log.user_role === "superadmin"
+                                ? "bg-primary/10 text-primary border-primary/20"
+                                : log.user_role === "admin"
+                                ? "bg-blue-500/10 text-blue-600 border-blue-500/20"
+                                : "text-muted-foreground"
+                            }>
+                              {log.user_role}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-mono text-sm text-foreground">
+                            {log.ip_address || "N/A"}
+                          </TableCell>
+                          <TableCell>
+                            <Badge className="bg-green-500/10 text-green-600 border-green-500/20" variant="outline">
+                              Success
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                            <div className="flex flex-col">
+                              <span>{new Date(log.created_at).toLocaleDateString()}</span>
+                              <span className="text-xs">{new Date(log.created_at).toLocaleTimeString()}</span>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              )}
+              {securityLogsTotalPages > 1 && !securityLogsLoading && securityLogs.length > 0 && (
+                <div className="flex items-center justify-between border-t border-border px-4 py-3 mt-4">
+                  <p className="text-sm text-muted-foreground">
+                    {(securityLogsPage - 1) * PAGE_SIZE + 1}-{Math.min(securityLogsPage * PAGE_SIZE, securityLogs.length)} of {securityLogs.length}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSecurityLogsPage((p) => Math.max(1, p - 1))}
+                      disabled={securityLogsPage === 1}
+                      className="gap-1 bg-transparent border-border text-foreground"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+                    <span className="text-sm text-muted-foreground">
+                      {securityLogsPage} / {securityLogsTotalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSecurityLogsPage((p) => Math.min(securityLogsTotalPages, p + 1))}
+                      disabled={securityLogsPage === securityLogsTotalPages}
+                      className="gap-1 bg-transparent border-border text-foreground"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Status Change Logs Tab */}
+        <TabsContent value="status_logs" className="mt-6">
+          <Card className="border-border bg-card">
+            <CardHeader>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-foreground">
+                    <ArrowRightLeft className="h-5 w-5 text-primary" />
+                    Application Status Change Logs
+                  </CardTitle>
+                  <CardDescription className="text-muted-foreground">
+                    Track which admin changed the status of which applicant and when
+                  </CardDescription>
+                </div>
+                <div className="relative w-full sm:w-72">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by ID, name, or email..."
+                    value={statusLogsSearch}
+                    onChange={(e) => {
+                      setStatusLogsSearch(e.target.value);
+                      setStatusLogsPage(1);
+                    }}
+                    className="pl-10 bg-card text-foreground"
+                  />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {statusLogsLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : statusLogs.length === 0 ? (
+                <div className="flex items-center justify-center py-12 text-muted-foreground">
+                  {statusLogsSearch ? "No matching status change logs found" : "No status change logs found"}
+                </div>
+              ) : (
+                <ScrollArea className="max-h-[60vh]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="hover:bg-transparent">
+                        <TableHead className="text-muted-foreground">Admin</TableHead>
+                        <TableHead className="text-muted-foreground">Applicant</TableHead>
+                        <TableHead className="text-muted-foreground">Old Status</TableHead>
+                        <TableHead className="text-muted-foreground">New Status</TableHead>
+                        <TableHead className="text-muted-foreground">Date / Time</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedStatusLogs.map((log) => (
+                        <TableRow key={log.id} className="hover:bg-accent/30">
+                          <TableCell>
+                            <div className="flex flex-col">
+                              <span className="font-medium text-foreground text-sm">
+                                {log.admin_name.trim() || log.admin_email}
+                              </span>
+                              {log.admin_name.trim() && (
+                                <span className="text-xs text-muted-foreground">{log.admin_email}</span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col">
+                              <span className="font-medium text-foreground text-sm">
+                                {log.applicant_name.trim() || log.applicant_email}
+                              </span>
+                              {log.applicant_unikal_id && (
+                                <span className="text-xs text-muted-foreground">ID: {log.applicant_unikal_id}</span>
+                              )}
+                              <span className="text-xs text-muted-foreground">{log.applicant_email}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="text-xs text-muted-foreground">
+                              {log.old_status
+                                ? (APPLICATION_STATUS_LABELS[log.old_status as ApplicationStatus] || log.old_status.replace(/_/g, " "))
+                                : "N/A"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
+                              {APPLICATION_STATUS_LABELS[log.new_status as ApplicationStatus] || log.new_status.replace(/_/g, " ")}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                            <div className="flex flex-col">
+                              <span>{new Date(log.created_at).toLocaleDateString()}</span>
+                              <span className="text-xs">{new Date(log.created_at).toLocaleTimeString()}</span>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              )}
+              {statusLogsTotalPages > 1 && !statusLogsLoading && statusLogs.length > 0 && (
+                <div className="flex items-center justify-between border-t border-border px-4 py-3 mt-4">
+                  <p className="text-sm text-muted-foreground">
+                    {(statusLogsPage - 1) * PAGE_SIZE + 1}-{Math.min(statusLogsPage * PAGE_SIZE, statusLogs.length)} of {statusLogs.length}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setStatusLogsPage((p) => Math.max(1, p - 1))}
+                      disabled={statusLogsPage === 1}
+                      className="gap-1 bg-transparent border-border text-foreground"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+                    <span className="text-sm text-muted-foreground">
+                      {statusLogsPage} / {statusLogsTotalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setStatusLogsPage((p) => Math.min(statusLogsTotalPages, p + 1))}
+                      disabled={statusLogsPage === statusLogsTotalPages}
+                      className="gap-1 bg-transparent border-border text-foreground"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

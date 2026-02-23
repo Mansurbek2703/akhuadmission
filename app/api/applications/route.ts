@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
 
     if (session.role === "applicant") {
       const result = await query(
-        `SELECT a.*, u.email as user_email, u.program as user_program
+        `SELECT a.*, u.email as user_email, u.phone as user_phone, u.program as user_program
          FROM applications a
          JOIN users u ON a.user_id = u.id
          WHERE a.user_id = $1
@@ -96,6 +96,7 @@ export async function GET(req: NextRequest) {
 
     let sql = `
       SELECT a.*, u.email as user_email, u.phone as user_phone, u.program as user_program,
+             u.profile_photo_path as user_profile_photo,
              admin_user.email as assigned_admin_email,
              TRIM(COALESCE(admin_user.first_name, '') || ' ' || COALESCE(admin_user.last_name, '')) as assigned_admin_name
       FROM applications a
@@ -349,6 +350,15 @@ export async function PUT(req: NextRequest) {
             fields.status
           ).catch((err) =>
             console.error("[APP] Failed to send status email:", err)
+          );
+        }
+
+        // Log status change to status_change_logs
+        if (fields.status && fields.status !== oldApp?.status) {
+          await query(
+            `INSERT INTO status_change_logs (admin_id, application_id, old_status, new_status)
+             VALUES ($1, $2, $3, $4)`,
+            [session.userId, applicationId, oldApp?.status || null, fields.status]
           );
         }
       }
