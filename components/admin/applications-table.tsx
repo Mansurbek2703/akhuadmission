@@ -30,8 +30,9 @@ import {
   PROGRAM_LABELS,
   EDUCATION_TYPE_LABELS,
   LANGUAGE_CERT_LABELS,
+  INTL_CERT_LABELS,
   CITIZENSHIP_LABELS,
-} from "@/lib/types";
+  } from "@/lib/types";
 import type {
   Application,
   ApplicationStatus,
@@ -456,17 +457,32 @@ export function ApplicationsTable({
                         <DocRow label="Attestat / Diploma" path={selectedApp.attestat_pdf_path} verifiedField="attestat_verified" invalidField="attestat_invalid" />
                       </SectionCard>
 
-                      <SectionCard title="Certificates">
-                        <ReadonlyRow label="Language Certificate" value={selectedApp.language_cert_type ? LANGUAGE_CERT_LABELS[selectedApp.language_cert_type as LanguageCertType] : "N/A"} />
-                        <EditableRow label="Language Score" fieldKey="language_cert_score" />
-                        <EditableRow label="Language Cert ID" fieldKey="language_cert_id" />
-                        <DocRow label="Language Cert PDF" path={selectedApp.language_cert_pdf_path} verifiedField="language_cert_verified" invalidField="language_cert_invalid" />
-                        <EditableRow label="SAT Score" fieldKey="sat_score" />
-                        <EditableRow label="SAT ID" fieldKey="sat_id" />
-                        <DocRow label="SAT PDF" path={(selectedApp as unknown as Record<string, string>).sat_pdf_path} verifiedField="sat_verified" invalidField="sat_invalid" />
-                        <EditableRow label="CEFR Level" fieldKey="cefr_score" />
-                        <EditableRow label="CEFR ID" fieldKey="cefr_id" />
-                        <DocRow label="CEFR PDF" path={(selectedApp as unknown as Record<string, string>).cefr_pdf_path} verifiedField="cefr_verified" invalidField="cefr_invalid" />
+                      <SectionCard title="English Proficiency Certificate">
+                        <ReadonlyRow label="Certificate Type" value={selectedApp.language_cert_type ? LANGUAGE_CERT_LABELS[selectedApp.language_cert_type as LanguageCertType] : "N/A"} />
+                        <EditableRow label="Score / Band" fieldKey="language_cert_score" />
+                        <EditableRow label="Certificate ID" fieldKey="language_cert_id" />
+                        <DocRow label="Certificate PDF" path={selectedApp.language_cert_pdf_path} verifiedField="language_cert_verified" invalidField="language_cert_invalid" />
+                      </SectionCard>
+
+                      <SectionCard title="International Certificate">
+                        <ReadonlyRow label="Certificate Type" value={(selectedApp as unknown as Record<string, string>).intl_cert_type ? (INTL_CERT_LABELS as Record<string, string>)[(selectedApp as unknown as Record<string, string>).intl_cert_type] || (selectedApp as unknown as Record<string, string>).intl_cert_type : "N/A"} />
+                        {((selectedApp as unknown as Record<string, string>).intl_cert_type === "sat" || (selectedApp as unknown as Record<string, string>).sat_score) && (<>
+                          <EditableRow label="SAT Score" fieldKey="sat_score" />
+                          <EditableRow label="SAT ID" fieldKey="sat_id" />
+                          <ReadonlyRow label="College Board Email" value={(selectedApp as unknown as Record<string, string>).sat_email || "N/A"} />
+                          <ReadonlyRow label="College Board Password" value={(selectedApp as unknown as Record<string, string>).sat_password || "N/A"} />
+                          <DocRow label="SAT PDF" path={(selectedApp as unknown as Record<string, string>).sat_pdf_path} verifiedField="sat_verified" invalidField="sat_invalid" />
+                        </>)}
+                        {(selectedApp as unknown as Record<string, string>).intl_cert_type === "ib" && (<>
+                          <EditableRow label="IB Score" fieldKey="ib_score" />
+                          <EditableRow label="IB Candidate No." fieldKey="ib_id" />
+                          <DocRow label="IB PDF" path={(selectedApp as unknown as Record<string, string>).ib_pdf_path} verifiedField="ib_verified" invalidField="ib_invalid" />
+                        </>)}
+                        {(selectedApp as unknown as Record<string, string>).intl_cert_type === "a_levels" && (<>
+                          <EditableRow label="A-Levels Score" fieldKey="alevel_score" />
+                          <EditableRow label="A-Levels Candidate No." fieldKey="alevel_id" />
+                          <DocRow label="A-Levels PDF" path={(selectedApp as unknown as Record<string, string>).alevel_pdf_path} verifiedField="alevel_verified" invalidField="alevel_invalid" />
+                        </>)}
                       </SectionCard>
 
                       <SectionCard title="Social Protection">

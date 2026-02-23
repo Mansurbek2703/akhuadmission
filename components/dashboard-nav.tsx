@@ -36,7 +36,7 @@ export function DashboardNav() {
     <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-md shadow-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-8">
         <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="flex items-center gap-2.5">
+          <Link href="/" className="flex items-center gap-2.5">
             <Image
               src="/logoEdited.png"
               alt="Al-Khwarizmi University"
@@ -45,7 +45,7 @@ export function DashboardNav() {
               className="h-18 w-40 rounded-lg object-contain"
             />
             <span className="hidden font-bold text-foreground sm:block">
-              Admissions Portal
+              Admission Portal
             </span>
           </Link>
           <nav className="hidden items-center gap-1 md:flex">

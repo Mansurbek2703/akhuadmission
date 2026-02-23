@@ -88,7 +88,7 @@ export default function LoginPage() {
             Sign In
           </CardTitle>
           <CardDescription className="text-muted-foreground">
-            Al-Khwarizmi University Admissions Portal
+            Al-Khwarizmi University Admission Portal
           </CardDescription>
         </CardHeader>
         <CardContent>

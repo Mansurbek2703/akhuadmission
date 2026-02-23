@@ -75,10 +75,14 @@ export async function GET(req: NextRequest) {
     const LANG_CERT_LABELS: Record<string, string> = {
       ielts: "IELTS",
       toefl: "TOEFL iBT",
-      duolingo: "Duolingo English Test",
-      cambridge: "Cambridge (FCE/CAE/CPE)",
-      pearson: "Pearson PTE Academic",
+      cefr: "CEFR",
       other_lang: "Other",
+    };
+
+    const INTL_CERT_LABELS: Record<string, string> = {
+      sat: "SAT",
+      ib: "International Baccalaureate (IB)",
+      a_levels: "International AS & A Levels",
     };
 
     const CITIZENSHIP_MAP: Record<string, string> = {
@@ -161,19 +165,32 @@ export async function GET(req: NextRequest) {
       "Institution Name": row.institution_name || "",
       "Attestat PDF": row.attestat_pdf_path ? "Uploaded" : "Not uploaded",
       "Attestat Verified": row.attestat_verified ? "Yes" : row.attestat_invalid ? "Invalid" : "Pending",
-      // Language cert
-      "Language Cert Type": row.language_cert_type ? (LANG_CERT_LABELS[row.language_cert_type] || row.language_cert_type) : "",
-      "Language Cert Score": row.language_cert_score || "",
-      "Language Cert ID": row.language_cert_id || "",
-      "Language Cert Date": row.language_cert_date || "",
-      "Language Cert PDF": row.language_cert_pdf_path ? "Uploaded" : "Not uploaded",
-      "Language Cert Verified": row.language_cert_verified ? "Yes" : row.language_cert_invalid ? "Invalid" : "Pending",
+      // English Proficiency cert
+      "English Cert Type": row.language_cert_type ? (LANG_CERT_LABELS[row.language_cert_type] || row.language_cert_type) : "",
+      "English Cert Score": row.language_cert_score || "",
+      "English Cert ID": row.language_cert_id || "",
+      "English Cert PDF": row.language_cert_pdf_path ? "Uploaded" : "Not uploaded",
+      "English Cert Verified": row.language_cert_verified ? "Yes" : row.language_cert_invalid ? "Invalid" : "Pending",
+      // International certificate
+      "Intl Cert Type": row.intl_cert_type ? (INTL_CERT_LABELS[row.intl_cert_type] || row.intl_cert_type) : "",
       // SAT
       "SAT Score": row.sat_score || "",
       "SAT ID": row.sat_id || "",
+      "SAT Email": row.sat_email || "",
+      "SAT Password": row.sat_password || "",
       "SAT PDF": row.sat_pdf_path ? "Uploaded" : "Not uploaded",
       "SAT Verified": row.sat_verified ? "Yes" : row.sat_invalid ? "Invalid" : "Pending",
-      // CEFR
+      // IB
+      "IB Score": row.ib_score || "",
+      "IB ID": row.ib_id || "",
+      "IB PDF": row.ib_pdf_path ? "Uploaded" : "Not uploaded",
+      "IB Verified": row.ib_verified ? "Yes" : row.ib_invalid ? "Invalid" : "Pending",
+      // A-Levels
+      "A-Levels Score": row.alevel_score || "",
+      "A-Levels ID": row.alevel_id || "",
+      "A-Levels PDF": row.alevel_pdf_path ? "Uploaded" : "Not uploaded",
+      "A-Levels Verified": row.alevel_verified ? "Yes" : row.alevel_invalid ? "Invalid" : "Pending",
+      // CEFR (legacy)
       "CEFR Score": row.cefr_score || "",
       "CEFR ID": row.cefr_id || "",
       "CEFR PDF": row.cefr_pdf_path ? "Uploaded" : "Not uploaded",

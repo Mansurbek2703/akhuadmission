@@ -49,18 +49,22 @@ export const EDUCATION_TYPE_LABELS: Record<EducationType, string> = {
 export type LanguageCertType =
   | "ielts"
   | "toefl"
-  | "duolingo"
-  | "cambridge"
-  | "pearson"
+  | "cefr"
   | "other_lang";
 
 export const LANGUAGE_CERT_LABELS: Record<LanguageCertType, string> = {
   ielts: "IELTS",
   toefl: "TOEFL iBT",
-  duolingo: "Duolingo English Test",
-  cambridge: "Cambridge (FCE/CAE/CPE)",
-  pearson: "Pearson PTE Academic",
+  cefr: "CEFR",
   other_lang: "Other",
+};
+
+export type IntlCertType = "sat" | "ib" | "a_levels";
+
+export const INTL_CERT_LABELS: Record<IntlCertType, string> = {
+  sat: "SAT",
+  ib: "International Baccalaureate (IB)",
+  a_levels: "International AS & A Levels",
 };
 
 export type Citizenship =
@@ -153,11 +157,23 @@ export interface Application {
   language_cert_score?: string;
   language_cert_id?: string;
   language_cert_date?: string;
+  // International certificate
+  intl_cert_type?: IntlCertType;
   // SAT
   sat_score?: string;
   sat_id?: string;
   sat_pdf_path?: string;
-  // CEFR
+  sat_email?: string;
+  sat_password?: string;
+  // IB
+  ib_score?: string;
+  ib_id?: string;
+  ib_pdf_path?: string;
+  // A-Levels
+  alevel_score?: string;
+  alevel_id?: string;
+  alevel_pdf_path?: string;
+  // CEFR (legacy, now part of language cert)
   cefr_score?: string;
   cefr_id?: string;
   cefr_pdf_path?: string;

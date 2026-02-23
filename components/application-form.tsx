@@ -39,15 +39,17 @@ import {
 import {
   EDUCATION_TYPE_LABELS,
   LANGUAGE_CERT_LABELS,
+  INTL_CERT_LABELS,
   CITIZENSHIP_LABELS,
   UZBEKISTAN_REGIONS,
-} from "@/lib/types";
-import type {
+  } from "@/lib/types";
+  import type {
   Application,
   EducationType,
   LanguageCertType,
+  IntlCertType,
   Citizenship,
-} from "@/lib/types";
+  } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ */
@@ -189,8 +191,7 @@ export function ApplicationForm({
   });
   // Track which certificate sections are open
   const [langCertOpen, setLangCertOpen] = useState(false);
-  const [satOpen, setSatOpen] = useState(false);
-  const [cefrOpen, setCefrOpen] = useState(false);
+  const [intlCertOpen, setIntlCertOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Track first load to avoid overwriting stepSaved on every re-fetch
@@ -220,9 +221,8 @@ export function ApplicationForm({
       if (isFirstLoad.current) {
         isFirstLoad.current = false;
         // Open cert sections if data exists
-        if (data.language_cert_type) setLangCertOpen(true);
-        if (data.sat_score || data.sat_id || data.sat_pdf_path) setSatOpen(true);
-        if (data.cefr_score || data.cefr_id || data.cefr_pdf_path) setCefrOpen(true);
+      if (data.language_cert_type) setLangCertOpen(true);
+      if (data.intl_cert_type || data.sat_score || data.sat_id || data.sat_pdf_path || data.ib_score || data.alevel_score) setIntlCertOpen(true);
 
         // If user has already submitted (oferta_agreed), mark ALL steps as saved
         if (data.oferta_agreed) {
@@ -364,15 +364,24 @@ export function ApplicationForm({
         if (!str("language_cert_id").trim()) { newErrors.language_cert_id = "Required"; valid = false; }
         if (!str("language_cert_pdf_path")) { newErrors.language_cert_pdf_path = "PDF required"; valid = false; }
       }
-      if (satOpen) {
-        if (!str("sat_score").trim()) { newErrors.sat_score = "Required"; valid = false; }
-        if (!str("sat_id").trim()) { newErrors.sat_id = "Required"; valid = false; }
-        if (!str("sat_pdf_path")) { newErrors.sat_pdf_path = "PDF required"; valid = false; }
-      }
-      if (cefrOpen) {
-        if (!str("cefr_score")) { newErrors.cefr_score = "Select level"; valid = false; }
-        if (!str("cefr_id").trim()) { newErrors.cefr_id = "Required"; valid = false; }
-        if (!str("cefr_pdf_path")) { newErrors.cefr_pdf_path = "PDF required"; valid = false; }
+      if (intlCertOpen) {
+        if (!str("intl_cert_type")) { newErrors.intl_cert_type = "Select type"; valid = false; }
+        const ct = str("intl_cert_type");
+        if (ct === "sat") {
+          if (!str("sat_score").trim()) { newErrors.sat_score = "Required"; valid = false; }
+          if (!str("sat_id").trim()) { newErrors.sat_id = "Required"; valid = false; }
+          if (!str("sat_pdf_path")) { newErrors.sat_pdf_path = "PDF required"; valid = false; }
+          if (!str("sat_email").trim()) { newErrors.sat_email = "Required"; valid = false; }
+          if (!str("sat_password").trim()) { newErrors.sat_password = "Required"; valid = false; }
+        } else if (ct === "ib") {
+          if (!str("ib_score").trim()) { newErrors.ib_score = "Required"; valid = false; }
+          if (!str("ib_id").trim()) { newErrors.ib_id = "Required"; valid = false; }
+          if (!str("ib_pdf_path")) { newErrors.ib_pdf_path = "PDF required"; valid = false; }
+        } else if (ct === "a_levels") {
+          if (!str("alevel_score").trim()) { newErrors.alevel_score = "Required"; valid = false; }
+          if (!str("alevel_id").trim()) { newErrors.alevel_id = "Required"; valid = false; }
+          if (!str("alevel_pdf_path")) { newErrors.alevel_pdf_path = "PDF required"; valid = false; }
+        }
       }
     }
 
@@ -390,7 +399,7 @@ export function ApplicationForm({
       }
     }
     return valid;
-  }, [currentStep, formData, langCertOpen, satOpen, cefrOpen]);
+  }, [currentStep, formData, langCertOpen, intlCertOpen]);
 
   /* ---- Collect only the relevant fields for the current step ---- */
   const getStepFields = useCallback((): Record<string, unknown> => {
@@ -410,7 +419,10 @@ export function ApplicationForm({
       certificates: [
         "language_cert_type", "language_cert_pdf_path", "language_cert_score",
         "language_cert_id", "language_cert_date",
-        "sat_score", "sat_id", "sat_pdf_path",
+        "intl_cert_type",
+        "sat_score", "sat_id", "sat_pdf_path", "sat_email", "sat_password",
+        "ib_score", "ib_id", "ib_pdf_path",
+        "alevel_score", "alevel_id", "alevel_pdf_path",
         "cefr_score", "cefr_id", "cefr_pdf_path",
       ],
       social: ["social_protection", "social_protection_pdf_path"],
@@ -565,11 +577,12 @@ export function ApplicationForm({
       if (langCertOpen) {
         if (!str("language_cert_type") || !str("language_cert_score").trim() || !str("language_cert_id").trim() || !str("language_cert_pdf_path")) return false;
       }
-      if (satOpen) {
-        if (!str("sat_score").trim() || !str("sat_id").trim() || !str("sat_pdf_path")) return false;
-      }
-      if (cefrOpen) {
-        if (!str("cefr_score") || !str("cefr_id").trim() || !str("cefr_pdf_path")) return false;
+      if (intlCertOpen) {
+        if (!str("intl_cert_type")) return false;
+        const ct = str("intl_cert_type");
+        if (ct === "sat" && (!str("sat_score").trim() || !str("sat_id").trim() || !str("sat_pdf_path") || !str("sat_email").trim() || !str("sat_password").trim())) return false;
+        if (ct === "ib" && (!str("ib_score").trim() || !str("ib_id").trim() || !str("ib_pdf_path"))) return false;
+        if (ct === "a_levels" && (!str("alevel_score").trim() || !str("alevel_id").trim() || !str("alevel_pdf_path"))) return false;
       }
       return true;
     }
@@ -1182,7 +1195,7 @@ export function ApplicationForm({
         </p>
       </div>
 
-      {/* Language Certificate */}
+      {/* English Proficiency Certificate */}
       <div className="rounded-lg border border-border p-4">
         <div className="flex items-center gap-3">
           <Checkbox
@@ -1199,7 +1212,7 @@ export function ApplicationForm({
             }}
           />
           <Label htmlFor="lang-cert-check" className="cursor-pointer font-medium">
-            I have an International Language Certificate
+            I have an English Proficiency Certificate
           </Label>
         </div>
 
@@ -1222,130 +1235,169 @@ export function ApplicationForm({
               </Select>
               <FieldError field="language_cert_type" />
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>Score / Band <span className="text-red-500">*</span></Label>
-                <Input
-                  value={str("language_cert_score")}
-                  onChange={(e) => setField("language_cert_score", e.target.value)}
-                  placeholder="e.g. 7.0"
-                  className={errors.language_cert_score ? "border-red-500" : ""}
-                />
-                <FieldError field="language_cert_score" />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Certificate ID <span className="text-red-500">*</span></Label>
-                <Input
-                  value={str("language_cert_id")}
-                  onChange={(e) => setField("language_cert_id", e.target.value)}
-                  placeholder="Unique certificate ID"
-                  className={errors.language_cert_id ? "border-red-500" : ""}
-                />
-                <FieldError field="language_cert_id" />
-              </div>
-            </div>
-            <FileUploadField label="Certificate PDF *" fieldName="language_cert_pdf_path" docType="language_cert_pdf" />
+
+            {/* Show score/ID/PDF only after type is selected */}
+            {str("language_cert_type") && (
+              <>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label>
+                      {str("language_cert_type") === "cefr" ? "CEFR Level" : "Score / Band"} <span className="text-red-500">*</span>
+                    </Label>
+                    {str("language_cert_type") === "cefr" ? (
+                      <Select
+                        value={str("language_cert_score")}
+                        onValueChange={(v) => setField("language_cert_score", v)}
+                      >
+                        <SelectTrigger className={errors.language_cert_score ? "border-red-500" : ""}>
+                          <SelectValue placeholder="Select level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {["A1", "A2", "B1", "B2", "C1", "C2"].map((l) => (
+                            <SelectItem key={l} value={l}>{l}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        value={str("language_cert_score")}
+                        onChange={(e) => setField("language_cert_score", e.target.value)}
+                        placeholder={str("language_cert_type") === "ielts" ? "e.g. 7.0" : str("language_cert_type") === "toefl" ? "e.g. 100" : "Enter score"}
+                        className={errors.language_cert_score ? "border-red-500" : ""}
+                      />
+                    )}
+                    <FieldError field="language_cert_score" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Certificate ID <span className="text-red-500">*</span></Label>
+                    <Input
+                      value={str("language_cert_id")}
+                      onChange={(e) => setField("language_cert_id", e.target.value)}
+                      placeholder="Unique certificate ID"
+                      className={errors.language_cert_id ? "border-red-500" : ""}
+                    />
+                    <FieldError field="language_cert_id" />
+                  </div>
+                </div>
+                <FileUploadField label="Certificate PDF *" fieldName="language_cert_pdf_path" docType="language_cert_pdf" />
+              </>
+            )}
           </div>
         )}
       </div>
 
-      {/* SAT */}
+      {/* International Certificate */}
       <div className="rounded-lg border border-border p-4">
         <div className="flex items-center gap-3">
           <Checkbox
-            id="sat-check"
-            checked={satOpen}
+            id="intl-cert-check"
+            checked={intlCertOpen}
             onCheckedChange={(checked) => {
-              setSatOpen(!!checked);
+              setIntlCertOpen(!!checked);
               if (!checked) {
-                setField("sat_score", "");
-                setField("sat_id", "");
-                setField("sat_pdf_path", "");
+                setField("intl_cert_type", "");
+                setField("sat_score", ""); setField("sat_id", ""); setField("sat_pdf_path", "");
+                setField("sat_email", ""); setField("sat_password", "");
+                setField("ib_score", ""); setField("ib_id", ""); setField("ib_pdf_path", "");
+                setField("alevel_score", ""); setField("alevel_id", ""); setField("alevel_pdf_path", "");
               }
             }}
           />
-          <Label htmlFor="sat-check" className="cursor-pointer font-medium">I have a SAT Certificate</Label>
+          <Label htmlFor="intl-cert-check" className="cursor-pointer font-medium">I have an International Certificate</Label>
         </div>
 
-        {satOpen && (
+        {intlCertOpen && (
           <div className="mt-4 space-y-3 border-t border-border pt-4">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>SAT Score <span className="text-red-500">*</span></Label>
-                <Input
-                  value={str("sat_score")}
-                  onChange={(e) => setField("sat_score", e.target.value)}
-                  placeholder="e.g. 1400"
-                  className={errors.sat_score ? "border-red-500" : ""}
-                />
-                <FieldError field="sat_score" />
-              </div>
-              <div className="space-y-1.5">
-                <Label>SAT ID <span className="text-red-500">*</span></Label>
-                <Input
-                  value={str("sat_id")}
-                  onChange={(e) => setField("sat_id", e.target.value)}
-                  placeholder="Registration number"
-                  className={errors.sat_id ? "border-red-500" : ""}
-                />
-                <FieldError field="sat_id" />
-              </div>
+            <div className="space-y-1.5">
+              <Label>Certificate Type <span className="text-red-500">*</span></Label>
+              <Select
+                value={str("intl_cert_type")}
+                onValueChange={(v) => {
+                  setField("intl_cert_type", v);
+                }}
+              >
+                <SelectTrigger className={errors.intl_cert_type ? "border-red-500" : ""}>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(INTL_CERT_LABELS).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>{v}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FieldError field="intl_cert_type" />
             </div>
-            <FileUploadField label="SAT PDF *" fieldName="sat_pdf_path" docType="sat_pdf" />
-          </div>
-        )}
-      </div>
 
-      {/* CEFR */}
-      <div className="rounded-lg border border-border p-4">
-        <div className="flex items-center gap-3">
-          <Checkbox
-            id="cefr-check"
-            checked={cefrOpen}
-            onCheckedChange={(checked) => {
-              setCefrOpen(!!checked);
-              if (!checked) {
-                setField("cefr_score", "");
-                setField("cefr_id", "");
-                setField("cefr_pdf_path", "");
-              }
-            }}
-          />
-          <Label htmlFor="cefr-check" className="cursor-pointer font-medium">I have a CEFR Certificate</Label>
-        </div>
+            {/* SAT Fields */}
+            {str("intl_cert_type") === "sat" && (
+              <div className="space-y-3">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label>Overall Band Score (Math subject) <span className="text-red-500">*</span></Label>
+                    <Input value={str("sat_score")} onChange={(e) => setField("sat_score", e.target.value)} placeholder="Overall Band Score" className={errors.sat_score ? "border-red-500" : ""} />
+                    <FieldError field="sat_score" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>SAT Registration ID <span className="text-red-500">*</span></Label>
+                    <Input value={str("sat_id")} onChange={(e) => setField("sat_id", e.target.value)} placeholder="Registration number" className={errors.sat_id ? "border-red-500" : ""} />
+                    <FieldError field="sat_id" />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Write your College Board account login details: <span className="text-red-500">*</span></Label>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <Input value={str("sat_email")} onChange={(e) => setField("sat_email", e.target.value)} placeholder="Email" className={errors.sat_email ? "border-red-500" : ""} />
+                      <FieldError field="sat_email" />
+                    </div>
+                    <div>
+                      <Input value={str("sat_password")} onChange={(e) => setField("sat_password", e.target.value)} placeholder="Enter your password" className={errors.sat_password ? "border-red-500" : ""} />
+                      <FieldError field="sat_password" />
+                    </div>
+                  </div>
+                  <p className="text-xs text-destructive">Note: We use your login details to sign in to your College Board account to verify your SAT certificate.</p>
+                </div>
+                <FileUploadField label="SAT Certificate PDF *" fieldName="sat_pdf_path" docType="sat_pdf" />
+              </div>
+            )}
 
-        {cefrOpen && (
-          <div className="mt-4 space-y-3 border-t border-border pt-4">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>CEFR Level <span className="text-red-500">*</span></Label>
-                <Select
-                  value={str("cefr_score")}
-                  onValueChange={(v) => setField("cefr_score", v)}
-                >
-                  <SelectTrigger className={errors.cefr_score ? "border-red-500" : ""}>
-                    <SelectValue placeholder="Select level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {["A1", "A2", "B1", "B2", "C1", "C2"].map((l) => (
-                      <SelectItem key={l} value={l}>{l}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FieldError field="cefr_score" />
+            {/* IB Fields */}
+            {str("intl_cert_type") === "ib" && (
+              <div className="space-y-3">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label>IB Total Score <span className="text-red-500">*</span></Label>
+                    <Input value={str("ib_score")} onChange={(e) => setField("ib_score", e.target.value)} placeholder="e.g. 38" className={errors.ib_score ? "border-red-500" : ""} />
+                    <FieldError field="ib_score" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>IB Candidate Number <span className="text-red-500">*</span></Label>
+                    <Input value={str("ib_id")} onChange={(e) => setField("ib_id", e.target.value)} placeholder="Candidate number" className={errors.ib_id ? "border-red-500" : ""} />
+                    <FieldError field="ib_id" />
+                  </div>
+                </div>
+                <FileUploadField label="IB Diploma PDF *" fieldName="ib_pdf_path" docType="ib_pdf" />
               </div>
-              <div className="space-y-1.5">
-                <Label>CEFR Certificate ID <span className="text-red-500">*</span></Label>
-                <Input
-                  value={str("cefr_id")}
-                  onChange={(e) => setField("cefr_id", e.target.value)}
-                  placeholder="Certificate ID"
-                  className={errors.cefr_id ? "border-red-500" : ""}
-                />
-                <FieldError field="cefr_id" />
+            )}
+
+            {/* A-Levels Fields */}
+            {str("intl_cert_type") === "a_levels" && (
+              <div className="space-y-3">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label>A-Levels Grade/Score <span className="text-red-500">*</span></Label>
+                    <Input value={str("alevel_score")} onChange={(e) => setField("alevel_score", e.target.value)} placeholder="e.g. A*A*A" className={errors.alevel_score ? "border-red-500" : ""} />
+                    <FieldError field="alevel_score" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>A-Levels Candidate Number <span className="text-red-500">*</span></Label>
+                    <Input value={str("alevel_id")} onChange={(e) => setField("alevel_id", e.target.value)} placeholder="Candidate number" className={errors.alevel_id ? "border-red-500" : ""} />
+                    <FieldError field="alevel_id" />
+                  </div>
+                </div>
+                <FileUploadField label="A-Levels Certificate PDF *" fieldName="alevel_pdf_path" docType="alevel_pdf" />
               </div>
-            </div>
-            <FileUploadField label="CEFR PDF *" fieldName="cefr_pdf_path" docType="cefr_pdf" />
+            )}
           </div>
         )}
       </div>
@@ -1392,10 +1444,10 @@ export function ApplicationForm({
   const renderOlympiad = () => (
     <div className="space-y-5">
       <div>
-        <h3 className="text-lg font-semibold text-foreground">Olympiad & Achievements</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Describe any olympiad participations or other relevant achievements (optional)
-        </p>
+      <h3 className="text-lg font-semibold text-foreground">Olympiad & Achievements</h3>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Upload only if you have participated in the following international olympiads: International Mathematics Olympiad (IMO), International Physics Olympiad (IPhO), International Chemistry Olympiad (IChO), International Biology Olympiad (IBO), or International Olympiad in Informatics (IOI). (optional)
+      </p>
       </div>
 
       <div className="space-y-1.5">
@@ -1404,7 +1456,7 @@ export function ApplicationForm({
           rows={4}
           value={str("other_achievements_text")}
           onChange={(e) => setField("other_achievements_text", e.target.value)}
-          placeholder="Describe your olympiad results, competitions, awards..."
+          placeholder="Describe your international olympiad participation (IMO, IPhO, IChO, IBO, IOI)..."
         />
       </div>
 
@@ -1417,13 +1469,16 @@ export function ApplicationForm({
   );
 
   const HEAR_ABOUT_OPTIONS = [
-    "Social Media (Instagram, Telegram, etc.)",
-    "Friends or Family",
-    "School / Teacher recommendation",
-    "University website",
-    "Education fair / Exhibition",
-    "News / Media",
-    "Other",
+    "Al-Khwarizmi University Student",
+    "School counselor",
+    "Social media influencers (bloggers)",
+    "Facebook",
+    "Instagram",
+    "Telegram",
+    "YouTube",
+    "LinkedIn",
+    "Open Doors Day at Al-Khwarizmi University Campus",
+    "Regional visits",
   ];
 
   const SIBLING_OPTIONS = [
@@ -1635,18 +1690,28 @@ export function ApplicationForm({
         { label: "Institution Name", value: str("institution_name") },
         { label: "Attestat / Diploma", value: str("attestat_pdf_path") ? "Uploaded" : "Not uploaded" },
       ]},
-      { section: "Certificates", fields: [
-        { label: "Language Certificate", value: str("language_cert_type") ? LANGUAGE_CERT_LABELS[str("language_cert_type") as LanguageCertType] : "N/A" },
-        { label: "Language Score", value: str("language_cert_score") || "N/A" },
-        { label: "Language Cert ID", value: str("language_cert_id") || "N/A" },
-        { label: "Language Cert Date", value: str("language_cert_date") || "N/A" },
-        { label: "Language Cert PDF", value: str("language_cert_pdf_path") ? "Uploaded" : "N/A" },
-        { label: "SAT Score", value: str("sat_score") || "N/A" },
-        { label: "SAT ID", value: str("sat_id") || "N/A" },
-        { label: "SAT PDF", value: str("sat_pdf_path") ? "Uploaded" : "N/A" },
-        { label: "CEFR Level", value: str("cefr_score") || "N/A" },
-        { label: "CEFR ID", value: str("cefr_id") || "N/A" },
-        { label: "CEFR PDF", value: str("cefr_pdf_path") ? "Uploaded" : "N/A" },
+      { section: "English Proficiency Certificate", fields: [
+        { label: "Certificate Type", value: str("language_cert_type") ? LANGUAGE_CERT_LABELS[str("language_cert_type") as LanguageCertType] : "N/A" },
+        { label: "Score / Band", value: str("language_cert_score") || "N/A" },
+        { label: "Certificate ID", value: str("language_cert_id") || "N/A" },
+        { label: "Certificate PDF", value: str("language_cert_pdf_path") ? "Uploaded" : "N/A" },
+      ]},
+      { section: "International Certificate", fields: [
+        { label: "Certificate Type", value: str("intl_cert_type") ? INTL_CERT_LABELS[str("intl_cert_type") as IntlCertType] : "N/A" },
+        ...(str("intl_cert_type") === "sat" ? [
+          { label: "SAT Score", value: str("sat_score") || "N/A" },
+          { label: "SAT ID", value: str("sat_id") || "N/A" },
+          { label: "College Board Email", value: str("sat_email") || "N/A" },
+          { label: "SAT PDF", value: str("sat_pdf_path") ? "Uploaded" : "N/A" },
+        ] : str("intl_cert_type") === "ib" ? [
+          { label: "IB Score", value: str("ib_score") || "N/A" },
+          { label: "IB Candidate Number", value: str("ib_id") || "N/A" },
+          { label: "IB PDF", value: str("ib_pdf_path") ? "Uploaded" : "N/A" },
+        ] : str("intl_cert_type") === "a_levels" ? [
+          { label: "A-Levels Score", value: str("alevel_score") || "N/A" },
+          { label: "A-Levels Candidate No.", value: str("alevel_id") || "N/A" },
+          { label: "A-Levels PDF", value: str("alevel_pdf_path") ? "Uploaded" : "N/A" },
+        ] : []),
       ]},
       { section: "Social Protection", fields: [
         { label: "Social Protection Registry", value: formData.social_protection ? "Yes" : "No" },
