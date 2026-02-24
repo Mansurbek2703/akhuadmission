@@ -173,7 +173,7 @@ export function ChatPanel({ applicationId, user }: ChatPanelProps) {
         <div>
           <h3 className="font-semibold text-foreground">
             {user.role === "applicant"
-              ? "Registrar Office"
+              ? "Admission Department"
               : "Applicant Chat"}
           </h3>
           <p className="text-xs text-muted-foreground">

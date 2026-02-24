@@ -49,7 +49,7 @@ export default function ApplicantChatPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Chat with Registrar Office</h1>
+        <h1 className="text-2xl font-bold text-foreground">Chat with Admission Department</h1>
         <p className="mt-1 text-muted-foreground">
           Send messages and share documents with the admissions team
         </p>
