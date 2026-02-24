@@ -85,105 +85,90 @@ export default function LandingPage() {
               className="h-18 w-40 rounded-lg object-contain"
             />
           </Link>
+
           <nav className="hidden items-center gap-6 md:flex">
-            <a
-              href="#programs"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
+            <a className="text-sm font-medium text-muted-foreground hover:text-foreground" href="#programs">
               Programs
             </a>
-            <a
-              href="#how-it-works"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
+            <a className="text-sm font-medium text-muted-foreground hover:text-foreground" href="#how-it-works">
               How It Works
             </a>
+
             <Link href="/login">
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-border bg-transparent text-foreground"
-              >
+              <Button variant="outline" size="sm">
                 Sign In
               </Button>
             </Link>
+
             <Link href="/register">
-              <Button
-                size="sm"
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                Apply Now
-              </Button>
+              <Button size="sm">Apply Now</Button>
             </Link>
           </nav>
-          <div className="flex items-center gap-2 md:hidden">
-            <Link href="/login">
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-border bg-transparent text-foreground"
-              >
-                Sign In
-              </Button>
-            </Link>
-            <Link href="/register">
-              <Button
-                size="sm"
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                Apply
-              </Button>
-            </Link>
-          </div>
         </div>
       </header>
 
-      {/* Hero Section - Light AI Theme */}
+      {/* ================= HERO ================= */}
       <section className="relative min-h-[85vh] overflow-hidden sm:min-h-[88vh]">
-        {/* Animated background */}
+        {/* BACKGROUND (o'zgarmadi) */}
         <Hero3DScene />
 
-        {/* Content overlay - pushed down to make room for typewriter title */}
-        <div className="relative z-10 mx-auto max-w-7xl px-4 pb-10 pt-36 sm:pt-40 lg:px-8 lg:pb-16 lg:pt-44">
+        {/* CONTENT */}
+        {/* 👉 padding-top kamaytirildi — kontent tepaga ko‘tarildi */}
+        <div className="relative z-10 mx-auto max-w-7xl px-4 pb-6 pt-20 sm:pt-24 lg:px-8 lg:pb-10 lg:pt-8">
           <div className="mx-auto max-w-3xl text-center">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-200/60 bg-white/80 px-4 py-1.5 shadow-md shadow-blue-500/5 backdrop-blur-sm">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-200/60 bg-white/80 px-4 py-1.5 shadow-md backdrop-blur-sm">
               <BookOpen className="h-4 w-4 text-blue-600" />
               <span className="text-sm font-medium text-blue-600">
                 2026/2027 Admissions Open
               </span>
             </div>
-            <h1 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
               Shape Your Future at Al-Khwarizmi University
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg lg:text-xl">
+
+            <p className="mx-auto mt-6 max-w-2xl text-base text-muted-foreground sm:text-lg lg:text-xl">
               Apply for our world-class Bachelor programs in technology and
               science. Start your journey towards innovation and excellence.
             </p>
+
+            {/* BUTTONS */}
             <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               <Link href="/register">
-                <Button
-                  size="lg"
-                  className="w-full bg-blue-600 text-white shadow-lg shadow-blue-600/20 hover:bg-blue-500 hover:shadow-xl hover:shadow-blue-500/30 sm:w-auto"
-                >
+                <Button size="lg" className="bg-blue-600 text-white">
                   Apply for Bachelor
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
+
               <a href="#programs">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full border-blue-200 bg-white/80 text-foreground backdrop-blur-sm hover:bg-blue-50 sm:w-auto"
-                >
+                <Button variant="outline" size="lg">
                   Explore Programs
                 </Button>
               </a>
             </div>
+
+            {/* ================= YOUTUBE VIDEO ================= */}
+            {/* 👉 2-rasmdagi kabi tugmalar ostida markazda */}
+            <div className="mt-8 flex justify-center">
+              <div className="w-full max-w-3xl overflow-hidden rounded-xl shadow-xl">
+                <div className="relative w-full pb-[56.25%]">
+                  <iframe
+                    className="absolute left-0 top-0 h-full w-full"
+                    src="https://www.youtube.com/embed/dbe37orMYhE?si=PFMbhP8QE2M599XU"
+                    title="University Video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+            </div>
+            {/* ================================================= */}
           </div>
         </div>
 
         {/* Scroll hint */}
-        <div className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2">
+        <div className="absolute bottom-4 left-1/2 z-0 -translate-x-1/2">
           <div className="flex flex-col items-center gap-2">
             <span className="text-xs text-muted-foreground/50">Scroll</span>
             <div className="h-8 w-5 rounded-full border-2 border-blue-300/30 p-1">
