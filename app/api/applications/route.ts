@@ -93,6 +93,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+
     if (session.role === "applicant") {
       const result = await query(
         `SELECT a.*, u.email as user_email, u.phone as user_phone, u.program as user_program
