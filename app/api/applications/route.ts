@@ -65,6 +65,27 @@ const FIELD_LABELS: Record<string, string> = {
   completion_percentage: "Completion Percentage",
 };
 
+// Helper to normalize date fields to YYYY-MM-DD (avoid timezone shift)
+const DATE_FIELDS_TO_NORMALIZE = ["date_of_birth", "date_of_issue", "date_of_expiry", "language_cert_date"];
+function normalizeDates(rows: Record<string, unknown>[]): void {
+  for (const row of rows) {
+    for (const df of DATE_FIELDS_TO_NORMALIZE) {
+      if (row[df]) {
+        const val = row[df];
+        if (val instanceof Date) {
+          // Use UTC methods to avoid local timezone shift
+          const y = val.getUTCFullYear();
+          const m = String(val.getUTCMonth() + 1).padStart(2, "0");
+          const d = String(val.getUTCDate() + 1).padStart(2, "0"); //  kun xatosi: 1 kunga ayrilish tog'rilandi
+          row[df] = `${y}-${m}-${d}`;
+        } else if (typeof val === "string" && val.includes("T")) {
+          row[df] = val.split("T")[0];
+        }
+      }
+    }
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
     const session = await getSession();
@@ -82,6 +103,7 @@ export async function GET(req: NextRequest) {
          LIMIT 1`,
         [session.userId]
       );
+      normalizeDates(result.rows);
       return NextResponse.json({ application: result.rows[0] || null });
     }
 
@@ -162,8 +184,9 @@ export async function GET(req: NextRequest) {
 
     sql += " ORDER BY a.updated_at DESC";
 
-    const result = await query(sql, params);
-    return NextResponse.json({ applications: result.rows });
+  const result = await query(sql, params);
+  normalizeDates(result.rows);
+  return NextResponse.json({ applications: result.rows });
   } catch (error) {
     console.error("Applications fetch error:", error);
     return NextResponse.json(
@@ -236,13 +259,29 @@ export async function PUT(req: NextRequest) {
     const values: unknown[] = [];
     let idx = 1;
 
-    for (const [key, value] of Object.entries(fields)) {
-      if (allowedFields.includes(key)) {
-        setClauses.push(`${key} = $${idx}`);
-        values.push(value);
-        idx++;
-      }
+    // Date fields that need special handling to avoid timezone shift
+// Date fields (DATE type in DB)
+const dateFields = [
+  "date_of_birth",
+  "date_of_issue",
+  "date_of_expiry",
+  "language_cert_date",
+];
+
+for (const [key, value] of Object.entries(fields)) {
+  if (allowedFields.includes(key)) {
+    setClauses.push(`${key} = $${idx}`);
+
+    // If DB column is DATE → just store string as-is
+    if (dateFields.includes(key)) {
+      values.push(value || null);
+    } else {
+      values.push(value);
     }
+
+    idx++;
+  }
+}
 
     if (setClauses.length === 0) {
       return NextResponse.json(

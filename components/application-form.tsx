@@ -203,6 +203,25 @@ export function ApplicationForm({
   // Track first load to avoid overwriting stepSaved on every re-fetch
   const isFirstLoad = useRef(true);
 
+  // Helper to normalize date strings to YYYY-MM-DD (avoid timezone shift)
+  const normalizeDateField = (val: unknown): string | unknown => {
+    if (!val) return val;
+    if (typeof val === "string" && val.includes("T")) {
+      // ISO string like "2005-01-21T00:00:00.000Z" -> "2005-01-21"
+      return val.split("T")[0];
+    }
+    if (val instanceof Date) {
+      // Date object -> YYYY-MM-DD in local timezone
+      const y = val.getFullYear();
+      const m = String(val.getMonth() + 1).padStart(2, "0");
+      const d = String(val.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+    return val;
+  };
+
+  const DATE_FIELDS = ["date_of_birth", "date_of_issue", "date_of_expiry"];
+
   // Initialize
   useEffect(() => {
     if (application) {
@@ -210,7 +229,12 @@ export function ApplicationForm({
       const appRecord = application as unknown as Record<string, unknown>;
       for (const key of Object.keys(appRecord)) {
         if (appRecord[key] != null) {
-          data[key] = appRecord[key];
+          // Normalize date fields to avoid timezone shift
+          if (DATE_FIELDS.includes(key)) {
+            data[key] = normalizeDateField(appRecord[key]);
+          } else {
+            data[key] = appRecord[key];
+          }
         }
       }
       // Auto-fill personal_phone from user's registration phone if empty
