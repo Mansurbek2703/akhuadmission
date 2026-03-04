@@ -28,13 +28,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        suppressHydrationWarning
-        className={`${inter.variable} font-sans antialiased`}
-      >
+          suppressHydrationWarning
+        className={`${inter.variable} font-sans antialiased`}>
         {children}
-
-        <NUUAdBanner />
-
         <Toaster position="top-right" richColors />
       </body>
     </html>
