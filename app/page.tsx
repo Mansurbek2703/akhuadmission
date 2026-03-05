@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Hero3DScene from "@/components/hero-3d-scene";
-import NUUAdBanner from "@/components/NUUAdBanner";
 import {
   BookOpen,
   Shield,
@@ -114,7 +113,6 @@ export default function LandingPage() {
       <section className="relative min-h-[85vh] overflow-hidden sm:min-h-[88vh]">
         {/* BACKGROUND (o'zgarmadi) */}
         <Hero3DScene />
-        <NUUAdBanner />
         {/* CONTENT */}
         {/* 👉 padding-top kamaytirildi — kontent tepaga ko‘tarildi */}
         <div className="relative z-10 mx-auto max-w-7xl px-4 pb-6 pt-20 sm:pt-24 lg:px-8 lg:pb-10 lg:pt-8">
