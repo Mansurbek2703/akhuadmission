@@ -8,7 +8,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const DATABASE_URL =
   process.env.DATABASE_URL ||
-  "postgresql://postgres:postgres@localhost:5432/admissions";
+  "postgresql://postgres:postgres@localhost:5432/testuchun";
 
 async function setupDatabase() {
   console.log("=================================================");
