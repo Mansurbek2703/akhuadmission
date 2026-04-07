@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useStatusFilter } from "@/hooks/use-status-filter";
+import { useAuth } from "@/hooks/use-auth";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -40,6 +41,7 @@ function buildQuery(filters: Filters, forMe: boolean) {
 }
 
 export default function AdminPage() {
+  const { user } = useAuth();
   const { statusFilter } = useStatusFilter();
   const [tab, setTab] = useState("all");
   const [filters, setFilters] = useState<Filters>({
@@ -140,16 +142,18 @@ export default function AdminPage() {
           <h1 className="text-2xl font-bold text-foreground">Applications</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">Manage and review applicant submissions</p>
         </div>
-        <Button
-          onClick={handleExport}
-          disabled={exporting}
-          variant="outline"
-          size="sm"
-          className="gap-2 border-border text-foreground bg-transparent"
-        >
-          {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-          Export to Excel
-        </Button>
+        {user?.role === "superadmin" && (
+          <Button
+            onClick={handleExport}
+            disabled={exporting}
+            variant="outline"
+            size="sm"
+            className="gap-2 border-border text-foreground bg-transparent"
+          >
+            {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            Export to Excel
+          </Button>
+        )}
       </div>
 
       <ApplicationFilters filters={filters} onChange={setFilters} />
