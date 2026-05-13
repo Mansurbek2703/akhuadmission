@@ -1,9 +1,9 @@
 import { Pool } from "pg";
-console.log("DATABASE_URL =", process.env.DATABASE_URL);
+
 const pool = new Pool({
   connectionString:
-
-    "postgresql://postgres:root@localhost:5432/testadmit",
+    process.env.DATABASE_URL ||
+    "postgresql://postgres:postgres@localhost:5432/admissions",
 });
 
 let migrated = false;
