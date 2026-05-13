@@ -391,6 +391,49 @@ export function ApplicationsTable({
                   </div>
                 );
 
+                const SelectEditableRow = ({ label, fieldKey, options, displayLabels }: { label: string; fieldKey: string; options: string[]; displayLabels: Record<string, string> }) => {
+                  const rawVal = String(appRec[fieldKey] ?? "");
+                  const display = rawVal ? (displayLabels[rawVal] || rawVal) : "-";
+                  const isEditing = editingCell === fieldKey;
+
+                  if (isEditing) {
+                    return (
+                      <div className="flex items-center justify-between gap-2 px-3 py-2">
+                        <span className="text-sm text-muted-foreground shrink-0">{label}</span>
+                        <div className="flex items-center gap-1.5">
+                          <Select value={editingValue} onValueChange={(v) => setEditingValue(v)}>
+                            <SelectTrigger className="h-8 text-sm bg-card w-[220px]">
+                              <SelectValue placeholder="Select..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {options.map((opt) => (
+                                <SelectItem key={opt} value={opt}>{displayLabels[opt] || opt}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Button size="icon" variant="ghost" className="h-7 w-7 text-green-600" onClick={() => saveInlineEdit(fieldKey)} disabled={saving}>
+                            <Check className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={cancelEdit}>
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div
+                      className="flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-accent/40 transition-colors"
+                      onDoubleClick={() => startEdit(fieldKey, rawVal)}
+                      title="Double-click to edit"
+                    >
+                      <span className="text-sm text-muted-foreground">{label}</span>
+                      <span className="font-medium text-foreground text-sm text-right max-w-[60%] break-words">{display}</span>
+                    </div>
+                  );
+                };
+
                 const DocRow = ({ label, path, verifiedField, invalidField, docType, fieldKey }: { label: string; path?: string; verifiedField?: string; invalidField?: string; docType: string; fieldKey: string }) => {
                   const [uploading, setUploading] = useState(false);
 
@@ -634,7 +677,12 @@ export function ApplicationsTable({
                     {/* Right column */}
                     <div className="flex flex-col gap-4">
                       <SectionCard title="Education">
-                        <ReadonlyRow label="Education Type" value={selectedApp.education_type ? EDUCATION_TYPE_LABELS[selectedApp.education_type as EducationType] : "-"} />
+                        <SelectEditableRow
+                          label="Education Type"
+                          fieldKey="education_type"
+                          options={Object.keys(EDUCATION_TYPE_LABELS)}
+                          displayLabels={EDUCATION_TYPE_LABELS}
+                        />
                         <EditableRow label="Institution Location" fieldKey="institution_location" />
                         <EditableRow label="Institution Name" fieldKey="institution_name" />
                         <DocRow label="Attestat / Diploma" path={selectedApp.attestat_pdf_path} verifiedField="attestat_verified" invalidField="attestat_invalid" docType="attestat_pdf" fieldKey="attestat_pdf_path" />
