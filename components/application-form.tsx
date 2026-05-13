@@ -108,7 +108,7 @@ function validatePassport(v: string): string | null {
 }
 
 function validateJshir(v: string): string | null {
-  if (!v) return "JSHIR is required";
+  if (!v) return "JSHSHIR is required";
   if (!JSHIR_REGEX.test(v)) return "Must be exactly 14 digits";
   return null;
 }
@@ -824,7 +824,7 @@ export function ApplicationForm({
           <p className="text-xs text-muted-foreground">2 letters + 7 digits</p>
         </div>
         <div className="space-y-1.5">
-          <Label>Personal Number (JSHIR) <span className="text-red-500">*</span></Label>
+          <Label>Personal Number (JSHSHIR) <span className="text-red-500">*</span></Label>
           <Input
             value={str("personal_number")}
             onChange={(e) => {
@@ -1082,10 +1082,10 @@ export function ApplicationForm({
       </div>
 
       <FileUploadField
-        label="Passport Photo (JPG/PNG) *"
+            label="Passport Photo (JPG/PNG/PDF) *"
         fieldName="passport_image_path"
         docType="passport_image"
-        accept=".jpg,.jpeg,.png"
+        accept=".jpg,.jpeg,.png,.pdf,application/pdf"
       />
     </div>
   );
@@ -1689,7 +1689,7 @@ export function ApplicationForm({
         { label: "Gender", value: str("gender") },
         { label: "Citizenship", value: str("citizenship") === "other" ? str("citizenship_other") : (CITIZENSHIP_LABELS[str("citizenship") as Citizenship] || str("citizenship")) },
         { label: "Passport Number", value: str("card_number") },
-        { label: "Personal Number (JSHIR)", value: str("personal_number") },
+        { label: "Personal Number (JSHSHIR)", value: str("personal_number") },
         { label: "Date of Birth", value: str("date_of_birth") },
         { label: "Date of Issue", value: str("date_of_issue") },
         { label: "Date of Expiry", value: str("date_of_expiry") },

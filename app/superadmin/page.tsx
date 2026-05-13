@@ -15,6 +15,8 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 interface Filters {
   status: string;
   education_type: string;
+  program: string;
+  submission_id: string;
   date_from: string;
   date_to: string;
   search: string;
@@ -33,6 +35,8 @@ function buildQuery(filters: Filters, forMe: boolean) {
   if (forMe) params.set("for_me", "true");
   if (filters.status) params.set("status", filters.status);
   if (filters.education_type) params.set("education_type", filters.education_type);
+  if (filters.program) params.set("program", filters.program);
+  if (filters.submission_id) params.set("submission_id", filters.submission_id);
   if (filters.date_from) params.set("date_from", filters.date_from);
   if (filters.date_to) params.set("date_to", filters.date_to);
   if (filters.search) params.set("search", filters.search);
@@ -45,6 +49,8 @@ export default function SuperadminPage() {
   const [filters, setFilters] = useState<Filters>({
     status: "",
     education_type: "",
+    program: "",
+    submission_id: "",
     date_from: "",
     date_to: "",
     search: "",

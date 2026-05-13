@@ -14,7 +14,7 @@ const FIELD_LABELS: Record<string, string> = {
   date_of_birth: "Date of Birth",
   date_of_issue: "Date of Issue",
   date_of_expiry: "Date of Expiry",
-  personal_number: "Personal Number (JSHIR)",
+  personal_number: "Personal Number (JSHSHIR)",
   place_of_birth: "Place of Birth",
   current_address: "Current Address",
   birth_country: "Birth Country",
@@ -76,7 +76,7 @@ function normalizeDates(rows: Record<string, unknown>[]): void {
           // Use UTC methods to avoid local timezone shift
           const y = val.getUTCFullYear();
           const m = String(val.getUTCMonth() + 1).padStart(2, "0");
-          const d = String(val.getUTCDate() + 1).padStart(2, "0"); //  kun xatosi: 1 kunga ayrilish tog'rilandi
+          const d = String(val.getUTCDate()).padStart(2, "0");
           row[df] = `${y}-${m}-${d}`;
         } else if (typeof val === "string" && val.includes("T")) {
           row[df] = val.split("T")[0];
@@ -92,7 +92,6 @@ export async function GET(req: NextRequest) {
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
 
     if (session.role === "applicant") {
       const result = await query(
@@ -116,6 +115,8 @@ export async function GET(req: NextRequest) {
     const dateTo = searchParams.get("date_to");
     const forMe = searchParams.get("for_me");
     const search = searchParams.get("search");
+    const program = searchParams.get("program");
+    const submissionId = searchParams.get("submission_id");
 
     // Check if profile_photo_path column exists (safe for pre-migration DBs)
     let hasProfilePhotoCol = true;
@@ -153,6 +154,18 @@ export async function GET(req: NextRequest) {
     if (educationType) {
       sql += ` AND a.education_type = $${paramIndex}`;
       params.push(educationType);
+      paramIndex++;
+    }
+
+    if (program) {
+      sql += ` AND u.program = $${paramIndex}`;
+      params.push(program);
+      paramIndex++;
+    }
+
+    if (submissionId) {
+      sql += ` AND a.unikal_id = $${paramIndex}`;
+      params.push(parseInt(submissionId, 10));
       paramIndex++;
     }
 
@@ -261,28 +274,21 @@ export async function PUT(req: NextRequest) {
     let idx = 1;
 
     // Date fields that need special handling to avoid timezone shift
-// Date fields (DATE type in DB)
-const dateFields = [
-  "date_of_birth",
-  "date_of_issue",
-  "date_of_expiry",
-  "language_cert_date",
-];
+    const dateFields = ["date_of_birth", "date_of_issue", "date_of_expiry", "language_cert_date"];
 
-for (const [key, value] of Object.entries(fields)) {
-  if (allowedFields.includes(key)) {
-    setClauses.push(`${key} = $${idx}`);
-
-    // If DB column is DATE → just store string as-is
-    if (dateFields.includes(key)) {
-      values.push(value || null);
-    } else {
-      values.push(value);
+    for (const [key, value] of Object.entries(fields)) {
+      if (allowedFields.includes(key)) {
+        setClauses.push(`${key} = $${idx}`);
+        // For date fields, ensure we save as plain date string without timezone conversion
+        if (dateFields.includes(key) && typeof value === "string" && value.match(/^\d{4}-\d{2}-\d{2}$/)) {
+          // Add noon time to prevent timezone shift (12:00:00 UTC stays same day everywhere)
+          values.push(value + "T12:00:00.000Z");
+        } else {
+          values.push(value);
+        }
+        idx++;
+      }
     }
-
-    idx++;
-  }
-}
 
     if (setClauses.length === 0) {
       return NextResponse.json(

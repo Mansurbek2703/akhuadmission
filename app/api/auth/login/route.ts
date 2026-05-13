@@ -33,7 +33,6 @@ async function resetIpAttempts(ip: string) {
     [ip]
   );
 }
-
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
