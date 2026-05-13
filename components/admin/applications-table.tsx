@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import {
   Table,
@@ -74,6 +74,16 @@ export function ApplicationsTable({
 
   const selectedApp = onSelectApp ? selectedAppProp : selectedAppLocal;
   const setSelectedApp = onSelectApp ? onSelectApp : setSelectedAppLocal;
+
+  // Sync selectedApp with updated applications data (e.g., after file upload)
+  useEffect(() => {
+    if (selectedApp && applications.length > 0) {
+      const updatedApp = applications.find(app => app.id === selectedApp.id);
+      if (updatedApp && JSON.stringify(updatedApp) !== JSON.stringify(selectedApp)) {
+        setSelectedApp(updatedApp);
+      }
+    }
+  }, [applications, selectedApp, setSelectedApp]);
 
   const [saving, setSaving] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -381,46 +391,115 @@ export function ApplicationsTable({
                   </div>
                 );
 
-                const DocRow = ({ label, path, verifiedField, invalidField }: { label: string; path?: string; verifiedField?: string; invalidField?: string }) => (
-                  <div className="flex flex-col gap-2 px-3 py-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">{label}</span>
-                      {path ? (
-                        <a href={path} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">
-                          View <ExternalLink className="h-3 w-3" />
-                        </a>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">Not uploaded</span>
+                const DocRow = ({ label, path, verifiedField, invalidField, docType, fieldKey }: { label: string; path?: string; verifiedField?: string; invalidField?: string; docType: string; fieldKey: string }) => {
+                  const [uploading, setUploading] = useState(false);
+
+                  const handleFileReplace = async (file: File) => {
+                    if (!selectedApp) return;
+                    setUploading(true);
+                    try {
+                      const formData = new FormData();
+                      formData.append("file", file);
+                      formData.append("doc_type", docType);
+                      formData.append("user_id", selectedApp.user_id);
+
+                      const uploadRes = await fetch("/api/upload", {
+                        method: "POST",
+                        body: formData,
+                      });
+
+                      if (!uploadRes.ok) {
+                        const err = await uploadRes.json();
+                        throw new Error(err.error || "Upload failed");
+                      }
+
+                      const { filePath } = await uploadRes.json();
+
+                      // Update application with new file path
+                      const updateRes = await fetch("/api/applications", {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          applicationId: selectedApp.id,
+                          [fieldKey]: filePath,
+                        }),
+                      });
+
+                      if (!updateRes.ok) throw new Error("Failed to update application");
+
+                      toast.success("File replaced successfully");
+                      onUpdate();
+                    } catch (err) {
+                      toast.error(err instanceof Error ? err.message : "Upload failed");
+                    } finally {
+                      setUploading(false);
+                    }
+                  };
+
+                  return (
+                    <div className="flex flex-col gap-2 px-3 py-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">{label}</span>
+                        <div className="flex items-center gap-2">
+                          {path ? (
+                            <a href={path} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                              View <ExternalLink className="h-3 w-3" />
+                            </a>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">Not uploaded</span>
+                          )}
+                          <label className="cursor-pointer">
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                              {uploading ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <Upload className="h-3 w-3" />
+                              )}
+                              {path ? "Replace" : "Upload"}
+                            </span>
+                            <input
+                              type="file"
+                              className="sr-only"
+                              accept={docType === "passport_image" ? ".jpg,.jpeg,.png,.pdf" : ".pdf"}
+                              onChange={(e) => {
+                                const f = e.target.files?.[0];
+                                if (f) handleFileReplace(f);
+                                e.target.value = "";
+                              }}
+                              disabled={uploading}
+                            />
+                          </label>
+                        </div>
+                      </div>
+                      {path && verifiedField && invalidField && (
+                        <div className="flex flex-wrap gap-4 pl-2">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <Checkbox
+                              checked={!!appRec[verifiedField]}
+                              disabled={verifyLoading === verifiedField}
+                              onCheckedChange={(checked) => handleVerifyToggle(verifiedField, !!checked)}
+                            />
+                            <span className="flex items-center gap-1 text-xs text-green-700 dark:text-green-400">
+                              <ShieldCheck className="h-3.5 w-3.5" /> Verified
+                            </span>
+                            {verifyLoading === verifiedField && <Loader2 className="h-3 w-3 animate-spin" />}
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <Checkbox
+                              checked={!!appRec[invalidField]}
+                              disabled={verifyLoading === invalidField}
+                              onCheckedChange={(checked) => handleVerifyToggle(invalidField, !!checked)}
+                            />
+                            <span className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                              <ShieldAlert className="h-3.5 w-3.5" /> Invalid
+                            </span>
+                            {verifyLoading === invalidField && <Loader2 className="h-3 w-3 animate-spin" />}
+                          </label>
+                        </div>
                       )}
                     </div>
-                    {path && verifiedField && invalidField && (
-                      <div className="flex flex-wrap gap-4 pl-2">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <Checkbox
-                            checked={!!appRec[verifiedField]}
-                            disabled={verifyLoading === verifiedField}
-                            onCheckedChange={(checked) => handleVerifyToggle(verifiedField, !!checked)}
-                          />
-                          <span className="flex items-center gap-1 text-xs text-green-700 dark:text-green-400">
-                            <ShieldCheck className="h-3.5 w-3.5" /> Verified
-                          </span>
-                          {verifyLoading === verifiedField && <Loader2 className="h-3 w-3 animate-spin" />}
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <Checkbox
-                            checked={!!appRec[invalidField]}
-                            disabled={verifyLoading === invalidField}
-                            onCheckedChange={(checked) => handleVerifyToggle(invalidField, !!checked)}
-                          />
-                          <span className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
-                            <ShieldAlert className="h-3.5 w-3.5" /> Invalid
-                          </span>
-                          {verifyLoading === invalidField && <Loader2 className="h-3 w-3 animate-spin" />}
-                        </label>
-                      </div>
-                    )}
-                  </div>
-                );
+                  );
+                };
 
                 const SectionCard = ({ title, children }: { title: string; children: React.ReactNode }) => (
                   <div className="rounded-lg border border-border overflow-hidden">
@@ -542,7 +621,7 @@ export function ApplicationsTable({
                               : selectedApp.current_address || "-"
                           }
                         />
-                        <DocRow label="Passport Photo" path={selectedApp.passport_image_path} />
+                        <DocRow label="Passport Photo" path={selectedApp.passport_image_path} docType="passport_image" fieldKey="passport_image_path" />
                       </SectionCard>
 
                       <SectionCard title="Contact">
@@ -558,14 +637,14 @@ export function ApplicationsTable({
                         <ReadonlyRow label="Education Type" value={selectedApp.education_type ? EDUCATION_TYPE_LABELS[selectedApp.education_type as EducationType] : "-"} />
                         <EditableRow label="Institution Location" fieldKey="institution_location" />
                         <EditableRow label="Institution Name" fieldKey="institution_name" />
-                        <DocRow label="Attestat / Diploma" path={selectedApp.attestat_pdf_path} verifiedField="attestat_verified" invalidField="attestat_invalid" />
+                        <DocRow label="Attestat / Diploma" path={selectedApp.attestat_pdf_path} verifiedField="attestat_verified" invalidField="attestat_invalid" docType="attestat_pdf" fieldKey="attestat_pdf_path" />
                       </SectionCard>
 
                       <SectionCard title="English Proficiency Certificate">
                         <ReadonlyRow label="Certificate Type" value={selectedApp.language_cert_type ? LANGUAGE_CERT_LABELS[selectedApp.language_cert_type as LanguageCertType] : "N/A"} />
                         <EditableRow label="Score / Band" fieldKey="language_cert_score" />
                         <EditableRow label="Certificate ID" fieldKey="language_cert_id" />
-                        <DocRow label="Certificate PDF" path={selectedApp.language_cert_pdf_path} verifiedField="language_cert_verified" invalidField="language_cert_invalid" />
+                        <DocRow label="Certificate PDF" path={selectedApp.language_cert_pdf_path} verifiedField="language_cert_verified" invalidField="language_cert_invalid" docType="language_cert_pdf" fieldKey="language_cert_pdf_path" />
                       </SectionCard>
 
                       <SectionCard title="International Certificate">
@@ -575,28 +654,28 @@ export function ApplicationsTable({
                           <EditableRow label="SAT ID" fieldKey="sat_id" />
                           <ReadonlyRow label="College Board Email" value={(selectedApp as unknown as Record<string, string>).sat_email || "N/A"} />
                           <ReadonlyRow label="College Board Password" value={(selectedApp as unknown as Record<string, string>).sat_password || "N/A"} />
-                          <DocRow label="SAT PDF" path={(selectedApp as unknown as Record<string, string>).sat_pdf_path} verifiedField="sat_verified" invalidField="sat_invalid" />
+                          <DocRow label="SAT PDF" path={(selectedApp as unknown as Record<string, string>).sat_pdf_path} verifiedField="sat_verified" invalidField="sat_invalid" docType="sat_pdf" fieldKey="sat_pdf_path" />
                         </>)}
                         {(selectedApp as unknown as Record<string, string>).intl_cert_type === "ib" && (<>
                           <EditableRow label="IB Score" fieldKey="ib_score" />
                           <EditableRow label="IB Candidate No." fieldKey="ib_id" />
-                          <DocRow label="IB PDF" path={(selectedApp as unknown as Record<string, string>).ib_pdf_path} verifiedField="ib_verified" invalidField="ib_invalid" />
+                          <DocRow label="IB PDF" path={(selectedApp as unknown as Record<string, string>).ib_pdf_path} verifiedField="ib_verified" invalidField="ib_invalid" docType="ib_pdf" fieldKey="ib_pdf_path" />
                         </>)}
                         {(selectedApp as unknown as Record<string, string>).intl_cert_type === "a_levels" && (<>
                           <EditableRow label="A-Levels Score" fieldKey="alevel_score" />
                           <EditableRow label="A-Levels Candidate No." fieldKey="alevel_id" />
-                          <DocRow label="A-Levels PDF" path={(selectedApp as unknown as Record<string, string>).alevel_pdf_path} verifiedField="alevel_verified" invalidField="alevel_invalid" />
+                          <DocRow label="A-Levels PDF" path={(selectedApp as unknown as Record<string, string>).alevel_pdf_path} verifiedField="alevel_verified" invalidField="alevel_invalid" docType="alevel_pdf" fieldKey="alevel_pdf_path" />
                         </>)}
                       </SectionCard>
 
                       <SectionCard title="Social Protection">
                         <ReadonlyRow label="Social Protection" value={selectedApp.social_protection ? "Yes" : "No"} />
-                        <DocRow label="Social Protection PDF" path={selectedApp.social_protection_pdf_path} />
+                        <DocRow label="Social Protection PDF" path={selectedApp.social_protection_pdf_path} docType="social_protection_pdf" fieldKey="social_protection_pdf_path" />
                       </SectionCard>
 
                       <SectionCard title="Achievements">
                         <EditableRow label="Achievements" fieldKey="other_achievements_text" />
-                        <DocRow label="Achievements PDF" path={selectedApp.other_achievements_pdf_path} />
+                        <DocRow label="Achievements PDF" path={selectedApp.other_achievements_pdf_path} docType="achievements_pdf" fieldKey="other_achievements_pdf_path" />
                       </SectionCard>
 
                       <SectionCard title="Submission Details">

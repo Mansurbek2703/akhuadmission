@@ -16,6 +16,13 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get("file") as File;
     const docType = formData.get("doc_type") as string;
+    const targetUserId = formData.get("user_id") as string | null;
+
+    // Admin/superadmin can upload for other users
+    let userId = session.userId;
+    if (targetUserId && (session.role === "admin" || session.role === "superadmin")) {
+      userId = targetUserId;
+    }
 
     if (!file || !docType) {
       return NextResponse.json(
@@ -34,10 +41,12 @@ export async function POST(req: NextRequest) {
 
     // Validate file type
     const allowedTypes: Record<string, string[]> = {
-      passport_image: ["image/jpeg", "image/png"],
+      passport_image: ["image/jpeg", "image/png", "application/pdf"],
       attestat_pdf: ["application/pdf"],
       language_cert_pdf: ["application/pdf"],
       sat_pdf: ["application/pdf"],
+      ib_pdf: ["application/pdf"],
+      alevel_pdf: ["application/pdf"],
       cefr_pdf: ["application/pdf"],
       social_protection_pdf: ["application/pdf"],
       social_registry_pdf: ["application/pdf"],
@@ -54,7 +63,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Create upload directory
-    const userDir = path.join(UPLOAD_DIR, session.userId);
+    const userDir = path.join(UPLOAD_DIR, userId);
     await mkdir(userDir, { recursive: true });
 
     // Generate unique filename
@@ -66,7 +75,7 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
     await writeFile(filePath, buffer);
 
-    const publicPath = `/api/files/${session.userId}/${fileName}`;
+    const publicPath = `/api/files/${userId}/${fileName}`;
 
     return NextResponse.json({
       success: true,
