@@ -269,6 +269,27 @@ export async function PUT(req: NextRequest) {
       "attestat_verified", "attestat_invalid",
     ];
 
+    // Handle user_program separately (it's in users table, not applications)
+    let userProgramUpdated = false;
+    if (fields.user_program) {
+      // Check permission: superadmin always allowed, admin needs can_change_program
+      let canChange = session.role === "superadmin";
+      if (!canChange && session.role === "admin") {
+        const permResult = await query("SELECT can_change_program FROM users WHERE id = $1", [session.userId]);
+        canChange = permResult.rows[0]?.can_change_program === true;
+      }
+
+      if (canChange) {
+        // Get user_id from application
+        const appResult = await query("SELECT user_id FROM applications WHERE id = $1", [applicationId]);
+        if (appResult.rows.length > 0) {
+          await query("UPDATE users SET program = $1, updated_at = NOW() WHERE id = $2", [fields.user_program, appResult.rows[0].user_id]);
+          userProgramUpdated = true;
+        }
+      }
+      delete fields.user_program;
+    }
+
     const setClauses: string[] = [];
     const values: unknown[] = [];
     let idx = 1;
@@ -290,7 +311,20 @@ export async function PUT(req: NextRequest) {
       }
     }
 
+    // If only user_program was updated (no application fields), return success
     if (setClauses.length === 0) {
+      if (userProgramUpdated) {
+        // Fetch updated application with user info
+        const result = await query(
+          `SELECT a.*, u.email as user_email, u.program as user_program
+           FROM applications a
+           JOIN users u ON a.user_id = u.id
+           WHERE a.id = $1`,
+          [applicationId]
+        );
+        normalizeDates(result.rows);
+        return NextResponse.json({ application: result.rows[0] });
+      }
       return NextResponse.json(
         { error: "No valid fields to update" },
         { status: 400 }

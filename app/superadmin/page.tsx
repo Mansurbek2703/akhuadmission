@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useStatusFilter } from "@/hooks/use-status-filter";
+import { useAuth } from "@/hooks/use-auth";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -44,6 +45,7 @@ function buildQuery(filters: Filters, forMe: boolean) {
 }
 
 export default function SuperadminPage() {
+  const { user } = useAuth();
   const { statusFilter } = useStatusFilter();
   const [tab, setTab] = useState("all");
   const [filters, setFilters] = useState<Filters>({
@@ -118,6 +120,8 @@ export default function SuperadminPage() {
         unreadChatMap={unread}
         selectedApp={selectedApp}
         onSelectApp={setSelectedApp}
+        userRole="superadmin"
+        canChangeProgram={true}
       />
     );
   };
@@ -134,6 +138,8 @@ export default function SuperadminPage() {
         unreadChatMap={tab === "forme" ? forMeUnread : allUnread}
         selectedApp={selectedApp}
         onSelectApp={setSelectedApp}
+        userRole="superadmin"
+        canChangeProgram={true}
       />
     );
   }

@@ -120,6 +120,8 @@ export default function AdminPage() {
         unreadChatMap={unread}
         selectedApp={selectedApp}
         onSelectApp={setSelectedApp}
+        userRole="admin"
+        canChangeProgram={user?.can_change_program || false}
       />
     );
   };
@@ -136,6 +138,8 @@ export default function AdminPage() {
         unreadChatMap={tab === "forme" ? forMeUnread : allUnread}
         selectedApp={selectedApp}
         onSelectApp={setSelectedApp}
+        userRole="admin"
+        canChangeProgram={user?.can_change_program || false}
       />
     );
   }

@@ -34,6 +34,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import {
   UserPlus,
@@ -63,6 +64,7 @@ interface Admin {
   first_name?: string;
   last_name?: string;
   position?: string;
+  can_change_program?: boolean;
   created_at: string;
 }
 
@@ -119,6 +121,7 @@ export default function SuperadminSettingsPage() {
   const [securityLogsPage, setSecurityLogsPage] = useState(1);
   const [statusLogsPage, setStatusLogsPage] = useState(1);
   const [statusLogsSearch, setStatusLogsSearch] = useState("");
+  const [togglingPermission, setTogglingPermission] = useState<string | null>(null);
   const PAGE_SIZE = 10;
 
   const {
@@ -238,6 +241,25 @@ export default function SuperadminSettingsPage() {
       toast.error(err instanceof Error ? err.message : "Failed to remove admin");
     } finally {
       setDeleting(null);
+    }
+  };
+
+  const handleTogglePermission = async (adminId: string, currentValue: boolean) => {
+    setTogglingPermission(adminId);
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: adminId, can_change_program: !currentValue }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      toast.success(`Permission ${!currentValue ? "granted" : "revoked"} successfully`);
+      mutateAdmins();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update permission");
+    } finally {
+      setTogglingPermission(null);
     }
   };
 
@@ -451,6 +473,9 @@ export default function SuperadminSettingsPage() {
                         Role
                       </TableHead>
                       <TableHead className="text-muted-foreground">
+                        Can Change Program
+                      </TableHead>
+                      <TableHead className="text-muted-foreground">
                         Created
                       </TableHead>
                       <TableHead className="text-right text-muted-foreground">
@@ -485,6 +510,22 @@ export default function SuperadminSettingsPage() {
                               ? "Superadmin"
                               : "Admin"}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {admin.role === "admin" ? (
+                            <div className="flex items-center gap-2">
+                              <Switch
+                                checked={admin.can_change_program || false}
+                                onCheckedChange={() => handleTogglePermission(admin.id, admin.can_change_program || false)}
+                                disabled={togglingPermission === admin.id}
+                              />
+                              {togglingPermission === admin.id && (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">Always allowed</span>
+                          )}
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {new Date(admin.created_at).toLocaleDateString()}

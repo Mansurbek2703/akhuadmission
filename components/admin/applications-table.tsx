@@ -49,6 +49,8 @@ interface ApplicationsTableProps {
   unreadChatMap?: Record<string, number>;
   selectedApp?: Application | null;
   onSelectApp?: (app: Application | null) => void;
+  userRole?: "admin" | "superadmin";
+  canChangeProgram?: boolean;
 }
 
 const statusColors: Record<ApplicationStatus, string> = {
@@ -66,6 +68,8 @@ export function ApplicationsTable({
   unreadChatMap = {},
   selectedApp: selectedAppProp = null,
   onSelectApp,
+  userRole,
+  canChangeProgram = false,
 }: ApplicationsTableProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -629,8 +633,17 @@ export function ApplicationsTable({
                             </div>
                           </div>
                         </div>
-                        <ReadonlyRow label="Email" value={selectedApp.user_email || "-"} />
-                        <ReadonlyRow label="Program" value={selectedApp.user_program ? PROGRAM_LABELS[selectedApp.user_program as Program] : "-"} />
+  <ReadonlyRow label="Email" value={selectedApp.user_email || "-"} />
+  {(userRole === "superadmin" || canChangeProgram) ? (
+    <SelectEditableRow
+      label="Program"
+      fieldKey="user_program"
+      options={Object.keys(PROGRAM_LABELS)}
+      displayLabels={PROGRAM_LABELS}
+    />
+  ) : (
+    <ReadonlyRow label="Program" value={selectedApp.user_program ? PROGRAM_LABELS[selectedApp.user_program as Program] : "-"} />
+  )}
                         <ReadonlyRow label="Completion" value={`${selectedApp.completion_percentage}%`} />
                         <ReadonlyRow label="Submitted" value={new Date(selectedApp.created_at).toLocaleDateString()} />
                       </SectionCard>

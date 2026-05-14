@@ -11,7 +11,7 @@ export async function GET() {
     }
 
     const result = await query(
-      "SELECT id, email, role, first_name, last_name, position, created_at FROM users WHERE role IN ('admin', 'superadmin') ORDER BY created_at DESC"
+      "SELECT id, email, role, first_name, last_name, position, can_change_program, created_at FROM users WHERE role IN ('admin', 'superadmin') ORDER BY created_at DESC"
     );
 
     return NextResponse.json({ admins: result.rows });
@@ -76,6 +76,37 @@ export async function POST(req: NextRequest) {
       { error: "Internal server error" },
       { status: 500 }
     );
+  }
+}
+
+export async function PUT(req: NextRequest) {
+  try {
+    const session = await getSession();
+    if (!session || session.role !== "superadmin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { userId, can_change_program } = body;
+
+    if (!userId) {
+      return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+    }
+
+    await query(
+      "UPDATE users SET can_change_program = $1, updated_at = NOW() WHERE id = $2 AND role = 'admin'",
+      [can_change_program, userId]
+    );
+
+    await query(
+      "INSERT INTO admin_logs (admin_id, action, details) VALUES ($1, $2, $3)",
+      [session.userId, "update_permission", `Set can_change_program=${can_change_program} for user ${userId}`]
+    );
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Admin permission update error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 

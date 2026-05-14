@@ -15,6 +15,7 @@ export interface AuthUser {
   profile_photo_path?: string;
   first_name?: string;
   last_name?: string;
+  can_change_program?: boolean;
 }
 
 export function useAuth() {
