@@ -3,104 +3,262 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /* ============================================================
-   AI University Hero - Light Theme (Hydration-safe)
-   30 English slogans, click-to-pause, slower speed
+   Premium Glass Effect Animated Background
+   - Highly realistic glass reflections and refractions
+   - Significantly increased particles, lines, and circles
+   - Vibrant contrasting colors for visual impact
+   - Smooth, elegant movements with depth perception
+   - Mesmerizing, high-fidelity aesthetic
    ============================================================ */
 
-
 const KEYFRAMES = `
-@keyframes hero-shape-float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-16px) rotate(6deg); }
+@keyframes glass-float {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  25% { transform: translateY(-15px) rotate(1.5deg) scale(1.02); }
+  50% { transform: translateY(-25px) rotate(3deg) scale(1.04); }
+  75% { transform: translateY(-10px) rotate(1deg) scale(1.01); }
 }
-@keyframes hero-shape-rotate {
+@keyframes glass-float-reverse {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  25% { transform: translateY(12px) rotate(-1deg) scale(1.01); }
+  50% { transform: translateY(20px) rotate(-2.5deg) scale(1.03); }
+  75% { transform: translateY(8px) rotate(-0.5deg) scale(1.02); }
+}
+@keyframes glass-float-alt {
+  0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
+  33% { transform: translateY(-18px) translateX(10px) rotate(2deg); }
+  66% { transform: translateY(-8px) translateX(-8px) rotate(-1deg); }
+}
+@keyframes shimmer-flow {
+  0% { transform: translateX(-150%) rotate(25deg); opacity: 0; }
+  20% { opacity: 0.6; }
+  80% { opacity: 0.6; }
+  100% { transform: translateX(250%) rotate(25deg); opacity: 0; }
+}
+@keyframes glass-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); filter: brightness(1); }
+  50% { opacity: 0.9; transform: scale(1.08); filter: brightness(1.2); }
+}
+@keyframes glass-breathe {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+@keyframes reflection-rotate {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+@keyframes light-sweep {
+  0% { opacity: 0; transform: translateX(-100%) skewX(-15deg); }
+  30% { opacity: 0.7; }
+  70% { opacity: 0.7; }
+  100% { opacity: 0; transform: translateX(200%) skewX(-15deg); }
+}
+@keyframes particle-dance {
+  0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.4; }
+  20% { transform: translateY(-40px) translateX(15px) scale(1.2); opacity: 0.8; }
+  40% { transform: translateY(-60px) translateX(-10px) scale(0.9); opacity: 0.6; }
+  60% { transform: translateY(-35px) translateX(20px) scale(1.1); opacity: 0.7; }
+  80% { transform: translateY(-15px) translateX(-5px) scale(1); opacity: 0.5; }
+}
+@keyframes screen-glow-premium {
+  0%, 100% {
+    box-shadow:
+      0 0 40px rgba(59, 130, 246, 0.25),
+      0 0 80px rgba(59, 130, 246, 0.15),
+      inset 0 0 40px rgba(59, 130, 246, 0.08);
+  }
+  50% {
+    box-shadow:
+      0 0 60px rgba(59, 130, 246, 0.35),
+      0 0 120px rgba(59, 130, 246, 0.2),
+      inset 0 0 60px rgba(59, 130, 246, 0.12);
+  }
+}
+@keyframes data-cascade {
+  0% { transform: translateY(120%); opacity: 0; }
+  5% { opacity: 1; }
+  95% { opacity: 1; }
+  100% { transform: translateY(-120%); opacity: 0; }
+}
+@keyframes orbit-elegant {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
-@keyframes hero-laptop-float-left {
-  0%, 100% { transform: translateY(0) translateX(0); }
-  33% { transform: translateY(-12px) translateX(4px); }
-  66% { transform: translateY(6px) translateX(-3px); }
+@keyframes dot-glow {
+  0%, 100% { transform: scale(1); opacity: 0.6; box-shadow: 0 0 10px currentColor; }
+  50% { transform: scale(1.8); opacity: 1; box-shadow: 0 0 25px currentColor, 0 0 50px currentColor; }
 }
-@keyframes hero-laptop-float-right {
-  0%, 100% { transform: translateY(0) translateX(0); }
-  33% { transform: translateY(8px) translateX(-5px); }
-  66% { transform: translateY(-10px) translateX(3px); }
+@keyframes circle-expand {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.3); opacity: 0.6; }
 }
-@keyframes hero-laptop-rotate {
-  0%, 100% { transform: rotateY(-12deg) rotateX(5deg); }
-  50% { transform: rotateY(12deg) rotateX(-3deg); }
+@keyframes line-draw {
+  0% { stroke-dashoffset: 1000; opacity: 0; }
+  50% { opacity: 0.8; }
+  100% { stroke-dashoffset: 0; opacity: 0; }
 }
-@keyframes hero-pulse-dot {
-  0%, 100% { transform: scale(1); opacity: 0.5; }
-  50% { transform: scale(1.8); opacity: 0.9; }
+@keyframes aurora-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
-@keyframes hero-orbit-ring {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to { transform: translate(-50%, -50%) rotate(360deg); }
-}
-@keyframes hero-scan-h {
-  0% { left: -10%; opacity: 0; }
-  10% { opacity: 0.4; }
-  90% { opacity: 0.4; }
-  100% { left: 110%; opacity: 0; }
-}
-@keyframes hero-data-rise {
-  0% { transform: translateY(0); opacity: 0.4; }
-  100% { transform: translateY(-120px); opacity: 0; }
+@keyframes glass-refract {
+  0%, 100% { filter: hue-rotate(0deg) brightness(1); }
+  50% { filter: hue-rotate(15deg) brightness(1.1); }
 }
 `;
 
-
-/* ---------- Canvas: circuit particles + connections ---------- */
-function CircuitCanvas() {
+/* ---------- Premium Particle Canvas with Many Lines & Circles ---------- */
+function PremiumParticleCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef(0);
-  const particlesRef = useRef<
-    { x: number; y: number; vx: number; vy: number; r: number; o: number }[]
-  >([]);
-  const initRef = useRef(false);
+  const particlesRef = useRef<Array<{
+    x: number; y: number; vx: number; vy: number;
+    radius: number; color: string; alpha: number; pulse: number;
+  }>>([]);
+  const circlesRef = useRef<Array<{
+    x: number; y: number; radius: number; maxRadius: number;
+    color: string; speed: number; phase: number;
+  }>>([]);
+  const timeRef = useRef(0);
+
+  const initParticles = useCallback((width: number, height: number) => {
+    // Limited color palette - only 3 colors for cleaner look
+    const colors = [
+      "59, 130, 246",   // Blue (primary)
+      "139, 92, 246",   // Purple (accent)
+      "99, 102, 241",   // Indigo (secondary)
+    ];
+
+    // 50 particles - balanced density
+    particlesRef.current = Array.from({ length: 50 }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+      radius: 1.5 + Math.random() * 2.5, // Smaller particles
+      color: colors[Math.floor(Math.random() * colors.length)],
+      alpha: 0.4 + Math.random() * 0.4,
+      pulse: Math.random() * Math.PI * 2,
+    }));
+
+    // 15 expanding circles - half the size
+    circlesRef.current = Array.from({ length: 15 }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      radius: 10 + Math.random() * 25,      // Half the original size
+      maxRadius: 35 + Math.random() * 50,   // Half the original max
+      color: colors[Math.floor(Math.random() * colors.length)],
+      speed: 0.0015 + Math.random() * 0.002,
+      phase: Math.random() * Math.PI * 2,
+    }));
+  }, []);
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
     const cw = canvas.offsetWidth;
     const ch = canvas.offsetHeight;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
-    const dpr = window.devicePixelRatio || 1;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const particles = particlesRef.current;
-    for (const p of particles) {
+    timeRef.current += 0.016;
+    const t = timeRef.current;
+
+    // Draw expanding circles with glass effect
+    for (const circle of circlesRef.current) {
+      const phase = (t * circle.speed + circle.phase) % 1;
+      const currentRadius = circle.radius + (circle.maxRadius - circle.radius) * phase;
+      const alpha = 0.15 * (1 - phase);
+
+      // Outer glow
+      const gradient = ctx.createRadialGradient(
+        circle.x, circle.y, currentRadius * 0.5,
+        circle.x, circle.y, currentRadius
+      );
+      gradient.addColorStop(0, `rgba(${circle.color}, 0)`);
+      gradient.addColorStop(0.7, `rgba(${circle.color}, ${alpha * 0.5})`);
+      gradient.addColorStop(1, `rgba(${circle.color}, 0)`);
+
+      ctx.beginPath();
+      ctx.arc(circle.x, circle.y, currentRadius, 0, Math.PI * 2);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      // Inner ring (glass edge effect)
+      ctx.beginPath();
+      ctx.arc(circle.x, circle.y, currentRadius * 0.9, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${circle.color}, ${alpha})`;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    // Update and draw particles
+    for (const p of particlesRef.current) {
       p.x += p.vx;
       p.y += p.vy;
+      p.pulse += 0.05;
+
+      // Wrap around edges
       if (p.x < 0) p.x = cw;
       if (p.x > cw) p.x = 0;
       if (p.y < 0) p.y = ch;
       if (p.y > ch) p.y = 0;
 
+      const pulseScale = 1 + Math.sin(p.pulse) * 0.3;
+      const currentRadius = p.radius * pulseScale;
+      const currentAlpha = p.alpha * (0.7 + Math.sin(p.pulse) * 0.3);
+
+      // Particle glow
+      const gradient = ctx.createRadialGradient(
+        p.x, p.y, 0,
+        p.x, p.y, currentRadius * 3
+      );
+      gradient.addColorStop(0, `rgba(${p.color}, ${currentAlpha})`);
+      gradient.addColorStop(0.4, `rgba(${p.color}, ${currentAlpha * 0.4})`);
+      gradient.addColorStop(1, `rgba(${p.color}, 0)`);
+
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(37, 99, 235, ${Math.min(p.o * 2.5, 0.6)})`;
+      ctx.arc(p.x, p.y, currentRadius * 3, 0, Math.PI * 2);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      // Core particle
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, currentRadius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${p.color}, ${currentAlpha * 1.5})`;
       ctx.fill();
     }
 
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
-        const dist = dx * dx + dy * dy;
-        if (dist < 22000) {
-          const alpha = 0.15 * (1 - dist / 22000);
+    // Draw connecting lines between nearby particles - brighter and clearer
+    ctx.lineCap = "round";
+    for (let i = 0; i < particlesRef.current.length; i++) {
+      const p1 = particlesRef.current[i];
+      for (let j = i + 1; j < particlesRef.current.length; j++) {
+        const p2 = particlesRef.current[j];
+        const dx = p1.x - p2.x;
+        const dy = p1.y - p2.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < 150) {
+          const alpha = 0.5 * (1 - dist / 150); // Increased from 0.25 to 0.5
+
+          // Create brighter gradient line
+          const gradient = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+          gradient.addColorStop(0, `rgba(${p1.color}, ${alpha})`);
+          gradient.addColorStop(0.5, `rgba(255, 255, 255, ${alpha * 0.7})`); // Brighter center
+          gradient.addColorStop(1, `rgba(${p2.color}, ${alpha})`);
+
           ctx.beginPath();
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.strokeStyle = `rgba(37, 99, 235, ${alpha})`;
-          ctx.lineWidth = 0.6;
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.strokeStyle = gradient;
+          ctx.lineWidth = 1.2 + (1 - dist / 150) * 1; // Slightly thicker lines
           ctx.stroke();
         }
       }
@@ -116,170 +274,473 @@ function CircuitCanvas() {
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
-      canvas.width = canvas.offsetWidth * dpr;
-      canvas.height = canvas.offsetHeight * dpr;
+      const width = canvas.offsetWidth;
+      const height = canvas.offsetHeight;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      initParticles(width, height);
     };
     resize();
     window.addEventListener("resize", resize);
-
-    if (!initRef.current) {
-      initRef.current = true;
-      const w = canvas.offsetWidth;
-      const h = canvas.offsetHeight;
-      const count = Math.min(50, Math.floor((w * h) / 15000));
-      for (let i = 0; i < count; i++) {
-        particlesRef.current.push({
-          x: (i * 37.3 + 13) % w,
-          y: (i * 53.7 + 17) % h,
-          vx: ((i % 7) - 3) * 0.12,
-          vy: ((i % 5) - 2) * 0.1,
-          r: 1.8 + (i % 3) * 0.6,
-          o: 0.15 + (i % 5) * 0.06,
-        });
-      }
-    }
 
     animRef.current = requestAnimationFrame(draw);
     return () => {
       window.removeEventListener("resize", resize);
       cancelAnimationFrame(animRef.current);
     };
-  }, [draw]);
+  }, [draw, initParticles]);
 
   return <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />;
 }
 
-/* ---------- Static wireframe shapes ---------- */
-const WIREFRAME_SHAPES = [
-  { type: "tetra", x: 5, y: 15, size: 72, dur: 18, delay: 0, floatDur: 12 },
-  { type: "cube", x: 88, y: 20, size: 62, dur: 22, delay: 2, floatDur: 10 },
-  { type: "octa", x: 12, y: 70, size: 56, dur: 15, delay: 1, floatDur: 14 },
-  { type: "tetra", x: 92, y: 65, size: 65, dur: 20, delay: 3, floatDur: 11 },
-  { type: "diamond", x: 75, y: 8, size: 50, dur: 16, delay: 0.5, floatDur: 13 },
-  { type: "cube", x: 25, y: 85, size: 52, dur: 24, delay: 4, floatDur: 15 },
-];
+/* ---------- Premium Glass Panel ---------- */
+function PremiumGlassPanel({
+  className = "",
+  style,
+  children,
+  variant = "default",
+  glowColor = "blue",
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+  children?: React.ReactNode;
+  variant?: "default" | "screen" | "floating" | "frosted";
+  glowColor?: "blue" | "purple" | "green" | "orange" | "pink";
+}) {
+  const glowColors = {
+    blue: "59, 130, 246",
+    purple: "139, 92, 246",
+    green: "34, 197, 94",
+    orange: "251, 146, 60",
+    pink: "236, 72, 153",
+  };
 
-function WireframeShape({ type, size }: { type: string; size: number }) {
-  const s = size;
-  const half = s / 2;
-  if (type === "tetra") {
-    return (
-      <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`} fill="none">
-        <polygon points={`${half},${s * 0.1} ${s * 0.15},${s * 0.85} ${s * 0.85},${s * 0.85}`} stroke="rgba(37,99,235,0.4)" strokeWidth="1.2" fill="rgba(37,99,235,0.06)" />
-        <line x1={half} y1={s * 0.1} x2={half} y2={s * 0.55} stroke="rgba(37,99,235,0.25)" strokeWidth="0.8" />
-        <line x1={s * 0.15} y1={s * 0.85} x2={half} y2={s * 0.55} stroke="rgba(37,99,235,0.25)" strokeWidth="0.8" />
-        <line x1={s * 0.85} y1={s * 0.85} x2={half} y2={s * 0.55} stroke="rgba(37,99,235,0.25)" strokeWidth="0.8" />
-      </svg>
-    );
-  }
-  if (type === "cube") {
-    const o = s * 0.2;
-    return (
-      <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`} fill="none">
-        <rect x={o} y={o} width={s - 2 * o} height={s - 2 * o} stroke="rgba(37,99,235,0.35)" strokeWidth="1.2" fill="rgba(37,99,235,0.05)" />
-        <rect x={o + 8} y={o - 8} width={s - 2 * o} height={s - 2 * o} stroke="rgba(37,99,235,0.2)" strokeWidth="0.8" fill="none" />
-        <line x1={o} y1={o} x2={o + 8} y2={o - 8} stroke="rgba(37,99,235,0.2)" strokeWidth="0.8" />
-        <line x1={s - o} y1={o} x2={s - o + 8} y2={o - 8} stroke="rgba(37,99,235,0.2)" strokeWidth="0.8" />
-        <line x1={s - o} y1={s - o} x2={s - o + 8} y2={s - o - 8} stroke="rgba(37,99,235,0.2)" strokeWidth="0.8" />
-        <line x1={o} y1={s - o} x2={o + 8} y2={s - o - 8} stroke="rgba(37,99,235,0.2)" strokeWidth="0.8" />
-      </svg>
-    );
-  }
-  if (type === "octa") {
-    return (
-      <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`} fill="none">
-        <polygon points={`${half},${s * 0.05} ${s * 0.95},${half} ${half},${s * 0.95} ${s * 0.05},${half}`} stroke="rgba(34,197,94,0.4)" strokeWidth="1.2" fill="rgba(34,197,94,0.06)" />
-        <line x1={half} y1={s * 0.05} x2={half} y2={s * 0.95} stroke="rgba(34,197,94,0.22)" strokeWidth="0.8" />
-        <line x1={s * 0.05} y1={half} x2={s * 0.95} y2={half} stroke="rgba(34,197,94,0.22)" strokeWidth="0.8" />
-      </svg>
-    );
-  }
+  const baseStyles = {
+    default: "bg-white/70 backdrop-blur-2xl border border-white/50",
+    screen: "bg-gradient-to-br from-slate-900/95 via-slate-800/90 to-slate-900/95 backdrop-blur-2xl border border-white/20",
+    floating: "bg-white/50 backdrop-blur-xl border border-white/40",
+    frosted: "bg-gradient-to-br from-white/60 via-white/40 to-white/60 backdrop-blur-2xl border border-white/60",
+  };
+
+  const rgb = glowColors[glowColor];
+
   return (
-    <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`} fill="none">
-      <polygon points={`${half},${s * 0.05} ${s * 0.85},${s * 0.35} ${half},${s * 0.95} ${s * 0.15},${s * 0.35}`} stroke="rgba(37,99,235,0.35)" strokeWidth="1.2" fill="rgba(37,99,235,0.05)" />
-      <line x1={half} y1={s * 0.05} x2={half} y2={s * 0.95} stroke="rgba(37,99,235,0.18)" strokeWidth="0.8" />
-    </svg>
+    <div
+      className={`relative rounded-2xl shadow-2xl overflow-hidden ${baseStyles[variant]} ${className}`}
+      style={{
+        boxShadow: `
+          0 8px 32px rgba(${rgb}, 0.15),
+          0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+          0 32px 64px -12px rgba(0, 0, 0, 0.1)
+        `,
+        ...style,
+      }}
+    >
+      {/* Multi-layer glass reflection */}
+      <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+        {/* Primary reflection gradient */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(
+              135deg,
+              rgba(255,255,255,0.4) 0%,
+              rgba(255,255,255,0.1) 25%,
+              transparent 50%,
+              rgba(${rgb},0.05) 75%,
+              rgba(255,255,255,0.1) 100%
+            )`,
+          }}
+        />
+        {/* Secondary reflection */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(
+              -45deg,
+              transparent 0%,
+              rgba(255,255,255,0.15) 50%,
+              transparent 100%
+            )`,
+            opacity: 0.5,
+          }}
+        />
+        {/* Shimmer sweep effect */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(
+              90deg,
+              transparent 0%,
+              rgba(255,255,255,0.6) 45%,
+              rgba(255,255,255,0.8) 50%,
+              rgba(255,255,255,0.6) 55%,
+              transparent 100%
+            )`,
+            animation: "shimmer-flow 6s ease-in-out infinite",
+          }}
+        />
+        {/* Edge highlight */}
+        <div
+          className="absolute top-0 left-0 right-0 h-px"
+          style={{
+            background: `linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent)`,
+          }}
+        />
+      </div>
+      <div className="relative z-10">{children}</div>
+    </div>
   );
 }
 
-/* ---------- CSS 3D Laptop ---------- */
-function Laptop3D({ side }: { side: "left" | "right" }) {
+/* ---------- Premium Laptop Screen ---------- */
+function PremiumLaptopScreen({
+  side,
+  size = "large",
+  glowColor = "blue"
+}: {
+  side: "left" | "right";
+  size?: "large" | "medium" | "small";
+  glowColor?: "blue" | "purple" | "green";
+}) {
   const isLeft = side === "left";
+  const sizeConfig = {
+    large: { width: 200, height: 135, codeLines: 10 },
+    medium: { width: 160, height: 108, codeLines: 7 },
+    small: { width: 120, height: 80, codeLines: 5 },
+  };
+  const config = sizeConfig[size];
+
+  const glowColors: Record<string, string> = {
+    blue: "59, 130, 246",
+    purple: "139, 92, 246",
+    green: "34, 197, 94",
+  };
+
+  const rgb = glowColors[glowColor];
+
   return (
     <div
-      className={`absolute hidden lg:block ${isLeft ? "left-[3%] top-[30%]" : "right-[3%] bottom-[18%]"}`}
+      className={`absolute ${isLeft ? "left-[3%] top-[12%]" : "right-[3%] bottom-[8%]"}`}
       style={{
-        perspective: 600,
-        zIndex: 4,
-        animation: `hero-laptop-float-${side} 8s ease-in-out infinite`,
+        perspective: 1200,
+        zIndex: 5,
+        animation: `glass-float${isLeft ? "" : "-reverse"} 12s ease-in-out infinite`,
       }}
     >
       <div
         style={{
           transformStyle: "preserve-3d",
-          animation: `hero-laptop-rotate 20s ease-in-out infinite ${isLeft ? "0s" : "5s"}`,
+          transform: `rotateY(${isLeft ? "-18" : "18"}deg) rotateX(8deg)`,
         }}
       >
-        {/* Screen */}
-        <div
-          className="rounded-t-md border border-blue-200/60 bg-gradient-to-b from-slate-50 to-white"
+        <PremiumGlassPanel
+          variant="screen"
+          glowColor={glowColor as "blue" | "purple" | "green"}
           style={{
-            width: 100,
-            height: 68,
-            transformOrigin: "bottom center",
-            transform: "rotateX(-5deg)",
-            boxShadow: "0 0 20px rgba(37,99,235,0.08), inset 0 0 0 2px rgba(37,99,235,0.04)",
+            width: config.width,
+            height: config.height,
+            animation: "screen-glow-premium 5s ease-in-out infinite",
           }}
         >
-          <div className="flex h-full flex-col gap-1 overflow-hidden p-2">
-            <div className="h-1 w-[60%] rounded bg-blue-500/40" />
-            <div className="h-1 w-[80%] rounded bg-blue-400/30" />
-            <div className="h-1 w-[45%] rounded bg-green-500/35" />
-            <div className="h-1 w-[70%] rounded bg-blue-500/30" />
-            <div className="h-1 w-[55%] rounded bg-blue-400/35" />
-            <div className="h-1 w-[65%] rounded bg-green-500/30" />
-            <div className="h-1 w-[40%] rounded bg-blue-500/35" />
-            <div className="mt-auto flex gap-1">
-              <div className="h-1 w-2 rounded bg-blue-600/40" />
-              <div className="h-1 w-3 rounded bg-green-600/35" />
+          <div className="h-full overflow-hidden p-4">
+            {/* macOS style top bar */}
+            <div className="mb-3 flex items-center gap-2">
+              <div className="h-2.5 w-2.5 rounded-full bg-red-500 shadow-lg shadow-red-500/50" />
+              <div className="h-2.5 w-2.5 rounded-full bg-yellow-500 shadow-lg shadow-yellow-500/50" />
+              <div className="h-2.5 w-2.5 rounded-full bg-green-500 shadow-lg shadow-green-500/50" />
+              <div className="ml-4 h-1.5 flex-1 rounded-full bg-white/10" />
+            </div>
+
+            {/* Code lines with varied colors */}
+            <div className="space-y-2">
+              {Array.from({ length: config.codeLines }).map((_, i) => {
+                const colors = [
+                  `rgba(${rgb}, 0.7)`,
+                  "rgba(74, 222, 128, 0.6)",
+                  "rgba(251, 191, 36, 0.6)",
+                  "rgba(248, 113, 113, 0.5)",
+                  "rgba(167, 139, 250, 0.6)",
+                ];
+                return (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="text-[8px] text-white/30 w-4">{i + 1}</span>
+                    <div
+                      className="h-2 rounded-sm"
+                      style={{
+                        width: `${15 + ((i * 41) % 60)}%`,
+                        backgroundColor: colors[i % colors.length],
+                        animation: `glass-pulse ${2.5 + (i % 4) * 0.5}s ease-in-out infinite ${i * 0.2}s`,
+                        boxShadow: `0 0 10px ${colors[i % colors.length]}`,
+                      }}
+                    />
+                    {i % 3 === 0 && (
+                      <div
+                        className="h-2 rounded-sm"
+                        style={{
+                          width: `${10 + ((i * 29) % 25)}%`,
+                          backgroundColor: colors[(i + 2) % colors.length],
+                          animation: `glass-pulse ${3 + (i % 3) * 0.5}s ease-in-out infinite ${i * 0.3}s`,
+                        }}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Blinking cursor */}
+            <div className="mt-3 flex items-center gap-1">
+              <span className="text-[8px] text-white/30 w-4">{config.codeLines + 1}</span>
+              <div
+                className="h-3 w-0.5 rounded-full"
+                style={{
+                  backgroundColor: `rgba(${rgb}, 0.9)`,
+                  animation: "glass-breathe 1s step-end infinite",
+                  boxShadow: `0 0 8px rgba(${rgb}, 0.6)`,
+                }}
+              />
             </div>
           </div>
+
+          {/* Screen glare overlay */}
           <div
-            className="absolute inset-0 rounded-t-md"
-            style={{ background: "linear-gradient(135deg, rgba(37,99,235,0.03) 0%, transparent 50%)" }}
+            className="absolute inset-0 rounded-2xl pointer-events-none"
+            style={{
+              background: `linear-gradient(
+                120deg,
+                rgba(255,255,255,0.1) 0%,
+                transparent 30%,
+                transparent 70%,
+                rgba(255,255,255,0.05) 100%
+              )`,
+            }}
+          />
+        </PremiumGlassPanel>
+
+        {/* Laptop base with reflection */}
+        <div
+          className="mx-auto rounded-b-xl overflow-hidden"
+          style={{
+            width: config.width * 1.15,
+            height: 10,
+            background: "linear-gradient(to bottom, #d1d5db, #9ca3af)",
+            transform: "rotateX(70deg) translateY(-5px)",
+            transformOrigin: "top center",
+            boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+          }}
+        >
+          <div
+            className="h-full w-full"
+            style={{
+              background: "linear-gradient(to right, transparent, rgba(255,255,255,0.4) 50%, transparent)",
+            }}
           />
         </div>
-        {/* Base */}
-        <div
-          className="rounded-b-md border border-blue-200/40 bg-gradient-to-b from-slate-100 to-slate-200/80"
-          style={{ width: 100, height: 8, transform: "rotateX(70deg)", transformOrigin: "top center" }}
-        />
       </div>
     </div>
   );
 }
 
-/* ---------- Circuit junction dots (static data) ---------- */
-const JUNCTION_DOTS = [
-  { cx: 20, cy: 25 }, { cx: 50, cy: 25 }, { cx: 80, cy: 25 },
-  { cx: 20, cy: 50 }, { cx: 50, cy: 50 }, { cx: 80, cy: 50 },
-  { cx: 20, cy: 75 }, { cx: 50, cy: 75 }, { cx: 80, cy: 75 },
-];
+/* ---------- Floating Glass Card ---------- */
+function FloatingGlassCard({
+  x,
+  y,
+  delay = 0,
+  glowColor = "blue",
+  size = "medium"
+}: {
+  x: string;
+  y: string;
+  delay?: number;
+  glowColor?: "blue" | "purple" | "green" | "orange" | "pink";
+  size?: "small" | "medium" | "large";
+}) {
+  const sizeConfig = {
+    small: { w: 100, h: 65 },
+    medium: { w: 130, h: 85 },
+    large: { w: 160, h: 105 },
+  };
+  const config = sizeConfig[size];
 
-/* ---------- Mobile dots (static) ---------- */
-const MOBILE_DOTS = [
-  { left: "10%", top: "15%", dur: 4, delay: 0, size: "h-2 w-2", color: "bg-blue-400/25" },
-  { right: "12%", top: "12%", dur: 5, delay: 1, size: "h-1.5 w-1.5", color: "bg-blue-500/20" },
-  { left: "25%", bottom: "20%", dur: 3.5, delay: 0.5, size: "h-1.5 w-1.5", color: "bg-green-400/20" },
-  { right: "20%", bottom: "25%", dur: 4.5, delay: 2, size: "h-2 w-2", color: "bg-blue-300/25" },
-];
+  const glowColors: Record<string, string> = {
+    blue: "59, 130, 246",
+    purple: "139, 92, 246",
+    green: "34, 197, 94",
+    orange: "251, 146, 60",
+    pink: "236, 72, 153",
+  };
 
-/* ---------- Data rise columns ---------- */
-const DATA_RISE_COLS = [15, 35, 65, 85];
+  return (
+    <div
+      className="absolute hidden md:block"
+      style={{
+        left: x,
+        top: y,
+        animation: `glass-float-alt 10s ease-in-out infinite ${delay}s`,
+        zIndex: 4,
+      }}
+    >
+      <PremiumGlassPanel
+        variant="frosted"
+        glowColor={glowColor}
+        className="p-4"
+        style={{ width: config.w, height: config.h }}
+      >
+        <div className="space-y-2.5">
+          <div
+            className="h-2.5 rounded-full"
+            style={{
+              width: "75%",
+              backgroundColor: `rgba(${glowColors[glowColor]}, 0.5)`,
+              boxShadow: `0 0 12px rgba(${glowColors[glowColor]}, 0.3)`,
+            }}
+          />
+          <div
+            className="h-2 rounded-full bg-slate-400/30"
+            style={{ width: "55%" }}
+          />
+          <div
+            className="h-2 rounded-full bg-slate-300/25"
+            style={{ width: "65%" }}
+          />
+          <div className="flex gap-2 pt-1">
+            <div className="h-4 w-4 rounded-full bg-green-400/40" />
+            <div className="h-4 flex-1 rounded bg-slate-400/20" />
+          </div>
+        </div>
+      </PremiumGlassPanel>
+    </div>
+  );
+}
+
+/* ---------- Premium Orbital Ring ---------- */
+function PremiumOrbitalRing({
+  size,
+  duration,
+  reverse = false,
+  color = "blue",
+  dotCount = 3,
+}: {
+  size: number;
+  duration: number;
+  reverse?: boolean;
+  color?: "blue" | "purple" | "green" | "orange";
+  dotCount?: number;
+}) {
+  const colors: Record<string, string> = {
+    blue: "59, 130, 246",
+    purple: "139, 92, 246",
+    green: "34, 197, 94",
+    orange: "251, 146, 60",
+  };
+  const rgb = colors[color];
+
+  return (
+    <div
+      className="absolute left-1/2 top-1/2 pointer-events-none"
+      style={{
+        width: size,
+        height: size,
+        transform: "translate(-50%, -50%)",
+        animation: `orbit-elegant ${duration}s linear infinite ${reverse ? "reverse" : ""}`,
+        zIndex: 2,
+      }}
+    >
+      {/* Ring with gradient */}
+      <div
+        className="absolute inset-0 rounded-full"
+        style={{
+          border: `1.5px solid rgba(${rgb}, 0.2)`,
+          background: `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.03) 0%, transparent 70%)`,
+          boxShadow: `
+            0 0 20px rgba(${rgb}, 0.1),
+            inset 0 0 30px rgba(${rgb}, 0.05)
+          `,
+        }}
+      />
+      {/* Orbiting dots */}
+      {Array.from({ length: dotCount }).map((_, i) => (
+        <div
+          key={i}
+          className="absolute h-3 w-3 rounded-full"
+          style={{
+            top: "50%",
+            left: "50%",
+            transform: `rotate(${(360 / dotCount) * i}deg) translateX(${size / 2}px) translateY(-50%)`,
+            backgroundColor: `rgba(${rgb}, 0.8)`,
+            boxShadow: `0 0 15px rgba(${rgb}, 0.6), 0 0 30px rgba(${rgb}, 0.3)`,
+            animation: `dot-glow ${2 + i * 0.5}s ease-in-out infinite ${i * 0.3}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ---------- Data Stream Column ---------- */
+function DataStream({ x, delay = 0, color = "blue" }: { x: string; delay?: number; color?: string }) {
+  const colors: Record<string, string> = {
+    blue: "59, 130, 246",
+    purple: "139, 92, 246",
+    green: "34, 197, 94",
+    orange: "251, 146, 60",
+  };
+  const rgb = colors[color] || colors.blue;
+
+  return (
+    <div className="absolute hidden sm:block" style={{ left: x, top: 0, bottom: 0, zIndex: 2 }}>
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <div
+          key={i}
+          className="absolute w-1.5 rounded-full"
+          style={{
+            height: `${15 + i * 5}px`,
+            background: `linear-gradient(to bottom, transparent, rgba(${rgb}, 0.6), transparent)`,
+            animation: `data-cascade ${5 + i * 0.8}s linear infinite ${delay + i * 0.8}s`,
+            boxShadow: `0 0 8px rgba(${rgb}, 0.4)`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ---------- Floating Circle ---------- */
+function FloatingCircle({
+  x,
+  y,
+  size,
+  color,
+  delay = 0
+}: {
+  x: string;
+  y: string;
+  size: number;
+  color: string;
+  delay?: number;
+}) {
+  return (
+    <div
+      className="absolute rounded-full pointer-events-none hidden sm:block"
+      style={{
+        left: x,
+        top: y,
+        width: size,
+        height: size,
+        background: `radial-gradient(circle, rgba(${color}, 0.15) 0%, rgba(${color}, 0.05) 50%, transparent 70%)`,
+        animation: `circle-expand 8s ease-in-out infinite ${delay}s`,
+        boxShadow: `0 0 40px rgba(${color}, 0.1)`,
+        zIndex: 1,
+      }}
+    />
+  );
+}
 
 /* ========== Main Component ========== */
 export default function Hero3DScene() {
   const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -289,162 +750,152 @@ export default function Hero3DScene() {
       className="absolute inset-0 z-0 overflow-hidden"
       style={{ opacity: mounted ? 1 : 0, transition: "opacity 1s ease-in-out" }}
     >
-      {/* Keyframes injected as plain style (no styled-jsx) */}
       <style dangerouslySetInnerHTML={{ __html: KEYFRAMES }} />
 
-      {/* White base gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white via-blue-50/30 to-white" />
-
-      {/* Dot grid pattern */}
+      {/* Premium gradient background with aurora effect */}
       <div
         className="absolute inset-0"
         style={{
-          backgroundImage: "radial-gradient(circle, rgba(37,99,235,0.06) 1px, transparent 1px)",
-          backgroundSize: "32px 32px",
+          background: `
+            linear-gradient(135deg,
+              #f8fafc 0%,
+              #e0f2fe 25%,
+              #f0fdf4 50%,
+              #faf5ff 75%,
+              #f8fafc 100%
+            )
+          `,
+          backgroundSize: "400% 400%",
+          animation: "aurora-shift 20s ease infinite",
         }}
       />
 
-      {/* Soft glow spots */}
+      {/* Enhanced grid pattern */}
       <div
-        className="absolute rounded-full"
-        style={{ left: "-5%", top: "10%", width: 500, height: 500, background: "radial-gradient(circle, rgba(37,99,235,0.05) 0%, transparent 70%)" }}
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(59, 130, 246, 0.04) 1.5px, transparent 1.5px),
+            linear-gradient(90deg, rgba(59, 130, 246, 0.04) 1.5px, transparent 1.5px),
+            linear-gradient(rgba(139, 92, 246, 0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(139, 92, 246, 0.02) 1px, transparent 1px)
+          `,
+          backgroundSize: "80px 80px, 80px 80px, 20px 20px, 20px 20px",
+        }}
+      />
+
+      {/* Floating circles for depth - reduced sizes */}
+      <FloatingCircle x="5%" y="10%" size={150} color="59, 130, 246" delay={0} />
+      <FloatingCircle x="75%" y="8%" size={120} color="139, 92, 246" delay={2} />
+      <FloatingCircle x="85%" y="55%" size={170} color="59, 130, 246" delay={4} />
+      <FloatingCircle x="12%" y="65%" size={100} color="139, 92, 246" delay={1} />
+
+      {/* Premium particle canvas */}
+      {mounted && <PremiumParticleCanvas />}
+
+      {/* Ambient glow spots - reduced sizes and using only blue/purple */}
+      <div
+        className="absolute rounded-full pointer-events-none"
+        style={{
+          left: "-10%",
+          top: "15%",
+          width: 400,
+          height: 400,
+          background: "radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 60%)",
+          filter: "blur(50px)",
+        }}
       />
       <div
-        className="absolute rounded-full"
-        style={{ right: "-5%", bottom: "5%", width: 400, height: 400, background: "radial-gradient(circle, rgba(34,197,94,0.04) 0%, transparent 70%)" }}
+        className="absolute rounded-full pointer-events-none"
+        style={{
+          right: "-5%",
+          bottom: "10%",
+          width: 350,
+          height: 350,
+          background: "radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 60%)",
+          filter: "blur(45px)",
+        }}
       />
 
-      {/* Canvas particles (client only) */}
-      {mounted && <CircuitCanvas />}
+      {/* Premium Laptop screens */}
+      <div className="hidden lg:block">
+        <PremiumLaptopScreen side="left" size="large" glowColor="blue" />
+        <PremiumLaptopScreen side="right" size="medium" glowColor="purple" />
+      </div>
+      <div className="hidden md:block lg:hidden">
+        <PremiumLaptopScreen side="left" size="small" glowColor="blue" />
+        <PremiumLaptopScreen side="right" size="small" glowColor="green" />
+      </div>
 
-      {/* SVG circuit lines */}
-      <svg className="absolute inset-0 h-full w-full" style={{ zIndex: 1 }}>
-        {/* Horizontal */}
-        <line x1="0%" y1="25%" x2="100%" y2="25%" stroke="rgba(37,99,235,0.14)" strokeWidth="0.8" strokeDasharray="8 12">
-          <animate attributeName="stroke-dashoffset" values="0;-40" dur="4s" repeatCount="indefinite" />
-        </line>
-        <line x1="0%" y1="50%" x2="100%" y2="50%" stroke="rgba(37,99,235,0.1)" strokeWidth="0.7" strokeDasharray="6 16">
-          <animate attributeName="stroke-dashoffset" values="0;-44" dur="5s" repeatCount="indefinite" />
-        </line>
-        <line x1="0%" y1="75%" x2="100%" y2="75%" stroke="rgba(37,99,235,0.12)" strokeWidth="0.8" strokeDasharray="10 14">
-          <animate attributeName="stroke-dashoffset" values="0;-48" dur="3.5s" repeatCount="indefinite" />
-        </line>
-        {/* Vertical */}
-        <line x1="20%" y1="0%" x2="20%" y2="100%" stroke="rgba(37,99,235,0.1)" strokeWidth="0.7" strokeDasharray="6 18">
-          <animate attributeName="stroke-dashoffset" values="0;-48" dur="6s" repeatCount="indefinite" />
-        </line>
-        <line x1="50%" y1="0%" x2="50%" y2="100%" stroke="rgba(37,99,235,0.08)" strokeWidth="0.7" strokeDasharray="8 20">
-          <animate attributeName="stroke-dashoffset" values="0;-56" dur="7s" repeatCount="indefinite" />
-        </line>
-        <line x1="80%" y1="0%" x2="80%" y2="100%" stroke="rgba(37,99,235,0.1)" strokeWidth="0.7" strokeDasharray="5 15">
-          <animate attributeName="stroke-dashoffset" values="0;-40" dur="5.5s" repeatCount="indefinite" />
-        </line>
-        {/* Diagonal */}
-        <line x1="5%" y1="10%" x2="35%" y2="45%" stroke="rgba(37,99,235,0.12)" strokeWidth="0.8" strokeDasharray="4 10">
-          <animate attributeName="stroke-dashoffset" values="0;-28" dur="4s" repeatCount="indefinite" />
-        </line>
-        <line x1="95%" y1="15%" x2="65%" y2="50%" stroke="rgba(37,99,235,0.1)" strokeWidth="0.7" strokeDasharray="6 12">
-          <animate attributeName="stroke-dashoffset" values="0;-36" dur="5s" repeatCount="indefinite" />
-        </line>
-        <line x1="10%" y1="80%" x2="45%" y2="55%" stroke="rgba(34,197,94,0.12)" strokeWidth="0.8" strokeDasharray="5 14">
-          <animate attributeName="stroke-dashoffset" values="0;-38" dur="4.5s" repeatCount="indefinite" />
-        </line>
-        <line x1="90%" y1="85%" x2="60%" y2="55%" stroke="rgba(34,197,94,0.1)" strokeWidth="0.7" strokeDasharray="4 16">
-          <animate attributeName="stroke-dashoffset" values="0;-40" dur="6s" repeatCount="indefinite" />
-        </line>
-        {/* Junction dots */}
-        {JUNCTION_DOTS.map((dot, i) => (
-          <circle key={`jd-${i}`} cx={`${dot.cx}%`} cy={`${dot.cy}%`} r="2.5" fill="rgba(37,99,235,0.25)">
-            <animate attributeName="r" values="2.5;4.5;2.5" dur={`${2 + (i % 3)}s`} repeatCount="indefinite" />
-            <animate attributeName="opacity" values="0.4;0.8;0.4" dur={`${2 + (i % 3)}s`} repeatCount="indefinite" />
-          </circle>
-        ))}
-      </svg>
+      {/* Floating glass cards - only blue/purple */}
+      <FloatingGlassCard x="12%" y="55%" delay={0} glowColor="blue" size="medium" />
+      <FloatingGlassCard x="78%" y="20%" delay={1.5} glowColor="purple" size="large" />
+      <FloatingGlassCard x="82%" y="65%" delay={3} glowColor="blue" size="small" />
 
-      {/* Floating wireframe shapes */}
-      {WIREFRAME_SHAPES.map((shape, i) => (
-        <div
-          key={`wf-${i}`}
-          className="absolute hidden sm:block"
-          style={{
-            left: `${shape.x}%`,
-            top: `${shape.y}%`,
-            animation: `hero-shape-float ${shape.floatDur}s ease-in-out infinite ${shape.delay}s`,
-            zIndex: 2,
-          }}
-        >
-          <div style={{ animation: `hero-shape-rotate ${shape.dur}s linear infinite` }}>
-            <WireframeShape type={shape.type} size={shape.size} />
-          </div>
-        </div>
-      ))}
+      {/* Orbital rings - only 2, blue/purple palette */}
+      <PremiumOrbitalRing size={320} duration={50} color="blue" dotCount={3} />
+      <PremiumOrbitalRing size={480} duration={70} reverse color="purple" dotCount={2} />
 
-      {/* Orbital rings (desktop) */}
+      {/* Data streams - only 3, blue/purple */}
+      <DataStream x="15%" delay={0} color="blue" />
+      <DataStream x="50%" delay={1.5} color="purple" />
+      <DataStream x="85%" delay={2.5} color="blue" />
+
+      {/* Horizontal light beams */}
       <div
         className="absolute hidden sm:block"
-        style={{ left: "50%", top: "50%", width: 350, height: 350, animation: "hero-orbit-ring 45s linear infinite", zIndex: 1 }}
-      >
-        <div className="absolute inset-0 rounded-full border border-blue-400/[0.2]" />
-        <div className="absolute -top-1 left-1/2 h-3 w-3 -translate-x-1/2 rounded-full bg-blue-500/50" style={{ animation: "hero-pulse-dot 2s ease-in-out infinite" }} />
-      </div>
-      <div
-        className="absolute hidden lg:block"
-        style={{ left: "50%", top: "50%", width: 550, height: 550, animation: "hero-orbit-ring 70s linear infinite reverse", zIndex: 1 }}
-      >
-        <div className="absolute inset-0 rounded-full border border-dashed border-blue-300/[0.15]" />
-        <div className="absolute -bottom-1 left-1/2 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-green-500/45" style={{ animation: "hero-pulse-dot 3s ease-in-out infinite 1s" }} />
-      </div>
-
-      {/* 3D CSS Laptops */}
-      <Laptop3D side="left" />
-      <Laptop3D side="right" />
-
-      {/* Data rising particles (desktop) */}
-      {DATA_RISE_COLS.map((x, i) => (
-        <div
-          key={`dr-${i}`}
-          className="absolute hidden sm:block"
-          style={{ left: `${x}%`, bottom: "5%", zIndex: 2 }}
-        >
-          {[0, 1, 2].map((j) => (
-            <div
-              key={j}
-              className="absolute h-1.5 w-1.5 rounded-full bg-blue-500/50"
-              style={{ animation: `hero-data-rise ${3 + j}s ease-out infinite ${j * 1.2 + i * 0.5}s` }}
-            />
-          ))}
-        </div>
-      ))}
-
-      {/* Horizontal scan line */}
-      <div
-        className="absolute top-0 hidden h-px sm:block"
         style={{
-          width: "20%",
-          background: "linear-gradient(90deg, transparent, rgba(37,99,235,0.3), transparent)",
-          animation: "hero-scan-h 8s linear infinite",
+          top: "25%",
+          left: 0,
+          right: 0,
+          height: 2,
+          background: "linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.5), transparent)",
+          animation: "light-sweep 12s ease-in-out infinite",
+          zIndex: 3,
+        }}
+      />
+      <div
+        className="absolute hidden sm:block"
+        style={{
+          top: "65%",
+          left: 0,
+          right: 0,
+          height: 1.5,
+          background: "linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.4), transparent)",
+          animation: "light-sweep 15s ease-in-out infinite 3s",
           zIndex: 3,
         }}
       />
 
-      {/* Mobile: subtle dots */}
-      {MOBILE_DOTS.map((dot, i) => (
-        <div
-          key={`md-${i}`}
-          className="absolute sm:hidden"
-          style={{
-            left: dot.left,
-            right: dot.right,
-            top: dot.top,
-            bottom: dot.bottom,
-            animation: `hero-pulse-dot ${dot.dur}s ease-in-out infinite ${dot.delay}s`,
-          }}
-        >
-          <div className={`rounded-full ${dot.size} ${dot.color}`} />
-        </div>
-      ))}
+      {/* Mobile: floating elements - only blue/purple */}
+      <div className="sm:hidden">
+        {[
+          { x: "10%", y: "15%", delay: 0, color: "59, 130, 246" },
+          { x: "85%", y: "12%", delay: 1, color: "139, 92, 246" },
+          { x: "15%", y: "75%", delay: 2, color: "59, 130, 246" },
+          { x: "80%", y: "70%", delay: 3, color: "139, 92, 246" },
+        ].map((dot, i) => (
+          <div
+            key={i}
+            className="absolute h-3 w-3 rounded-full"
+            style={{
+              left: dot.x,
+              top: dot.y,
+              backgroundColor: `rgba(${dot.color}, 0.5)`,
+              animation: `particle-dance 8s ease-in-out infinite ${dot.delay}s`,
+              boxShadow: `0 0 15px rgba(${dot.color}, 0.4)`,
+            }}
+          />
+        ))}
+      </div>
 
-
+      {/* Premium bottom fade for content readability */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none"
+        style={{
+          background: "linear-gradient(to top, rgba(248, 250, 252, 0.95), rgba(248, 250, 252, 0.5) 50%, transparent)",
+        }}
+      />
     </div>
   );
 }
