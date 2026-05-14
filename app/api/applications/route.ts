@@ -73,13 +73,16 @@ function normalizeDates(rows: Record<string, unknown>[]): void {
       if (row[df]) {
         const val = row[df];
         if (val instanceof Date) {
-          // Use UTC methods to avoid local timezone shift
-          const y = val.getUTCFullYear();
-          const m = String(val.getUTCMonth() + 1).padStart(2, "0");
-          const d = String(val.getUTCDate()).padStart(2, "0");
-          row[df] = `${y}-${m}-${d}`;
-        } else if (typeof val === "string" && val.includes("T")) {
-          row[df] = val.split("T")[0];
+          // PostgreSQL DATE comes as JS Date at midnight UTC, but pg driver interprets it in local timezone
+          // Extract year, month, day directly from the Date's ISO string to avoid timezone issues
+          const isoString = val.toISOString(); // Always returns UTC
+          row[df] = isoString.split("T")[0];
+        } else if (typeof val === "string") {
+          // If it contains T (timestamp), extract just the date part
+          if (val.includes("T")) {
+            row[df] = val.split("T")[0];
+          }
+          // Otherwise keep as-is (already YYYY-MM-DD)
         }
       }
     }
@@ -294,16 +297,16 @@ export async function PUT(req: NextRequest) {
     const values: unknown[] = [];
     let idx = 1;
 
-    // Date fields that need special handling to avoid timezone shift
+    // Date fields - save as plain YYYY-MM-DD string (PostgreSQL DATE type handles this correctly)
     const dateFields = ["date_of_birth", "date_of_issue", "date_of_expiry", "language_cert_date"];
 
     for (const [key, value] of Object.entries(fields)) {
       if (allowedFields.includes(key)) {
         setClauses.push(`${key} = $${idx}`);
-        // For date fields, ensure we save as plain date string without timezone conversion
+        // For date fields, keep as plain YYYY-MM-DD string - do NOT add time component
+        // PostgreSQL DATE type stores just the date without timezone conversion when given a plain date string
         if (dateFields.includes(key) && typeof value === "string" && value.match(/^\d{4}-\d{2}-\d{2}$/)) {
-          // Add noon time to prevent timezone shift (12:00:00 UTC stays same day everywhere)
-          values.push(value + "T12:00:00.000Z");
+          values.push(value); // Keep as-is: "2024-01-15"
         } else {
           values.push(value);
         }

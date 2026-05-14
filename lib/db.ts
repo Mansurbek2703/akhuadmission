@@ -1,9 +1,14 @@
-import { Pool } from "pg";
+import { Pool, types } from "pg";
+
+// Disable automatic Date parsing for DATE type (OID 1082)
+// This prevents timezone conversion issues - dates come back as plain "YYYY-MM-DD" strings
+types.setTypeParser(1082, (val: string) => val); // DATE
+types.setTypeParser(1114, (val: string) => val); // TIMESTAMP (without timezone)
 
 const pool = new Pool({
   connectionString:
     process.env.DATABASE_URL ||
-    "postgresql://postgres:postgres@localhost:5432/admissions",
+    "postgresql://postgres:root@localhost:5432/admissions",
 });
 
 let migrated = false;
