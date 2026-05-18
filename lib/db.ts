@@ -8,7 +8,7 @@ types.setTypeParser(1114, (val: string) => val); // TIMESTAMP (without timezone)
 const pool = new Pool({
   connectionString:
     process.env.DATABASE_URL ||
-    "postgresql://postgres:root@localhost:5432/admissions",
+    "postgresql://postgres:root@localhost:5432/testadmit",
 });
 
 let migrated = false;

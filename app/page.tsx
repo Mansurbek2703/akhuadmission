@@ -5,22 +5,29 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Hero3DScene from "@/components/hero-3d-scene";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   BookOpen,
-  Shield,
   Cpu,
   Code,
   Brain,
   Plane,
   ArrowRight,
-  CheckCircle2,
   MapPin,
   Phone,
   Mail,
+  GraduationCap,
+  Shield,
+  Briefcase,
+  Languages,
+  ChevronDown,
 } from "lucide-react";
 
-
-
-const programs = [
+const bachelorPrograms = [
   {
     icon: Code,
     title: "Software Engineering",
@@ -49,26 +56,21 @@ const programs = [
   },
 ];
 
-const steps = [
+const masterPrograms = [
   {
-    number: "01",
-    title: "Register",
-    description: "Create your account with email and select your program",
+    icon: Brain,
+    title: "Applied Artificial Intelligence",
+    description: "Master advanced AI techniques, machine learning, and intelligent systems",
   },
   {
-    number: "02",
-    title: "Verify Email",
-    description: "Confirm your email address via the verification link",
+    icon: Briefcase,
+    title: "Business Administration (MBA)",
+    description: "Develop strategic leadership and business management expertise",
   },
   {
-    number: "03",
-    title: "Complete Application",
-    description: "Fill in your details and upload required documents",
-  },
-  {
-    number: "04",
-    title: "Track Status",
-    description: "Monitor your application progress in real-time",
+    icon: Languages,
+    title: "Applied Linguistics and TESOL",
+    description: "Teach English to speakers of other languages with advanced methodologies",
   },
 ];
 
@@ -92,34 +94,136 @@ export default function LandingPage() {
             <a className="text-sm font-medium text-muted-foreground hover:text-foreground" href="#programs">
               Programs
             </a>
-            <a className="text-sm font-medium text-muted-foreground hover:text-foreground" href="#how-it-works">
-              How It Works
-            </a>
 
-            <Link href="/login">
-              <Button variant="outline" size="sm">
-                Sign In
-              </Button>
-            </Link>
+            {/* Sign In Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1">
+                  Sign In
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <a href="https://admission.akhu.uz/login" className="flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4" />
+                    Bachelor
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="https://master.akhu.uz/login" className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4" />
+                    Master
+                  </a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-            <Link href="/register">
-              <Button size="sm">Apply Now</Button>
-            </Link>
+            {/* Apply Now Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" className="gap-1">
+                  Apply Now
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <a href="https://admission.akhu.uz/register" className="flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4" />
+                    Bachelor
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="https://master.akhu.uz/register" className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4" />
+                    Master
+                  </a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </nav>
+
+          {/* Mobile menu */}
+          <div className="flex items-center gap-2 md:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1">
+                  Sign In
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <a href="https://admission.akhu.uz/login" className="flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4" />
+                    Bachelor
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="https://master.akhu.uz/login" className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4" />
+                    Master
+                  </a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" className="gap-1">
+                  Apply
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <a href="https://admission.akhu.uz/register" className="flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4" />
+                    Bachelor
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="https://master.akhu.uz/register" className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4" />
+                    Master
+                  </a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </header>
 
       {/* ================= HERO ================= */}
       <section className="relative min-h-[85vh] overflow-hidden sm:min-h-[88vh]">
-        {/* BACKGROUND (o'zgarmadi) */}
+        {/* BACKGROUND */}
         <Hero3DScene />
         {/* CONTENT */}
-        {/* 👉 padding-top kamaytirildi — kontent tepaga ko‘tarildi */}
         <div className="relative z-10 mx-auto max-w-7xl px-4 pb-6 pt-20 sm:pt-24 lg:px-8 lg:pb-10 lg:pt-8">
           <div className="mx-auto max-w-3xl text-center">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-200/60 bg-white/80 px-4 py-1.5 shadow-md backdrop-blur-sm">
-              <BookOpen className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-600">
+              <BookOpen
+                className="h-4 w-4"
+                style={{
+                  animation: "icon-color-pulse 3s ease-in-out infinite",
+                  background: "linear-gradient(90deg, rgb(239, 68, 68), rgb(34, 197, 94))",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}
+              />
+              <span
+                className="text-sm font-medium"
+                style={{
+                  background: "linear-gradient(90deg, rgb(239, 68, 68) 0%, rgb(34, 197, 94) 100%)",
+                  backgroundSize: "200% 200%",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  animation: "gradient-shift 4s ease infinite",
+                }}
+              >
                 2026/2027 Admissions Open
               </span>
             </div>
@@ -128,29 +232,47 @@ export default function LandingPage() {
               Shape Your Future at Al-Khwarizmi University
             </h1>
 
-            <p className="mx-auto mt-6 max-w-2xl text-base text-muted-foreground sm:text-lg lg:text-xl">
-              Apply for our world-class Bachelor programs in technology and
-              science. Start your journey towards innovation and excellence.
+            <p className="mx-auto mt-6 max-w-2xl text-base font-bold sm:text-lg lg:text-xl leading-relaxed" style={{ color: "#335aa9" }}>
+              Apply for our world-class Bachelor and Master programs in technology,
+              science, and business. Start your journey towards innovation and excellence.
             </p>
 
             {/* BUTTONS */}
             <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              <Link href="/register">
-                <Button size="lg" className="bg-blue-600 text-white">
-                  Apply for Bachelor
-                  <ArrowRight className="ml-2 h-4 w-4" />
+              <a href="https://admission.akhu.uz/register">
+                <Button
+                  size="lg"
+                  className="relative overflow-hidden rounded-xl border-2 border-transparent bg-gradient-to-r from-blue-500 via-blue-600 to-cyan-500 text-white font-semibold text-base transition-all duration-300 hover:border-cyan-400/50 backdrop-blur-sm"
+                  style={{
+                    animation: "scale-pulse 1.5s ease-in-out infinite",
+                    boxShadow: "0 0 30px rgba(59, 130, 246, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.2)",
+                  }}
+                >
+                  <span className="relative z-10 flex items-center">
+                    Apply for Bachelor
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </span>
                 </Button>
-              </Link>
+              </a>
 
-              <a href="#programs">
-                <Button variant="outline" size="lg">
-                  Explore Programs
+              <a href="https://master.akhu.uz/register">
+                <Button
+                  size="lg"
+                  className="relative overflow-hidden rounded-xl border-2 border-transparent bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 text-white font-semibold text-base transition-all duration-300 hover:border-pink-400/50 backdrop-blur-sm"
+                  style={{
+                    animation: "scale-pulse 1.5s ease-in-out infinite",
+                    boxShadow: "0 0 30px rgba(139, 92, 246, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.2)",
+                  }}
+                >
+                  <span className="relative z-10 flex items-center">
+                    Apply for Master
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </span>
                 </Button>
               </a>
             </div>
 
             {/* ================= YOUTUBE VIDEO ================= */}
-            {/* 👉 2-rasmdagi kabi tugmalar ostida markazda */}
             <div className="mt-8 flex justify-center">
               <div className="w-full max-w-3xl overflow-hidden rounded-xl shadow-xl">
                 <div className="relative w-full pb-[56.25%]">
@@ -164,7 +286,6 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-            {/* ================================================= */}
           </div>
         </div>
 
@@ -184,8 +305,8 @@ export default function LandingPage() {
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-3 px-4 py-6 lg:grid-cols-4 lg:px-8">
           {[
             { value: "5", label: "Bachelor Programs" },
+            { value: "3", label: "Master Programs" },
             { value: "100%", label: "Online Process" },
-            { value: "24/7", label: "Application Support" },
             { value: "2026", label: "Intake Year" },
           ].map((stat) => (
             <div key={stat.label} className="group cursor-default rounded-lg p-3 text-center transition-all duration-200 hover:bg-blue-50/60">
@@ -203,106 +324,91 @@ export default function LandingPage() {
       {/* Programs Section */}
       <section id="programs" className="py-10 lg:py-14">
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-balance text-2xl font-bold text-foreground sm:text-3xl">
-              Bachelor Programs
-            </h2>
-            <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-              Choose from our industry-leading programs designed for the future
-            </p>
-          </div>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {programs.map((program) => (
-              <div
-                key={program.title}
-                className="group cursor-default rounded-xl border border-border bg-card p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-300/50 hover:shadow-lg hover:shadow-blue-500/5"
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500/10 to-cyan-500/10 transition-all duration-200 group-hover:from-blue-500/20 group-hover:to-cyan-500/20 group-hover:shadow-md group-hover:shadow-blue-500/10">
-                  <program.icon className="h-5 w-5 text-blue-600 transition-transform duration-200 group-hover:scale-110" />
-                </div>
-                <h3 className="mt-3 font-semibold text-foreground">
-                  {program.title}
-                </h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                  {program.description}
+          {/* Two columns on desktop, stacked on mobile */}
+          <div className="grid gap-12 lg:grid-cols-2 lg:gap-8">
+            {/* Bachelor Programs */}
+            <div>
+              <div className="mb-6 text-center lg:text-left">
+                <h2 className="text-balance text-2xl font-bold text-foreground sm:text-3xl">
+                  Bachelor Programs
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+                  Undergraduate degrees for future tech leaders
                 </p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+              <div className="grid gap-4">
+                {bachelorPrograms.map((program) => (
+                  <div
+                    key={program.title}
+                    className="group cursor-default rounded-xl border border-border bg-card p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-300/50 hover:shadow-lg hover:shadow-blue-500/5"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500/10 to-cyan-500/10 transition-all duration-200 group-hover:from-blue-500/20 group-hover:to-cyan-500/20 group-hover:shadow-md group-hover:shadow-blue-500/10">
+                        <program.icon className="h-5 w-5 text-blue-600 transition-transform duration-200 group-hover:scale-110" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground">
+                          {program.title}
+                        </h3>
+                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                          {program.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 text-center lg:text-left">
+                <a href="https://admission.akhu.uz/register">
+                  <Button className="bg-blue-600 text-white">
+                    Apply for Bachelor
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </a>
+              </div>
+            </div>
 
-      {/* How It Works */}
-      <section id="how-it-works" className="bg-card py-10 lg:py-14">
-        <div className="mx-auto max-w-7xl px-4 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-balance text-2xl font-bold text-foreground sm:text-3xl">
-              How It Works
-            </h2>
-            <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-              Complete your application in four simple steps
-            </p>
-          </div>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {steps.map((step) => (
-              <div key={step.number} className="group relative cursor-default rounded-xl border border-transparent p-4 transition-all duration-200 hover:border-blue-200/50 hover:bg-blue-50/40 hover:shadow-sm">
-                <div className="bg-gradient-to-r from-blue-600/15 to-cyan-500/15 bg-clip-text text-4xl font-bold text-transparent transition-transform duration-200 group-hover:scale-105">
-                  {step.number}
-                </div>
-                <h3 className="mt-2 font-semibold text-foreground">
-                  {step.title}
-                </h3>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                  {step.description}
+            {/* Master Programs */}
+            <div>
+              <div className="mb-6 text-center lg:text-left">
+                <h2 className="text-balance text-2xl font-bold text-foreground sm:text-3xl">
+                  Master Programs
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+                  Advanced degrees for career advancement
                 </p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section className="py-10 lg:py-14">
-        <div className="mx-auto max-w-7xl px-4 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-balance text-2xl font-bold text-foreground sm:text-3xl">
-              Why Apply Online?
-            </h2>
-          </div>
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            {[
-              {
-                title: "Real-Time Tracking",
-                description:
-                  "Monitor your application status at every stage",
-              },
-              {
-                title: "Direct Communication",
-                description: "Chat directly with the Registrar Office",
-              },
-              {
-                title: "Secure & Fast",
-                description:
-                  "Your documents are safely stored and processed quickly",
-              },
-            ].map((feature) => (
-              <div
-                key={feature.title}
-                className="group flex gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-green-300/50 hover:shadow-md hover:shadow-green-500/5"
-              >
-                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-green-500/10 to-emerald-500/10 transition-all duration-200 group-hover:from-green-500/20 group-hover:to-emerald-500/20">
-                  <CheckCircle2 className="h-4 w-4 text-green-600 transition-transform duration-200 group-hover:scale-110" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-foreground">
-                    {feature.title}
-                  </h3>
-                  <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground sm:text-sm">
-                    {feature.description}
-                  </p>
-                </div>
+              <div className="grid gap-4">
+                {masterPrograms.map((program) => (
+                  <div
+                    key={program.title}
+                    className="group cursor-default rounded-xl border border-border bg-card p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-purple-300/50 hover:shadow-lg hover:shadow-purple-500/5"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500/10 to-pink-500/10 transition-all duration-200 group-hover:from-purple-500/20 group-hover:to-pink-500/20 group-hover:shadow-md group-hover:shadow-purple-500/10">
+                        <program.icon className="h-5 w-5 text-purple-600 transition-transform duration-200 group-hover:scale-110" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground">
+                          {program.title}
+                        </h3>
+                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                          {program.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+              <div className="mt-6 text-center lg:text-left">
+                <a href="https://master.akhu.uz/register">
+                  <Button className="bg-purple-600 text-white hover:bg-purple-700">
+                    Apply for Master
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -319,15 +425,34 @@ export default function LandingPage() {
             Start your application today and take the first step towards your
             future.
           </p>
-          <Link href="/register">
-            <Button
-              size="lg"
-              className="mt-6 bg-white text-blue-600 shadow-xl transition-all duration-200 hover:bg-blue-50 hover:shadow-2xl hover:shadow-white/20"
-            >
-              Apply Now
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
+          <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            {/* Apply Now Dropdown in CTA */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="lg"
+                  className="gap-2 bg-white text-blue-600 shadow-xl transition-all duration-200 hover:bg-blue-50 hover:shadow-2xl hover:shadow-white/20"
+                >
+                  Apply Now
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center">
+                <DropdownMenuItem asChild>
+                  <a href="https://admission.akhu.uz/register" className="flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4" />
+                    Bachelor
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="https://master.akhu.uz/register" className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4" />
+                    Master
+                  </a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </section>
 
@@ -365,12 +490,18 @@ export default function LandingPage() {
                 >
                   Programs
                 </Link>
-                <Link
-                  href="/login"
+                <a
+                  href="https://admission.akhu.uz/login"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  Log in
-                </Link>
+                  Bachelor Login
+                </a>
+                <a
+                  href="https://master.akhu.uz/login"
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Master Login
+                </a>
                 <a
                   href="https://akhu.uz/"
                   target="_blank"
@@ -440,8 +571,16 @@ export default function LandingPage() {
               rights reserved.
             </p>
             <p className="text-xs text-muted-foreground">
-              This platform was developed by the IT department of Al-Khwarizmi
-              University.
+              This platform was developed by{" "}
+              <a
+                href="https://mansurbek.info"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:text-blue-600 hover:underline transition-colors"
+              >
+                Mansurbek
+              </a>
+              {" "}Qazaqov
             </p>
           </div>
         </div>
