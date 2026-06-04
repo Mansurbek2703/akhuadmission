@@ -107,13 +107,13 @@ export default function LandingPage() {
                 <DropdownMenuItem asChild>
                   <a href="https://admission.akhu.uz/login" className="flex items-center gap-2">
                     <GraduationCap className="h-4 w-4" />
-                    Bachelor
+                    Bachelor's
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <a href="https://master.akhu.uz/login" className="flex items-center gap-2">
                     <BookOpen className="h-4 w-4" />
-                    Master
+                    Master's
                   </a>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -131,13 +131,13 @@ export default function LandingPage() {
                 <DropdownMenuItem asChild>
                   <a href="https://admission.akhu.uz/register" className="flex items-center gap-2">
                     <GraduationCap className="h-4 w-4" />
-                    Bachelor
+                    Bachelor's
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <a href="https://master.akhu.uz/register" className="flex items-center gap-2">
                     <BookOpen className="h-4 w-4" />
-                    Master
+                    Master's
                   </a>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -157,13 +157,13 @@ export default function LandingPage() {
                 <DropdownMenuItem asChild>
                   <a href="https://admission.akhu.uz/login" className="flex items-center gap-2">
                     <GraduationCap className="h-4 w-4" />
-                    Bachelor
+                    Bachelor's
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <a href="https://master.akhu.uz/login" className="flex items-center gap-2">
                     <BookOpen className="h-4 w-4" />
-                    Master
+                    Master's
                   </a>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -180,13 +180,13 @@ export default function LandingPage() {
                 <DropdownMenuItem asChild>
                   <a href="https://admission.akhu.uz/register" className="flex items-center gap-2">
                     <GraduationCap className="h-4 w-4" />
-                    Bachelor
+                    Bachelor's
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <a href="https://master.akhu.uz/register" className="flex items-center gap-2">
                     <BookOpen className="h-4 w-4" />
-                    Master
+                    Master's
                   </a>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -249,7 +249,7 @@ export default function LandingPage() {
                   }}
                 >
                   <span className="relative z-10 flex items-center">
-                    Apply for Bachelor
+                    Apply for Bachelor's
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </span>
                 </Button>
@@ -265,7 +265,7 @@ export default function LandingPage() {
                   }}
                 >
                   <span className="relative z-10 flex items-center">
-                    Apply for Master
+                    Apply for Master's
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </span>
                 </Button>
@@ -304,8 +304,8 @@ export default function LandingPage() {
       <section className="border-y border-border bg-card">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-3 px-4 py-6 lg:grid-cols-4 lg:px-8">
           {[
-            { value: "5", label: "Bachelor Programs" },
-            { value: "3", label: "Master Programs" },
+            { value: "5", label: "Bachelor's Programs" },
+            { value: "3", label: "Master's Programs" },
             { value: "100%", label: "Online Process" },
             { value: "2026", label: "Intake Year" },
           ].map((stat) => (
@@ -361,7 +361,7 @@ export default function LandingPage() {
               <div className="mt-6 text-center lg:text-left">
                 <a href="https://admission.akhu.uz/register">
                   <Button className="bg-blue-600 text-white">
-                    Apply for Bachelor
+                    Apply for Bachelor's
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </a>
@@ -372,7 +372,7 @@ export default function LandingPage() {
             <div>
               <div className="mb-6 text-center lg:text-left">
                 <h2 className="text-balance text-2xl font-bold text-foreground sm:text-3xl">
-                  Master Programs
+                  Master's Programs
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground sm:text-base">
                   Advanced degrees for career advancement
@@ -403,7 +403,7 @@ export default function LandingPage() {
               <div className="mt-6 text-center lg:text-left">
                 <a href="https://master.akhu.uz/register">
                   <Button className="bg-purple-600 text-white hover:bg-purple-700">
-                    Apply for Master
+                    Apply for Master's
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </a>
@@ -441,13 +441,13 @@ export default function LandingPage() {
                 <DropdownMenuItem asChild>
                   <a href="https://admission.akhu.uz/register" className="flex items-center gap-2">
                     <GraduationCap className="h-4 w-4" />
-                    Bachelor
+                    Bachelor's
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <a href="https://master.akhu.uz/register" className="flex items-center gap-2">
                     <BookOpen className="h-4 w-4" />
-                    Master
+                    Master's
                   </a>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -494,13 +494,13 @@ export default function LandingPage() {
                   href="https://admission.akhu.uz/login"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  Bachelor Login
+                  Bachelor's Login
                 </a>
                 <a
                   href="https://master.akhu.uz/login"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  Master Login
+                  Master's Login
                 </a>
                 <a
                   href="https://akhu.uz/"
