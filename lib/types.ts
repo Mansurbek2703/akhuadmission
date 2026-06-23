@@ -6,7 +6,9 @@ export type ApplicationStatus =
   | "incomplete_document"
   | "approved_to_attend_exam"
   | "passed_with_exemption"
-  | "application_approved";
+  | "application_approved"
+  | "reserved"
+  | "rejected";
 
 export const APPLICATION_STATUS_LABELS: Record<ApplicationStatus, string> = {
   submitted: "Submitted",
@@ -15,6 +17,8 @@ export const APPLICATION_STATUS_LABELS: Record<ApplicationStatus, string> = {
   approved_to_attend_exam: "Approved to Attend Exam",
   passed_with_exemption: "Passed with Exemption",
   application_approved: "Application Approved",
+  reserved: "Seat Reserved",
+  rejected: "Application Rejected",
 };
 
 export type Program =

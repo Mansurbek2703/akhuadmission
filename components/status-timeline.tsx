@@ -12,6 +12,7 @@ const statusOrder: ApplicationStatus[] = [
   "approved_to_attend_exam",
   "passed_with_exemption",
   "application_approved",
+  "reserved",
 ];
 
 export function StatusTimeline({

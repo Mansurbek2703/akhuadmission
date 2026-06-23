@@ -60,6 +60,8 @@ const statusColors: Record<ApplicationStatus, string> = {
   approved_to_attend_exam: "bg-primary/10 text-primary border-primary/20",
   passed_with_exemption: "bg-accent text-accent-foreground border-accent",
   application_approved: "bg-success/10 text-success border-success/20",
+  reserved: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20",
+  rejected: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20",
 };
 
 export function ApplicationsTable({
