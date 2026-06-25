@@ -220,6 +220,7 @@ export interface Application {
   user_phone?: string;
   user_program?: Program;
   user_profile_photo?: string;
+  last_message_at?: string | null;
 }
 
 export interface ChatMessage {

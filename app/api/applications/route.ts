@@ -133,7 +133,8 @@ export async function GET(req: NextRequest) {
       SELECT a.*, u.email as user_email, u.phone as user_phone, u.program as user_program,
              ${hasProfilePhotoCol ? "u.profile_photo_path as user_profile_photo," : ""}
              admin_user.email as assigned_admin_email,
-             TRIM(COALESCE(admin_user.first_name, '') || ' ' || COALESCE(admin_user.last_name, '')) as assigned_admin_name
+             TRIM(COALESCE(admin_user.first_name, '') || ' ' || COALESCE(admin_user.last_name, '')) as assigned_admin_name,
+             (SELECT MAX(cm.created_at) FROM chat_messages cm WHERE cm.application_id = a.id) as last_message_at
       FROM applications a
       JOIN users u ON a.user_id = u.id
       LEFT JOIN users admin_user ON a.assigned_admin_id = admin_user.id

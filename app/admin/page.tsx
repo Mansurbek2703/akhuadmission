@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import useSWR from "swr";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ApplicationsTable } from "@/components/admin/applications-table";
@@ -47,6 +48,9 @@ function buildQuery(filters: Filters, forMe: boolean) {
 export default function AdminPage() {
   const { user } = useAuth();
   const { statusFilter } = useStatusFilter();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const appParam = searchParams.get("app");
   const [tab, setTab] = useState("all");
   const [filters, setFilters] = useState<Filters>({
     status: "",
@@ -102,6 +106,20 @@ export default function AdminPage() {
       setExporting(false);
     }
   };
+
+  // Open a specific applicant's profile when navigated here with ?app=<id>
+  // (e.g. from the chat page "View Profile" link).
+  useEffect(() => {
+    if (!appParam) return;
+    const all = (allData?.applications || []) as import("@/lib/types").Application[];
+    const forMe = (forMeData?.applications || []) as import("@/lib/types").Application[];
+    const found = all.find((a) => a.id === appParam) || forMe.find((a) => a.id === appParam);
+    if (found) {
+      setSelectedApp(found);
+      // Clear the param so it doesn't re-trigger / stick in the URL.
+      router.replace("/admin");
+    }
+  }, [appParam, allData, forMeData, router]);
 
   const mutateData = () => { mutateAll(); mutateForMe(); };
 

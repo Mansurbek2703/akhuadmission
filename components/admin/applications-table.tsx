@@ -92,10 +92,48 @@ export function ApplicationsTable({
   }, [applications, selectedApp, setSelectedApp]);
 
   const [saving, setSaving] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 10;
+  const pageStorageKey = `apps-page:${pathname}`;
 
-  const totalPages = Math.ceil(applications.length / PAGE_SIZE);
+  // Lazy init from sessionStorage so the page survives remounts (e.g. opening a
+  // detail view / chat and pressing back).
+  const [currentPage, setCurrentPage] = useState(() => {
+    if (typeof window === "undefined") return 1;
+    const saved = sessionStorage.getItem(pageStorageKey);
+    const parsed = saved ? parseInt(saved, 10) : 1;
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(applications.length / PAGE_SIZE));
+
+  // Keep currentPage within valid range and persist it.
+  useEffect(() => {
+    const clamped = Math.min(Math.max(1, currentPage), totalPages);
+    if (clamped !== currentPage) {
+      setCurrentPage(clamped);
+      return;
+    }
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem(pageStorageKey, String(clamped));
+    }
+  }, [currentPage, totalPages, pageStorageKey]);
+
+  const [jumpValue, setJumpValue] = useState("");
+
+  const goToPage = useCallback(
+    (page: number) => {
+      const target = Math.min(Math.max(1, page), totalPages);
+      setCurrentPage(target);
+    },
+    [totalPages]
+  );
+
+  const handleJump = useCallback(() => {
+    const n = parseInt(jumpValue, 10);
+    if (Number.isFinite(n)) goToPage(n);
+    setJumpValue("");
+  }, [jumpValue, goToPage]);
+
   const paginatedApps = applications.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE
@@ -715,8 +753,8 @@ export function ApplicationsTable({
                         {((selectedApp as unknown as Record<string, string>).intl_cert_type === "sat" || (selectedApp as unknown as Record<string, string>).sat_score) && (<>
                           <EditableRow label="SAT Score" fieldKey="sat_score" />
                           <EditableRow label="SAT ID" fieldKey="sat_id" />
-                          <ReadonlyRow label="College Board Email" value={(selectedApp as unknown as Record<string, string>).sat_email || "N/A"} />
-                          <ReadonlyRow label="College Board Password" value={(selectedApp as unknown as Record<string, string>).sat_password || "N/A"} />
+                          <EditableRow label="College Board Email" fieldKey="sat_email" />
+                          <EditableRow label="College Board Password" fieldKey="sat_password" />
                           <DocRow label="SAT PDF" path={(selectedApp as unknown as Record<string, string>).sat_pdf_path} verifiedField="sat_verified" invalidField="sat_invalid" docType="sat_pdf" fieldKey="sat_pdf_path" />
                         </>)}
                         {(selectedApp as unknown as Record<string, string>).intl_cert_type === "ib" && (<>
@@ -882,13 +920,29 @@ export function ApplicationsTable({
               {(currentPage - 1) * PAGE_SIZE + 1}-{Math.min(currentPage * PAGE_SIZE, applications.length)} of {applications.length}
             </p>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="gap-1 bg-transparent border-border text-foreground">
+              <Button variant="outline" size="sm" onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="gap-1 bg-transparent border-border text-foreground">
                 <ChevronLeft className="h-4 w-4" /> Prev
               </Button>
               <span className="text-sm text-muted-foreground">{currentPage} / {totalPages}</span>
-              <Button variant="outline" size="sm" onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="gap-1 bg-transparent border-border text-foreground">
+              <Button variant="outline" size="sm" onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} className="gap-1 bg-transparent border-border text-foreground">
                 Next <ChevronRight className="h-4 w-4" />
               </Button>
+              <div className="ml-2 flex items-center gap-1.5 border-l border-border pl-3">
+                <span className="text-xs text-muted-foreground whitespace-nowrap">Go to</span>
+                <Input
+                  type="number"
+                  min={1}
+                  max={totalPages}
+                  value={jumpValue}
+                  onChange={(e) => setJumpValue(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleJump(); }}
+                  placeholder={String(currentPage)}
+                  className="h-8 w-16 bg-card text-center text-sm"
+                />
+                <Button variant="outline" size="sm" onClick={handleJump} disabled={!jumpValue} className="h-8 bg-transparent border-border text-foreground">
+                  Go
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -924,16 +978,34 @@ export function ApplicationsTable({
           </div>
         ))}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-2">
-            <Button variant="ghost" size="sm" onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="text-foreground">
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-xs text-muted-foreground">
-              {(currentPage - 1) * PAGE_SIZE + 1}-{Math.min(currentPage * PAGE_SIZE, applications.length)} of {applications.length}
-            </span>
-            <Button variant="ghost" size="sm" onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="text-foreground">
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+          <div className="flex flex-col gap-2 rounded-lg border border-border bg-card px-3 py-2">
+            <div className="flex items-center justify-between">
+              <Button variant="ghost" size="sm" onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="text-foreground">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                Page {currentPage} / {totalPages}
+              </span>
+              <Button variant="ghost" size="sm" onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} className="text-foreground">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex items-center justify-center gap-1.5 border-t border-border pt-2">
+              <span className="text-xs text-muted-foreground whitespace-nowrap">Go to page</span>
+              <Input
+                type="number"
+                min={1}
+                max={totalPages}
+                value={jumpValue}
+                onChange={(e) => setJumpValue(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleJump(); }}
+                placeholder={String(currentPage)}
+                className="h-8 w-16 bg-card text-center text-sm"
+              />
+              <Button variant="outline" size="sm" onClick={handleJump} disabled={!jumpValue} className="h-8 bg-transparent border-border text-foreground">
+                Go
+              </Button>
+            </div>
           </div>
         )}
       </div>

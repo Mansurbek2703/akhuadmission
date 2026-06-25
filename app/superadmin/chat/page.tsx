@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import useSWR from "swr";
 import { useAuth } from "@/hooks/use-auth";
 import { ChatPanel } from "@/components/chat-panel";
@@ -10,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Search, MessageSquare, ArrowLeft } from "lucide-react";
+import { Loader2, Search, MessageSquare, ArrowLeft, User } from "lucide-react";
 import { PROGRAM_LABELS } from "@/lib/types";
 import type { Application, Program } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -19,10 +19,17 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function SuperadminChatPage() {
   const { user } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const appParam = searchParams.get("app");
   const [selectedAppId, setSelectedAppId] = useState<string | null>(appParam);
   const [search, setSearch] = useState("");
+
+  const goToProfile = (appId: string) => {
+    const base = pathname.startsWith("/superadmin") ? "/superadmin" : "/admin";
+    router.push(`${base}?app=${appId}`);
+  };
 
   useEffect(() => {
     if (appParam) setSelectedAppId(appParam);
@@ -46,15 +53,22 @@ export default function SuperadminChatPage() {
       : selectedApplication.user_email || "Applicant"
     : "";
 
-  const filtered = applications.filter((app) => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return (
-      app.user_email?.toLowerCase().includes(q) ||
-      app.surname?.toLowerCase().includes(q) ||
-      app.given_name?.toLowerCase().includes(q)
-    );
-  });
+  const filtered = applications
+    .filter((app) => {
+      if (!search) return true;
+      const q = search.toLowerCase();
+      return (
+        app.user_email?.toLowerCase().includes(q) ||
+        app.surname?.toLowerCase().includes(q) ||
+        app.given_name?.toLowerCase().includes(q)
+      );
+    })
+    // Most recent conversation first.
+    .sort((a, b) => {
+      const aTime = new Date(a.last_message_at || a.updated_at || a.created_at).getTime();
+      const bTime = new Date(b.last_message_at || b.updated_at || b.created_at).getTime();
+      return bTime - aTime;
+    });
 
   if (!user) return null;
 
@@ -79,8 +93,20 @@ export default function SuperadminChatPage() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="min-w-0">
-              <h1 className="text-lg font-bold text-foreground truncate">{selectedAppName}</h1>
-              <p className="text-xs text-muted-foreground truncate">{selectedApplication?.user_email}</p>
+              <button
+                type="button"
+                onClick={() => selectedAppId && goToProfile(selectedAppId)}
+                className="text-lg font-bold text-foreground truncate hover:text-primary hover:underline transition-colors text-left"
+                title="View profile"
+              >
+                {selectedAppName}
+              </button>
+              <div className="flex items-center gap-2">
+                {selectedApplication?.unikal_id && (
+                  <span className="text-[10px] font-semibold text-primary">ID: #{selectedApplication.unikal_id}</span>
+                )}
+                <p className="text-xs text-muted-foreground truncate">{selectedApplication?.user_email}</p>
+              </div>
             </div>
           </div>
         ) : (
@@ -122,17 +148,26 @@ export default function SuperadminChatPage() {
             ) : (
               <div className="flex flex-col">
                 {filtered.map((app) => (
-                  <button
+                  <div
                     key={app.id}
-                    type="button"
+                    role="button"
+                    tabIndex={0}
                     onClick={() => setSelectedAppId(app.id)}
+                    onKeyDown={(e) => { if (e.key === "Enter") setSelectedAppId(app.id); }}
                     className={cn(
-                      "flex flex-col gap-1 border-b border-border px-4 py-3 text-left transition-colors hover:bg-accent/50",
+                      "flex flex-col gap-1 border-b border-border px-4 py-3 text-left transition-colors hover:bg-accent/50 cursor-pointer",
                       selectedAppId === app.id && "bg-accent"
                     )}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <span className="text-sm font-medium text-foreground">
+                      <span
+                        role="link"
+                        tabIndex={0}
+                        onClick={(e) => { e.stopPropagation(); goToProfile(app.id); }}
+                        onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); goToProfile(app.id); } }}
+                        className="text-sm font-medium text-foreground hover:text-primary hover:underline transition-colors cursor-pointer"
+                        title="View profile"
+                      >
                         {app.surname && app.given_name
                           ? `${app.surname} ${app.given_name}`
                           : app.user_email}
@@ -143,9 +178,14 @@ export default function SuperadminChatPage() {
                         </span>
                       )}
                     </div>
-                    <span className="text-xs text-muted-foreground">
-                      {app.user_email}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {app.unikal_id && (
+                        <span className="text-[10px] font-semibold text-primary">ID: #{app.unikal_id}</span>
+                      )}
+                      <span className="text-xs text-muted-foreground truncate">
+                        {app.user_email}
+                      </span>
+                    </div>
                     {app.user_program && (
                       <Badge
                         variant="outline"
@@ -154,7 +194,7 @@ export default function SuperadminChatPage() {
                         {PROGRAM_LABELS[app.user_program as Program]}
                       </Badge>
                     )}
-                  </button>
+                  </div>
                 ))}
               </div>
             )}
@@ -166,7 +206,34 @@ export default function SuperadminChatPage() {
           selectedAppId ? "flex md:flex" : "hidden md:flex"
         )}>
           {selectedAppId ? (
-            <div className="w-full">
+            <div className="flex w-full flex-col gap-3">
+              {/* Desktop header: applicant name (clickable -> profile) + ID */}
+              <div className="hidden md:flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3 shadow-sm">
+                <div className="min-w-0">
+                  <button
+                    type="button"
+                    onClick={() => goToProfile(selectedAppId)}
+                    className="text-base font-bold text-foreground truncate hover:text-primary hover:underline transition-colors text-left"
+                    title="View profile"
+                  >
+                    {selectedAppName}
+                  </button>
+                  <div className="flex items-center gap-2">
+                    {selectedApplication?.unikal_id && (
+                      <span className="text-[10px] font-semibold text-primary">ID: #{selectedApplication.unikal_id}</span>
+                    )}
+                    <span className="text-xs text-muted-foreground truncate">{selectedApplication?.user_email}</span>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => goToProfile(selectedAppId)}
+                  className="shrink-0 gap-1.5 border-border bg-transparent text-foreground"
+                >
+                  <User className="h-4 w-4" /> View Profile
+                </Button>
+              </div>
               <ChatPanel applicationId={selectedAppId} user={user} />
             </div>
           ) : (
