@@ -223,7 +223,7 @@ export function TransferForm() {
               id="fullName"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="John Doe"
+              placeholder="Mansurbek Qazaqov"
               required
             />
           </div>

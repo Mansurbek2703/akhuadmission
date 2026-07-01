@@ -88,7 +88,7 @@ export default function LandingPage() {
     <div className="flex min-h-screen flex-col bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/90 shadow-sm backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-8">
+        <div className="flex items-center justify-between px-2.5 py-3 sm:px-4">
           <Link href="/" className="flex items-center gap-2.5">
             <Image
               src="/logoEdited.png"
@@ -129,13 +129,13 @@ export default function LandingPage() {
                 <DropdownMenuItem asChild>
                   <a href="https://admission.akhu.uz/login" className="flex items-center gap-2">
                     <GraduationCap className="h-4 w-4" />
-                    Bachelor
+                    Bachelor&apos;s
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <a href="https://master.akhu.uz/login" className="flex items-center gap-2">
                     <BookOpen className="h-4 w-4" />
-                    Master
+                    Master&apos;s
                   </a>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -153,13 +153,13 @@ export default function LandingPage() {
                 <DropdownMenuItem asChild>
                   <a href="https://admission.akhu.uz/register" className="flex items-center gap-2">
                     <GraduationCap className="h-4 w-4" />
-                    Bachelor
+                    Bachelor&apos;s
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <a href="https://master.akhu.uz/register" className="flex items-center gap-2">
                     <BookOpen className="h-4 w-4" />
-                    Master
+                    Master&apos;s
                   </a>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -179,13 +179,13 @@ export default function LandingPage() {
                 <DropdownMenuItem asChild>
                   <a href="https://admission.akhu.uz/login" className="flex items-center gap-2">
                     <GraduationCap className="h-4 w-4" />
-                    Bachelor
+                    Bachelor&apos;s
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <a href="https://master.akhu.uz/login" className="flex items-center gap-2">
                     <BookOpen className="h-4 w-4" />
-                    Master
+                    Master&apos;s
                   </a>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -202,13 +202,13 @@ export default function LandingPage() {
                 <DropdownMenuItem asChild>
                   <a href="https://admission.akhu.uz/register" className="flex items-center gap-2">
                     <GraduationCap className="h-4 w-4" />
-                    Bachelor
+                    Bachelor&apos;s
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <a href="https://master.akhu.uz/register" className="flex items-center gap-2">
                     <BookOpen className="h-4 w-4" />
-                    Master
+                    Master&apos;s
                   </a>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -222,8 +222,8 @@ export default function LandingPage() {
         {/* BACKGROUND */}
         <Hero3DScene />
         {/* CONTENT */}
-        <div className="relative z-10 mx-auto max-w-7xl px-4 pb-6 pt-20 sm:pt-24 lg:px-8 lg:pb-10 lg:pt-8">
-          <div className="mx-auto max-w-3xl text-center">
+        <div className="relative z-10 mx-auto max-w-[1500px] px-4 pb-6 pt-20 sm:pt-24 lg:px-12 lg:pb-10 lg:pt-8">
+          <div className="mx-auto max-w-4xl text-center">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-200/60 bg-white/80 px-4 py-1.5 shadow-md backdrop-blur-sm">
               <BookOpen
                 className="h-4 w-4"
@@ -255,7 +255,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="mx-auto mt-6 max-w-2xl text-base font-bold sm:text-lg lg:text-xl leading-relaxed" style={{ color: "#335aa9" }}>
-              Apply for our world-class Bachelor and Master programs in technology,
+              Apply for our world-class Bachelor&apos;s and Master&apos;s programs in technology,
               science, and business. Start your journey towards innovation and excellence.
             </p>
 
@@ -308,7 +308,7 @@ export default function LandingPage() {
                   }}
                 >
                   <span className="relative z-10 flex items-center">
-                    Apply for Bachelor
+                    Apply for Bachelor&apos;s
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </span>
                 </Button>
@@ -324,7 +324,7 @@ export default function LandingPage() {
                   }}
                 >
                   <span className="relative z-10 flex items-center">
-                    Apply for Master
+                    Apply for Master&apos;s
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </span>
                 </Button>
@@ -361,10 +361,10 @@ export default function LandingPage() {
 
       {/* Stats */}
       <section className="border-y border-border bg-card">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-3 px-4 py-6 lg:grid-cols-4 lg:px-8">
+        <div className="mx-auto grid max-w-[1500px] grid-cols-2 gap-3 px-4 py-6 lg:grid-cols-4 lg:px-12">
           {[
-            { value: "5", label: "Bachelor Programs" },
-            { value: "3", label: "Master Programs" },
+    { value: "5", label: "Bachelor's Programs" },
+    { value: "3", label: "Master's Programs" },
             { value: "100%", label: "Online Process" },
             { value: "2026", label: "Intake Year" },
           ].map((stat) => (
@@ -382,14 +382,14 @@ export default function LandingPage() {
 
       {/* Programs Section */}
       <section id="programs" className="py-10 lg:py-14">
-        <div className="mx-auto max-w-7xl px-4 lg:px-8">
+        <div className="mx-auto max-w-[1500px] px-4 lg:px-12">
           {/* Two columns on desktop, stacked on mobile */}
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-8">
             {/* Bachelor Programs */}
             <div>
               <div className="mb-6 text-center lg:text-left">
                 <h2 className="text-balance text-2xl font-bold text-foreground sm:text-3xl">
-                  Bachelor Programs
+                  Bachelor&apos;s Programs
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground sm:text-base">
                   Undergraduate degrees for future tech leaders
@@ -420,7 +420,7 @@ export default function LandingPage() {
               <div className="mt-6 text-center lg:text-left">
                 <a href="https://admission.akhu.uz/register">
                   <Button className="bg-blue-600 text-white">
-                    Apply for Bachelor
+                    Apply for Bachelor&apos;s
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </a>
@@ -431,7 +431,7 @@ export default function LandingPage() {
             <div>
               <div className="mb-6 text-center lg:text-left">
                 <h2 className="text-balance text-2xl font-bold text-foreground sm:text-3xl">
-                  Master Programs
+                  Master&apos;s Programs
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground sm:text-base">
                   Advanced degrees for career advancement
@@ -462,7 +462,7 @@ export default function LandingPage() {
               <div className="mt-6 text-center lg:text-left">
                 <a href="https://master.akhu.uz/register">
                   <Button className="bg-purple-600 text-white hover:bg-purple-700">
-                    Apply for Master
+                    Apply for Master&apos;s
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </a>
@@ -476,7 +476,7 @@ export default function LandingPage() {
       <section className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-600">
         <div className="absolute -left-16 -top-16 h-48 w-48 rounded-full bg-white/5 blur-3xl" />
         <div className="absolute -bottom-16 -right-16 h-48 w-48 rounded-full bg-white/5 blur-3xl" />
-        <div className="relative mx-auto max-w-7xl px-4 py-12 text-center sm:py-14 lg:px-8">
+        <div className="relative mx-auto max-w-[1500px] px-4 py-12 text-center sm:py-14 lg:px-12">
           <h2 className="text-balance text-2xl font-bold text-white sm:text-3xl">
             Ready to Begin?
           </h2>
@@ -500,13 +500,13 @@ export default function LandingPage() {
                 <DropdownMenuItem asChild>
                   <a href="https://admission.akhu.uz/register" className="flex items-center gap-2">
                     <GraduationCap className="h-4 w-4" />
-                    Bachelor
+                    Bachelor&apos;s
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <a href="https://master.akhu.uz/register" className="flex items-center gap-2">
                     <BookOpen className="h-4 w-4" />
-                    Master
+                    Master&apos;s
                   </a>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -517,7 +517,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="border-t border-border bg-muted/30">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 lg:px-8">
+        <div className="mx-auto max-w-[1500px] px-4 py-8 sm:py-12 lg:px-12">
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {/* Logo & Description */}
             <div className="space-y-4 sm:col-span-2 lg:col-span-1">
@@ -559,13 +559,13 @@ export default function LandingPage() {
                   href="https://admission.akhu.uz/login"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  Bachelor Login
+                  Bachelor&apos;s Login
                 </a>
                 <a
                   href="https://master.akhu.uz/login"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  Master Login
+                  Master&apos;s Login
                 </a>
                 <a
                   href="https://akhu.uz/"
@@ -592,19 +592,19 @@ export default function LandingPage() {
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 flex-shrink-0" />
                   <a
-                    href="tel:+998556020002"
+                    href="tel:+998622277171"
                     className="transition-colors hover:text-foreground"
                   >
-                    +998 (55) 602-00-02
+                    +998 62 227 71 71
                   </a>
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 flex-shrink-0" />
                   <a
-                    href="mailto:info@akhu.uz"
+                    href="mailto:admission@akhu.uz"
                     className="transition-colors hover:text-foreground"
                   >
-                    info@akhu.uz
+                    admission@akhu.uz
                   </a>
                 </div>
               </div>

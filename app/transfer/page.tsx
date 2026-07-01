@@ -67,7 +67,7 @@ export default function TransferPage() {
     <div className="flex min-h-screen flex-col bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/90 shadow-sm backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-8">
+        <div className="flex items-center justify-between px-2.5 py-3 sm:px-4">
           <Link href="/" className="flex items-center gap-2.5">
             <Image
               src="/logoEdited.png"
@@ -89,11 +89,11 @@ export default function TransferPage() {
 
       {/* Hero */}
       <section className="border-b border-border bg-accent/40">
-        <div className="mx-auto max-w-4xl px-4 py-12 text-center lg:px-8">
-          <h1 className="text-balance text-3xl font-bold text-foreground sm:text-4xl">
+        <div className="mx-auto max-w-6xl px-6 py-16 text-center lg:px-10">
+          <h1 className="text-balance text-4xl font-bold text-foreground sm:text-5xl">
             Transfer to Al-Khwarizmi University
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-pretty leading-relaxed text-muted-foreground">
+          <p className="mx-auto mt-5 max-w-3xl text-pretty text-lg leading-relaxed text-muted-foreground">
             Continue your undergraduate journey at Al-Khwarizmi University.
             Review the transfer regulations below, confirm your eligibility, and
             submit your application with the required documents online.
@@ -101,7 +101,7 @@ export default function TransferPage() {
         </div>
       </section>
 
-      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-12 lg:px-8">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-16 lg:px-10">
         {/* Eligibility notice */}
         <div className="mb-10 flex items-start gap-3 rounded-xl border border-warning/40 bg-warning/10 p-5">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
