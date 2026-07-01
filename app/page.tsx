@@ -87,7 +87,7 @@ export default function LandingPage() {
               alt="Al-Khwarizmi University"
               width={200}
               height={150}
-              className="h-18 w-40 rounded-lg object-contain"
+              className="h-16 w-auto rounded-lg object-contain"
             />
           </Link>
 
@@ -247,8 +247,31 @@ export default function LandingPage() {
               science, and business. Start your journey towards innovation and excellence.
             </p>
 
+            {/* Exam Specifications - mobile only, above Apply buttons */}
+            <div className="mt-10 flex justify-center md:hidden">
+              <a
+                href="https://drive.google.com/file/d/1xTw0IZ6-5izZHQIhPg4HiQPf-GdAnvUW/view?usp=sharing"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full max-w-xs"
+              >
+                <Button
+                  size="lg"
+                  className="relative w-full overflow-hidden rounded-xl border-2 border-transparent bg-gradient-to-r from-sky-400 via-sky-300 to-white text-blue-700 font-semibold text-base transition-all duration-300 hover:border-sky-300/60 backdrop-blur-sm"
+                  style={{
+                    boxShadow: "0 0 30px rgba(56, 189, 248, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.4)",
+                  }}
+                >
+                  <span className="relative z-10 flex items-center">
+                    <FileDown className="mr-2 h-4 w-4" />
+                    Exam Specifications
+                  </span>
+                </Button>
+              </a>
+            </div>
+
             {/* BUTTONS */}
-            <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <div className="mt-4 flex flex-col items-center gap-3 sm:mt-10 sm:flex-row sm:justify-center">
               <a href="https://admission.akhu.uz/register">
                 <Button
                   size="lg"
