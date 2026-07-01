@@ -59,16 +59,26 @@ const APP_URL =
   process.env.NEXT_PUBLIC_APP_URL ||
   "https://admission.akhu.uz";
 
+export interface EmailAttachment {
+  filename: string;
+  content: Buffer;
+  contentType?: string;
+}
+
 export async function sendEmail({
   to,
   subject,
   html,
   text,
+  attachments,
+  replyTo,
 }: {
   to: string;
   subject: string;
   html: string;
   text?: string;
+  attachments?: EmailAttachment[];
+  replyTo?: string;
 }) {
   const transporter = getTransporter();
 
@@ -77,10 +87,26 @@ export async function sendEmail({
     console.log("[EMAIL - CONSOLE MODE]");
     console.log(`  To:      ${to}`);
     console.log(`  Subject: ${subject}`);
+    if (attachments?.length) {
+      console.log(`  Files:   ${attachments.map((a) => a.filename).join(", ")}`);
+    }
     console.log(`  Body:    ${text || html.replace(/<[^>]*>/g, "")}`);
     console.log("=".repeat(60));
     return { success: true, mode: "console" };
   }
+
+  // Build a clean plain-text version (better than naive tag stripping)
+  const plainText =
+    text ||
+    html
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+      .replace(/<[^>]*>/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  // Extract the domain of the From address for List-Unsubscribe / Message-ID
+  const fromDomain = FROM_ADDRESS.split("@")[1] || "alkhwarizmi.uz";
 
   try {
     const info = await transporter.sendMail({
@@ -88,7 +114,23 @@ export async function sendEmail({
       to,
       subject,
       html,
-      text: text || html.replace(/<[^>]*>/g, ""),
+      text: plainText,
+      ...(attachments?.length ? { attachments } : {}),
+      // Replies go to a real, monitored inbox (improves trust score)
+      replyTo: replyTo || process.env.SMTP_REPLY_TO || FROM_ADDRESS,
+      headers: {
+        // One-click unsubscribe — major providers reward this heavily
+        "List-Unsubscribe": `<mailto:${FROM_ADDRESS}?subject=unsubscribe>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+        // Mark as transactional (not bulk marketing)
+        "X-Entity-Ref-ID": `akhu-${Date.now()}`,
+        Precedence: "transactional",
+      },
+      // Ensures the Return-Path/envelope matches the From domain (SPF alignment)
+      envelope: {
+        from: FROM_ADDRESS,
+        to,
+      },
     });
     console.log(`[EMAIL] Sent to ${to}: ${info.messageId}`);
     return { success: true, messageId: info.messageId };

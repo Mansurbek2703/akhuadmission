@@ -26,6 +26,7 @@ import {
   Languages,
   ChevronDown,
   FileDown,
+  ArrowLeftRight,
 } from "lucide-react";
 
 const bachelorPrograms = [
@@ -75,6 +76,13 @@ const masterPrograms = [
   },
 ];
 
+const navCtaClass =
+  "relative overflow-hidden rounded-xl border-2 border-transparent bg-gradient-to-r from-blue-500 via-blue-600 to-cyan-500 text-white font-semibold gap-1.5 transition-all duration-300 hover:border-cyan-400/50 backdrop-blur-sm"
+
+const navCtaStyle = {
+  boxShadow: "0 0 20px rgba(59, 130, 246, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.2)",
+}
+
 export default function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -91,24 +99,28 @@ export default function LandingPage() {
             />
           </Link>
 
-          <nav className="hidden items-center gap-6 md:flex">
-            <a
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
-              href="https://drive.google.com/file/d/1xTw0IZ6-5izZHQIhPg4HiQPf-GdAnvUW/view?usp=sharing"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <FileDown className="h-4 w-4" />
-              Exam Specifications
-            </a>
-            <a className="text-sm font-medium text-muted-foreground hover:text-foreground" href="#programs">
-              Programs
-            </a>
+          <nav className="hidden items-center gap-3 md:flex">
+            <Button asChild size="sm" className={navCtaClass} style={navCtaStyle}>
+              <a
+                href="https://drive.google.com/file/d/1xTw0IZ6-5izZHQIhPg4HiQPf-GdAnvUW/view?usp=sharing"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <FileDown className="h-4 w-4" />
+                Exam Specifications
+              </a>
+            </Button>
+            <Button asChild size="sm" className={navCtaClass} style={navCtaStyle}>
+              <Link href="/transfer">
+                <ArrowLeftRight className="h-4 w-4" />
+                Transfer
+              </Link>
+            </Button>
 
             {/* Sign In Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1">
+                <Button size="sm" className={navCtaClass} style={navCtaStyle}>
                   Sign In
                   <ChevronDown className="h-3 w-3" />
                 </Button>
@@ -132,7 +144,7 @@ export default function LandingPage() {
             {/* Apply Now Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button size="sm" className="gap-1">
+                <Button size="sm" className={navCtaClass} style={navCtaStyle}>
                   Apply Now
                   <ChevronDown className="h-3 w-3" />
                 </Button>
@@ -247,8 +259,22 @@ export default function LandingPage() {
               science, and business. Start your journey towards innovation and excellence.
             </p>
 
-            {/* Exam Specifications - mobile only, above Apply buttons */}
-            <div className="mt-10 flex justify-center md:hidden">
+            {/* Transfer + Exam Specifications - mobile only, above Apply buttons */}
+            <div className="mt-10 flex flex-col items-center gap-3 md:hidden">
+              <Link href="/transfer" className="w-full max-w-xs">
+                <Button
+                  size="lg"
+                  className="relative w-full overflow-hidden rounded-xl border-2 border-transparent bg-gradient-to-r from-sky-400 via-sky-300 to-white text-blue-700 font-semibold text-base transition-all duration-300 hover:border-sky-300/60 backdrop-blur-sm"
+                  style={{
+                    boxShadow: "0 0 30px rgba(56, 189, 248, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.4)",
+                  }}
+                >
+                  <span className="relative z-10 flex items-center">
+                    <ArrowLeftRight className="mr-2 h-4 w-4" />
+                    Transfer
+                  </span>
+                </Button>
+              </Link>
               <a
                 href="https://drive.google.com/file/d/1xTw0IZ6-5izZHQIhPg4HiQPf-GdAnvUW/view?usp=sharing"
                 target="_blank"
@@ -522,6 +548,12 @@ export default function LandingPage() {
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Programs
+                </Link>
+                <Link
+                  href="/transfer"
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Transfer
                 </Link>
                 <a
                   href="https://admission.akhu.uz/login"
