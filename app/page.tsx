@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { AdmissionCountdown } from "@/components/admission-countdown";
 import Hero3DScene from "@/components/hero-3d-scene";
 import {
   DropdownMenu,
@@ -254,10 +255,7 @@ export default function LandingPage() {
               Shape Your Future at Al-Khwarizmi University
             </h1>
 
-            <p className="mx-auto mt-6 max-w-2xl text-base font-bold sm:text-lg lg:text-xl leading-relaxed" style={{ color: "#335aa9" }}>
-              Apply for our world-class Bachelor&apos;s and Master&apos;s programs in technology,
-              science, and business. Start your journey towards innovation and excellence.
-            </p>
+            <AdmissionCountdown />
 
             {/* Transfer + Exam Specifications - mobile only, above Apply buttons */}
             <div className="mt-10 flex flex-col items-center gap-3 md:hidden">
