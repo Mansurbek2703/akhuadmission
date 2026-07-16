@@ -183,6 +183,30 @@ export function ApplicationsTable({
 
   const cancelEdit = () => { setEditingCell(null); };
 
+  const [confirmToggleLoading, setConfirmToggleLoading] = useState<string | null>(null);
+
+  const toggleConfirmField = useCallback(async (fieldKey: string) => {
+    if (!selectedApp) return;
+    const currentValue = Boolean((selectedApp as unknown as Record<string, unknown>)[fieldKey]);
+    const newValue = !currentValue;
+    setConfirmToggleLoading(fieldKey);
+    try {
+      const res = await fetch("/api/applications", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ applicationId: selectedApp.id, [fieldKey]: newValue }),
+      });
+      if (!res.ok) throw new Error("Failed to save");
+      setSelectedApp({ ...selectedApp, [fieldKey]: newValue } as Application);
+      toast.success(newValue ? "Confirmed" : "Confirmation removed");
+      onUpdate();
+    } catch {
+      toast.error("Failed to update confirmation");
+    } finally {
+      setConfirmToggleLoading(null);
+    }
+  }, [selectedApp, onUpdate]);
+
   const handleVerifyToggle = async (field: string, value: boolean) => {
     if (!selectedApp) return;
     setVerifyLoading(field);
@@ -428,12 +452,52 @@ export function ApplicationsTable({
                   );
                 };
 
-                const ReadonlyRow = ({ label, value }: { label: string; value: string }) => (
-                  <div className="flex items-center justify-between gap-2 px-3 py-2">
-                    <span className="text-sm text-muted-foreground">{label}</span>
-                    <span className="font-medium text-foreground text-sm text-right max-w-[60%] break-words">{value || "-"}</span>
-                  </div>
-                );
+  const ReadonlyRow = ({ label, value }: { label: string; value: string }) => (
+    <div className="flex items-center justify-between gap-2 px-3 py-2">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="font-medium text-foreground text-sm text-right max-w-[60%] break-words">{value || "-"}</span>
+    </div>
+  );
+
+  const ConfirmToggleRow = ({ label, fieldKey }: { label: string; fieldKey: string }) => {
+    const confirmed = Boolean(appRec[fieldKey]);
+    const isLoading = confirmToggleLoading === fieldKey;
+    return (
+      <div
+        className="flex cursor-pointer select-none items-center justify-between gap-2 rounded-md px-3 py-2 transition-colors hover:bg-muted/60"
+        onDoubleClick={() => { if (!isLoading) toggleConfirmField(fieldKey); }}
+        title="Double-click to toggle confirmation"
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if ((e.key === "Enter" || e.key === " ") && !isLoading) {
+            e.preventDefault();
+            toggleConfirmField(fieldKey);
+          }
+        }}
+      >
+        <span className="text-sm text-muted-foreground">{label}</span>
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+            isLoading
+              ? "bg-muted text-muted-foreground"
+              : confirmed
+                ? "bg-emerald-100 text-emerald-700"
+                : "bg-red-100 text-red-700"
+          }`}
+        >
+          {isLoading ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : confirmed ? (
+            <Check className="h-3 w-3" />
+          ) : (
+            <X className="h-3 w-3" />
+          )}
+          {isLoading ? "Saving..." : confirmed ? "Confirmed" : "Not confirmed"}
+        </span>
+      </div>
+    );
+  };
 
                 const SelectEditableRow = ({ label, fieldKey, options, displayLabels }: { label: string; fieldKey: string; options: string[]; displayLabels: Record<string, string> }) => {
                   const rawVal = String(appRec[fieldKey] ?? "");
@@ -782,10 +846,10 @@ export function ApplicationsTable({
                       <SectionCard title="Submission Details">
                         <ReadonlyRow label="How did you hear about us" value={String(appRec.hear_about || "-")} />
 
-                        <ReadonlyRow label="Info is correct" value={appRec.confirm_info_correct ? "Confirmed" : "Not confirmed"} />
-                        <ReadonlyRow label="Final year completed" value={appRec.confirm_final_year ? "Confirmed" : "Not confirmed"} />
-                        <ReadonlyRow label="Fake info = disqualification" value={appRec.confirm_fake_disqualify ? "Confirmed" : "Not confirmed"} />
-                        <ReadonlyRow label="Fake info = cancellation" value={appRec.confirm_fake_cancel ? "Confirmed" : "Not confirmed"} />
+                <ConfirmToggleRow label="Info is correct" fieldKey="confirm_info_correct" />
+                <ConfirmToggleRow label="Final year completed" fieldKey="confirm_final_year" />
+                <ConfirmToggleRow label="Fake info = disqualification" fieldKey="confirm_fake_disqualify" />
+                <ConfirmToggleRow label="Fake info = cancellation" fieldKey="confirm_fake_cancel" />
                       </SectionCard>
                     </div>
                   </>

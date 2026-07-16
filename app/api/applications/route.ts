@@ -61,6 +61,12 @@ const FIELD_LABELS: Record<string, string> = {
   other_achievements_text: "Other Achievements Notes",
   other_achievements_pdf_path: "Other Achievements PDF",
   oferta_agreed: "Oferta Agreement",
+  hear_about: "How did you hear about us",
+  sibling_study: "Sibling Study",
+  confirm_info_correct: "Confirmation: Info is correct",
+  confirm_final_year: "Confirmation: Final year completed",
+  confirm_fake_disqualify: "Confirmation: Fake info = disqualification",
+  confirm_fake_cancel: "Confirmation: Fake info = cancellation",
   status: "Application Status",
   completion_percentage: "Completion Percentage",
 };
