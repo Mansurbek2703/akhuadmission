@@ -50,6 +50,8 @@ import {
   Globe,
   ArrowRightLeft,
   Search,
+  Mail,
+  Send,
 } from "lucide-react";
 import { APPLICATION_STATUS_LABELS } from "@/lib/types";
 import type { ApplicationStatus } from "@/lib/types";
@@ -122,6 +124,11 @@ export default function SuperadminSettingsPage() {
   const [statusLogsPage, setStatusLogsPage] = useState(1);
   const [statusLogsSearch, setStatusLogsSearch] = useState("");
   const [togglingPermission, setTogglingPermission] = useState<string | null>(null);
+  const [bcTitle, setBcTitle] = useState("");
+  const [bcDetails, setBcDetails] = useState("");
+  const [bcStatus, setBcStatus] = useState<string>("");
+  const [bcSending, setBcSending] = useState(false);
+  const [bcConfirmOpen, setBcConfirmOpen] = useState(false);
   const PAGE_SIZE = 10;
 
   const {
@@ -263,6 +270,34 @@ export default function SuperadminSettingsPage() {
     }
   };
 
+  const handleSendBroadcast = async () => {
+    if (!bcTitle.trim() || !bcDetails.trim() || !bcStatus) {
+      toast.error("Title, details, and status are required");
+      return;
+    }
+    setBcSending(true);
+    try {
+      const res = await fetch("/api/admin/broadcast-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: bcStatus, title: bcTitle, details: bcDetails }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      toast.success(
+        `Email sent to ${data.sent} of ${data.total} applicants with status "${data.statusLabel}"${data.failed ? ` (${data.failed} failed)` : ""}`
+      );
+      setBcTitle("");
+      setBcDetails("");
+      setBcStatus("");
+      setBcConfirmOpen(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to send broadcast email");
+    } finally {
+      setBcSending(false);
+    }
+  };
+
   const handleSaveOferta = async () => {
     if (!ofertaText.trim()) {
       toast.error("Oferta text cannot be empty");
@@ -330,6 +365,13 @@ export default function SuperadminSettingsPage() {
           >
             <ArrowRightLeft className="h-4 w-4" />
             Status Logs
+          </TabsTrigger>
+          <TabsTrigger
+            value="broadcast"
+            className="gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground"
+          >
+            <Mail className="h-4 w-4" />
+            Send Email
           </TabsTrigger>
         </TabsList>
 
@@ -979,6 +1021,124 @@ export default function SuperadminSettingsPage() {
                   </div>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="broadcast" className="mt-6">
+          <Card className="border-border bg-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <Mail className="h-5 w-5 text-primary" />
+                Broadcast Email to Applicants
+              </CardTitle>
+              <CardDescription className="text-muted-foreground">
+                Compose an email and send it to every applicant with a selected application status
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex max-w-2xl flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                  <Label className="text-foreground">
+                    Title <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    value={bcTitle}
+                    onChange={(e) => setBcTitle(e.target.value)}
+                    placeholder="e.g. Exam Schedule Announcement"
+                    className="bg-card text-foreground"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label className="text-foreground">
+                    Details <span className="text-destructive">*</span>
+                  </Label>
+                  <Textarea
+                    value={bcDetails}
+                    onChange={(e) => setBcDetails(e.target.value)}
+                    placeholder="Write the email message here..."
+                    rows={8}
+                    className="bg-card text-foreground"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label className="text-foreground">
+                    Send to applicants with status <span className="text-destructive">*</span>
+                  </Label>
+                  <Select value={bcStatus} onValueChange={setBcStatus}>
+                    <SelectTrigger className="bg-card text-foreground">
+                      <SelectValue placeholder="Select application status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(APPLICATION_STATUS_LABELS).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Dialog open={bcConfirmOpen} onOpenChange={setBcConfirmOpen}>
+                  <DialogTrigger asChild>
+                    <Button
+                      className="gap-2 self-start bg-primary text-primary-foreground hover:bg-primary/90"
+                      disabled={!bcTitle.trim() || !bcDetails.trim() || !bcStatus}
+                    >
+                      <Send className="h-4 w-4" />
+                      Send Email
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-card">
+                    <DialogHeader>
+                      <DialogTitle className="text-foreground">Confirm Broadcast</DialogTitle>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-3">
+                      <p className="text-sm leading-relaxed text-muted-foreground">
+                        This email will be sent to{" "}
+                        <span className="font-semibold text-foreground">every applicant</span> whose
+                        application status is{" "}
+                        <span className="font-semibold text-foreground">
+                          {bcStatus ? APPLICATION_STATUS_LABELS[bcStatus as ApplicationStatus] : ""}
+                        </span>
+                        . This action cannot be undone.
+                      </p>
+                      <div className="rounded-md border border-border bg-secondary/50 p-3">
+                        <p className="text-sm font-semibold text-foreground">{bcTitle}</p>
+                        <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+                          {bcDetails.length > 300 ? `${bcDetails.slice(0, 300)}...` : bcDetails}
+                        </p>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => setBcConfirmOpen(false)}
+                          disabled={bcSending}
+                          className="border-border bg-transparent text-foreground"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleSendBroadcast}
+                          disabled={bcSending}
+                          className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+                        >
+                          {bcSending ? (
+                            <span className="flex items-center gap-2">
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Sending...
+                            </span>
+                          ) : (
+                            <>
+                              <Send className="h-4 w-4" />
+                              Confirm & Send
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
