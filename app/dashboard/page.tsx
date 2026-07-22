@@ -107,7 +107,7 @@ function DashboardContent() {
       {/* Exam Permit Button - shown when approved to attend exam */}
       {application && hasFilled && application.status === "approved_to_attend_exam" && (
         <a
-          href="#"
+          href="https://id.akhu.uz/step/1/"
           target="_blank"
           rel="noopener noreferrer"
           className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl border-2 border-transparent bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 px-6 py-5 text-lg font-bold text-white transition-all duration-300 hover:border-cyan-300/60 hover:scale-[1.01] sm:text-xl"
@@ -116,7 +116,7 @@ function DashboardContent() {
           }}
         >
           <ClipboardCheck className="h-6 w-6 shrink-0" />
-          <span className="text-balance text-center">Technical issue. Exam permits will be available soon.</span>
+          <span className="text-balance text-center">Get Your Exam Admission Permit</span>
           <ArrowRight className="h-5 w-5 shrink-0 transition-transform duration-300 group-hover:translate-x-1" />
         </a>
       )}
