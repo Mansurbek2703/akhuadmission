@@ -12,6 +12,8 @@ import {
   Phone,
   User as UserIcon,
   AlertTriangle,
+  ClipboardCheck,
+  ArrowRight,
 } from "lucide-react";
 import {
   APPLICATION_STATUS_LABELS,
@@ -102,6 +104,23 @@ function DashboardContent() {
         </div>
       </div>
 
+      {/* Exam Permit Button - shown when approved to attend exam */}
+      {application && hasFilled && application.status === "approved_to_attend_exam" && (
+        <a
+          href="https://id.akhu.uz/step/1/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl border-2 border-transparent bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 px-6 py-5 text-lg font-bold text-white transition-all duration-300 hover:border-cyan-300/60 hover:scale-[1.01] sm:text-xl"
+          style={{
+            boxShadow: "0 0 35px rgba(59, 130, 246, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.25)",
+          }}
+        >
+          <ClipboardCheck className="h-6 w-6 shrink-0" />
+          <span className="text-balance text-center">Get Your Exam Admission Permit</span>
+          <ArrowRight className="h-5 w-5 shrink-0 transition-transform duration-300 group-hover:translate-x-1" />
+        </a>
+      )}
+
       {/* Admin Contact Info Card - shown when an admin is assigned */}
       {application && application.assigned_admin_id && (
         <Card className="border-primary/20 bg-primary/5">
@@ -112,7 +131,7 @@ function DashboardContent() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">
-                  Admission Department - Your application is being reviewed
+                  Registrar Office - Your application is being reviewed
                 </p>
                 <p className="text-xs text-muted-foreground">
                   Your application is under review. If you have questions, please contact us.
@@ -131,7 +150,7 @@ function DashboardContent() {
                   #
                 </span>
                 <span className="text-muted-foreground">
-                  Inner Extension: <span className="font-medium text-foreground">333</span>
+                  Extension: <span className="font-medium text-foreground">333</span>
                 </span>
               </div>
             </div>
