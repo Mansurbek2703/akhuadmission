@@ -18,6 +18,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { formatAddress } from "@/lib/address-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,6 +68,7 @@ const statusColors: Record<ApplicationStatus, string> = {
   approved_to_attend_exam: "bg-primary/10 text-primary border-primary/20",
   passed_with_exemption: "bg-accent text-accent-foreground border-accent",
   application_approved: "bg-success/10 text-success border-success/20",
+  accepted: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
   reserved: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20",
   rejected: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20",
 };
@@ -261,10 +270,24 @@ export function ApplicationsTable({
     document.body.removeChild(a);
   };
 
+  // Accepted status: score entry / edit dialog state
+  const [scoreDialogAppId, setScoreDialogAppId] = useState<string | null>(null);
+  const [scoreValue, setScoreValue] = useState("");
+  const [scoreSaving, setScoreSaving] = useState(false);
+  // "edit" mode = only update score (not status) and re-send email
+  const [scoreDialogMode, setScoreDialogMode] = useState<"accept" | "edit">("accept");
+
   const handleStatusChange = async (
     applicationId: string,
     newStatus: ApplicationStatus
   ) => {
+    // "accepted" requires the applicant score first - open the dialog
+    if (newStatus === "accepted") {
+      setScoreValue("");
+      setScoreDialogMode("accept");
+      setScoreDialogAppId(applicationId);
+      return;
+    }
     try {
       const res = await fetch("/api/applications", {
         method: "PUT",
@@ -282,7 +305,116 @@ export function ApplicationsTable({
     }
   };
 
+  const submitAcceptedWithScore = useCallback(async () => {
+    if (!scoreDialogAppId) return;
+    const trimmed = scoreValue.trim();
+    if (!trimmed) {
+      toast.error("Please enter the applicant score");
+      return;
+    }
+    setScoreSaving(true);
+    try {
+      const body =
+        scoreDialogMode === "edit"
+          ? { applicationId: scoreDialogAppId, applicant_score: trimmed }
+          : { applicationId: scoreDialogAppId, status: "accepted", applicant_score: trimmed };
 
+      const res = await fetch("/api/applications", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to update score");
+      }
+      toast.success(scoreDialogMode === "edit" ? "Score updated" : "Applicant accepted");
+      if (selectedApp && selectedApp.id === scoreDialogAppId) {
+        setSelectedApp({
+          ...selectedApp,
+          ...(scoreDialogMode === "accept" ? { status: "accepted" as ApplicationStatus } : {}),
+          applicant_score: trimmed,
+        } as Application);
+      }
+      // also refresh the list so score shows in the table row
+      const updatedApps = applications.map((a) =>
+        a.id === scoreDialogAppId
+          ? {
+              ...a,
+              ...(scoreDialogMode === "accept" ? { status: "accepted" as ApplicationStatus } : {}),
+              applicant_score: trimmed,
+            }
+          : a
+      );
+      // trigger parent refresh
+      setScoreDialogAppId(null);
+      setScoreValue("");
+      onUpdate();
+      void updatedApps; // suppress lint
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update score");
+    } finally {
+      setScoreSaving(false);
+    }
+  }, [scoreDialogAppId, scoreDialogMode, scoreValue, selectedApp, setSelectedApp, applications, onUpdate]);
+
+
+
+  const scoreDialog = (
+    <Dialog
+      open={scoreDialogAppId !== null}
+      onOpenChange={(open) => {
+        if (!open) {
+          setScoreDialogAppId(null);
+          setScoreValue("");
+        }
+      }}
+    >
+      <DialogContent className="sm:max-w-[400px]">
+        <DialogHeader>
+          <DialogTitle>
+            {scoreDialogMode === "edit" ? "Edit Applicant Score" : "Enter Applicant Score"}
+          </DialogTitle>
+          <DialogDescription>
+            {scoreDialogMode === "edit"
+              ? "Update the applicant score. A new confirmation email will be sent automatically."
+              : "To change the status to Accepted, please enter the applicant\u2019s score and press Enter."}
+          </DialogDescription>
+        </DialogHeader>
+        <Input
+          autoFocus
+          value={scoreValue}
+          onChange={(e) => setScoreValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.nativeEvent.isComposing && e.keyCode !== 229) {
+              e.preventDefault();
+              submitAcceptedWithScore();
+            }
+          }}
+          placeholder="e.g. 85"
+          disabled={scoreSaving}
+          className="bg-card"
+        />
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setScoreDialogAppId(null);
+              setScoreValue("");
+            }}
+            disabled={scoreSaving}
+            className="bg-transparent"
+          >
+            Cancel
+          </Button>
+          <Button onClick={submitAcceptedWithScore} disabled={scoreSaving || !scoreValue.trim()}>
+            {scoreSaving && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+            {scoreDialogMode === "edit" ? "Save Score" : "Accept"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 
   if (applications.length === 0) {
     return (
@@ -332,26 +464,44 @@ export function ApplicationsTable({
   };
 
   const renderStatusSelect = (app: Application) => (
-    <Select
-      value={app.status}
-      onValueChange={(v) => handleStatusChange(app.id, v as ApplicationStatus)}
-    >
-      <SelectTrigger className="h-7 w-full max-w-[180px] border-0 bg-transparent p-0 text-foreground">
-        <Badge variant="outline" className={statusColors[app.status as ApplicationStatus] || ""}>
-          {APPLICATION_STATUS_LABELS[app.status as ApplicationStatus]}
-        </Badge>
-      </SelectTrigger>
-      <SelectContent>
-        {Object.entries(APPLICATION_STATUS_LABELS).map(([key, label]) => (
-          <SelectItem key={key} value={key}>{label}</SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <div className="flex flex-col gap-1">
+      <Select
+        value={app.status}
+        onValueChange={(v) => handleStatusChange(app.id, v as ApplicationStatus)}
+      >
+        <SelectTrigger className="h-7 w-full max-w-[180px] border-0 bg-transparent p-0 text-foreground">
+          <Badge variant="outline" className={statusColors[app.status as ApplicationStatus] || ""}>
+            {APPLICATION_STATUS_LABELS[app.status as ApplicationStatus]}
+          </Badge>
+        </SelectTrigger>
+        <SelectContent>
+          {Object.entries(APPLICATION_STATUS_LABELS).map(([key, label]) => (
+            <SelectItem key={key} value={key}>{label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {app.status === "accepted" && app.applicant_score && (
+        <button
+          type="button"
+          title="Double-click to edit score"
+          onDoubleClick={(e) => {
+            e.stopPropagation();
+            setScoreValue(app.applicant_score ?? "");
+            setScoreDialogMode("edit");
+            setScoreDialogAppId(app.id);
+          }}
+          className="inline-flex items-center gap-1 self-start rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-700 animate-pulse hover:animate-none cursor-default dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+        >
+          Score: {app.applicant_score}
+        </button>
+      )}
+    </div>
   );
 
   if (selectedApp) {
     return (
       <>
+        {scoreDialog}
         <div className="rounded-lg border border-border bg-card shadow-sm">
           {/* Header with name and back button */}
           <div className="border-b border-border px-4 py-4 sm:px-6">
@@ -385,12 +535,15 @@ export function ApplicationsTable({
                   )}
                 </div>
               </div>
-              <div className="shrink-0">
+              <div className="shrink-0 flex flex-col items-end gap-2">
                 <Select
                   value={selectedApp.status}
                   onValueChange={(v) => {
                     handleStatusChange(selectedApp.id, v as ApplicationStatus);
-                    setSelectedApp({ ...selectedApp, status: v as ApplicationStatus });
+                    // "accepted" is applied only after the score is entered in the dialog
+                    if (v !== "accepted") {
+                      setSelectedApp({ ...selectedApp, status: v as ApplicationStatus });
+                    }
                   }}
                 >
                   <SelectTrigger className="h-8 w-[180px] bg-card text-foreground text-xs">
@@ -402,6 +555,20 @@ export function ApplicationsTable({
                     ))}
                   </SelectContent>
                 </Select>
+                {selectedApp.status === "accepted" && selectedApp.applicant_score && (
+                  <button
+                    type="button"
+                    title="Double-click to edit score"
+                    onDoubleClick={() => {
+                      setScoreValue(selectedApp.applicant_score ?? "");
+                      setScoreDialogMode("edit");
+                      setScoreDialogAppId(selectedApp.id);
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1 text-sm font-extrabold text-emerald-700 animate-pulse hover:animate-none cursor-default dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                  >
+                    Score: {selectedApp.applicant_score}
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -933,6 +1100,7 @@ export function ApplicationsTable({
 
   return (
     <>
+      {scoreDialog}
       {/* Desktop Table */}
       <div className="hidden lg:block rounded-lg border border-border bg-card shadow-sm">
         <div className="overflow-x-auto">

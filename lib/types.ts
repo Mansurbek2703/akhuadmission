@@ -7,6 +7,7 @@ export type ApplicationStatus =
   | "approved_to_attend_exam"
   | "passed_with_exemption"
   | "application_approved"
+  | "accepted"
   | "reserved"
   | "rejected";
 
@@ -17,6 +18,7 @@ export const APPLICATION_STATUS_LABELS: Record<ApplicationStatus, string> = {
   approved_to_attend_exam: "Approved to Attend Exam",
   passed_with_exemption: "Passed with Exemption",
   application_approved: "Application Approved",
+  accepted: "Accepted",
   reserved: "Seat Reserved",
   rejected: "Application Rejected",
 };
@@ -210,6 +212,7 @@ export interface Application {
   attestat_verified?: boolean;
   attestat_invalid?: boolean;
   // Admin
+  applicant_score?: string;
   assigned_admin_id?: string;
   assigned_admin_email?: string;
   assigned_admin_name?: string;

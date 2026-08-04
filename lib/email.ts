@@ -202,7 +202,8 @@ export async function sendVerificationEmail(to: string, token: string, plainPass
 export async function sendStatusUpdateEmail(
   to: string,
   applicantName: string,
-  newStatus: string
+  newStatus: string,
+  applicantScore?: string
 ) {
   const statusLabels: Record<string, string> = {
     submitted: "Submitted",
@@ -211,6 +212,7 @@ export async function sendStatusUpdateEmail(
     approved_to_attend_exam: "Approved to Attend Exam",
     passed_with_exemption: "Passed with Exemption",
     application_approved: "Application Approved",
+    accepted: "Accepted",
     reserved: "Seat Reserved",
     rejected: "Application Rejected",
   };
@@ -218,7 +220,10 @@ export async function sendStatusUpdateEmail(
   const statusLabel = statusLabels[newStatus] || newStatus;
   const dashboardUrl = `${APP_URL}/dashboard`;
 
-  // Special handling for rejection and reserved statuses
+  // Special handling for accepted, rejection and reserved statuses
+  if (newStatus === "accepted") {
+    return sendAcceptedEmail(to, applicantName, applicantScore);
+  }
   if (newStatus === "rejected") {
     return sendRejectionEmail(to, applicantName);
   }
@@ -328,6 +333,67 @@ export async function sendChatNotificationEmail(
               Read Message
             </a>
           </div>
+        </div>
+      </div>
+    `,
+  });
+}
+
+export async function sendAcceptedEmail(
+  to: string,
+  applicantName: string,
+  applicantScore?: string
+) {
+  const dashboardUrl = `${APP_URL}/dashboard`;
+  const contactPhone = "+998 62 227 71 71";
+
+  const scoreBlock = applicantScore
+    ? `
+          <div style="background: #f0f9ff; border: 1px solid #bfdbfe; padding: 15px 20px; margin: 20px 0; border-radius: 8px; text-align: center;">
+            <p style="margin: 0 0 5px 0; color: #6b7280; font-size: 13px;">Your Score</p>
+            <p style="margin: 0; color: #1e40af; font-weight: bold; font-size: 28px;">${applicantScore}</p>
+          </div>
+    `
+    : "";
+
+  return sendEmail({
+    to,
+    subject: "Al-Khwarizmi University - Congratulations! You Have Been Accepted",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; padding: 20px 0; border-bottom: 2px solid #1e40af;">
+          <h1 style="color: #1e40af; margin: 0;">Al-Khwarizmi University</h1>
+          <p style="color: #6b7280; margin: 5px 0 0 0;">Online Admissions Platform</p>
+        </div>
+        <div style="padding: 30px 0;">
+          <h2 style="color: #059669; font-size: 24px; margin-bottom: 20px;">Congratulations, ${applicantName}!</h2>
+          <p style="color: #374151; line-height: 1.6; margin-bottom: 15px;">
+            We are delighted to inform you that your application to Al-Khwarizmi University has been <strong>accepted</strong>.
+          </p>
+          <div style="background: #ecfdf5; border-left: 4px solid #059669; padding: 15px 20px; margin: 20px 0; border-radius: 0 8px 8px 0;">
+            <p style="margin: 0; color: #059669; font-weight: bold; font-size: 16px;">Application Status: Accepted</p>
+          </div>
+          ${scoreBlock}
+          <p style="color: #374151; line-height: 1.6;">
+            This is a significant achievement, and we congratulate you on your success. Our admissions team will contact you soon with information about the next steps.
+          </p>
+          <p style="color: #374151; line-height: 1.6; margin-top: 20px;">
+            For any additional information or queries, please do not hesitate to contact our admissions office:
+          </p>
+          <p style="color: #1e40af; font-weight: bold; font-size: 16px; margin: 15px 0;">
+            ${contactPhone}
+          </p>
+          <p style="color: #6b7280; line-height: 1.6;">
+            We look forward to welcoming you as a student at Al-Khwarizmi University.
+          </p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${dashboardUrl}" style="background: #1e40af; color: #ffffff; padding: 12px 35px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">
+              Go to Dashboard
+            </a>
+          </div>
+        </div>
+        <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; text-align: center;">
+          <p style="color: #9ca3af; font-size: 12px;">Al-Khwarizmi University Online Admissions Platform</p>
         </div>
       </div>
     `,

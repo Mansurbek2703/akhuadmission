@@ -68,6 +68,7 @@ const FIELD_LABELS: Record<string, string> = {
   confirm_fake_disqualify: "Confirmation: Fake info = disqualification",
   confirm_fake_cancel: "Confirmation: Fake info = cancellation",
   status: "Application Status",
+  applicant_score: "Applicant Score",
   completion_percentage: "Completion Percentage",
 };
 
@@ -237,6 +238,23 @@ export async function PUT(req: NextRequest) {
       );
     }
 
+    // "accepted" status requires an applicant score
+    if (fields.status === "accepted") {
+      if (session.role !== "admin" && session.role !== "superadmin") {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+      const scoreProvided =
+        typeof fields.applicant_score === "string" &&
+        fields.applicant_score.trim().length > 0;
+      if (!scoreProvided) {
+        return NextResponse.json(
+          { error: "Applicant score is required to set status to Accepted" },
+          { status: 400 }
+        );
+      }
+      fields.applicant_score = String(fields.applicant_score).trim();
+    }
+
     // Check ownership for applicants
     if (session.role === "applicant") {
       const check = await query(
@@ -270,7 +288,7 @@ export async function PUT(req: NextRequest) {
       "other_achievements_text", "other_achievements_pdf_path",
       "hear_about", "sibling_study",
       "confirm_info_correct", "confirm_final_year", "confirm_fake_disqualify", "confirm_fake_cancel",
-      "oferta_agreed", "status", "completion_percentage",
+      "oferta_agreed", "status", "applicant_score", "completion_percentage",
       "language_cert_verified", "language_cert_invalid",
       "sat_verified", "sat_invalid",
       "ib_verified", "ib_invalid",
@@ -445,10 +463,35 @@ export async function PUT(req: NextRequest) {
           sendStatusUpdateEmail(
             applicant.email,
             `${applicant.given_name || ""} ${applicant.surname || ""}`.trim() || "Applicant",
-            fields.status
+            fields.status,
+            typeof fields.applicant_score === "string" ? fields.applicant_score : undefined
           ).catch((err) =>
             console.error("[APP] Failed to send status email:", err)
           );
+        }
+
+        // Re-send accepted email when only the score is updated (no status change)
+        if (
+          !fields.status &&
+          typeof fields.applicant_score === "string" &&
+          fields.applicant_score.trim().length > 0 &&
+          applicant.email
+        ) {
+          const currentAppRow = await query(
+            "SELECT status FROM applications WHERE id = $1",
+            [applicationId]
+          );
+          const currentStatus = currentAppRow.rows[0]?.status;
+          if (currentStatus === "accepted") {
+            sendStatusUpdateEmail(
+              applicant.email,
+              `${applicant.given_name || ""} ${applicant.surname || ""}`.trim() || "Applicant",
+              "accepted",
+              fields.applicant_score.trim()
+            ).catch((err) =>
+              console.error("[APP] Failed to re-send accepted email:", err)
+            );
+          }
         }
 
         // Log status change to status_change_logs (safe if table not yet created)

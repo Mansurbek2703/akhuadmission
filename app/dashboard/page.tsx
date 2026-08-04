@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Loader2,
   Phone,
-  User as UserIcon,
   AlertTriangle,
   ClipboardCheck,
   ArrowRight,
@@ -124,20 +123,7 @@ function DashboardContent() {
       {/* Admin Contact Info Card - shown when an admin is assigned */}
       {application && application.assigned_admin_id && (
         <Card className="border-primary/20 bg-primary/5">
-          <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                <UserIcon className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">
-                  Registrar Office - Your application is being reviewed
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Your application is under review. If you have questions, please contact us.
-                </p>
-              </div>
-            </div>
+          <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-end">
             <div className="flex flex-col gap-1.5 sm:items-end">
               <div className="flex items-center gap-2 text-sm">
                 <Phone className="h-3.5 w-3.5 text-primary" />

@@ -12,6 +12,7 @@ const statusBtnColors: Record<string, string> = {
   approved_to_attend_exam: "bg-primary/15 text-primary border-primary/30",
   passed_with_exemption: "bg-accent text-accent-foreground",
   application_approved: "bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30",
+  accepted: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
   reserved: "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30",
   rejected: "bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30",
 };

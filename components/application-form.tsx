@@ -91,6 +91,9 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   approved_to_attend_exam: { label: "Approved to Attend Exam", color: "bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300" },
   passed_with_exemption: { label: "Passed with Exemption", color: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300" },
   application_approved: { label: "Application Approved", color: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" },
+  accepted: { label: "Accepted", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300" },
+  reserved: { label: "Seat Reserved", color: "bg-sky-100 text-sky-700 dark:bg-sky-900 dark:text-sky-300" },
+  rejected: { label: "Rejected", color: "bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-300" },
 };
 
 /* ------------------------------------------------------------------ */
@@ -1674,9 +1677,6 @@ export function ApplicationForm({
       );
     }
 
-    const statusKey = str("status") || application.status || "submitted";
-    const statusInfo = STATUS_LABELS[statusKey] || STATUS_LABELS.submitted;
-
     const summaryRows = [
       { section: "Account", fields: [
         { label: "Email", value: application.user_email || "-" },
@@ -1749,17 +1749,28 @@ export function ApplicationForm({
       ]},
     ];
 
+    const currentStatus = application.status || "submitted";
+    const resolvedStatusInfo = STATUS_LABELS[currentStatus] || STATUS_LABELS.submitted;
+    const applicantScore = application.applicant_score;
+
     return (
       <div className="space-y-6">
         {/* Status badge + Edit button */}
         <div className="rounded-xl border border-border bg-muted/20 p-4 text-center sm:p-5">
           <p className="mb-2 text-sm text-muted-foreground">Application Status</p>
-          <span className={cn("inline-block rounded-full px-5 py-2 text-base font-bold", statusInfo.color)}>
-            {statusInfo.label}
+          <span className={cn("inline-block rounded-full px-5 py-2 text-base font-bold", resolvedStatusInfo.color)}>
+            {resolvedStatusInfo.label}
           </span>
           <p className="mt-3 text-xs text-muted-foreground">
             Submitted on {application.updated_at ? new Date(application.updated_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "-"}
           </p>
+          {currentStatus === "accepted" && applicantScore && (
+            <div className="mt-4 inline-flex flex-col items-center gap-1 rounded-xl border border-emerald-300 bg-emerald-50 px-8 py-3 dark:border-emerald-700 dark:bg-emerald-900/30"
+              style={{ animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite" }}>
+              <span className="text-xs font-medium uppercase tracking-widest text-emerald-600 dark:text-emerald-400">Your Score</span>
+              <span className="text-4xl font-extrabold text-emerald-700 dark:text-emerald-300">{applicantScore}</span>
+            </div>
+          )}
           {!editMode && application.status === "incomplete_document" && (
             <Button
               className="mt-4"
