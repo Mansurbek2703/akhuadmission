@@ -91,7 +91,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   approved_to_attend_exam: { label: "Approved to Attend Exam", color: "bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300" },
   passed_with_exemption: { label: "Passed with Exemption", color: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300" },
   application_approved: { label: "Application Approved", color: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" },
-  accepted: { label: "Accepted", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300" },
+  accepted: { label: "Eligible Candidate", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300" },
   reserved: { label: "Seat Reserved", color: "bg-sky-100 text-sky-700 dark:bg-sky-900 dark:text-sky-300" },
   rejected: { label: "Rejected", color: "bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-300" },
 };

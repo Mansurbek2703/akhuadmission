@@ -18,7 +18,7 @@ export const APPLICATION_STATUS_LABELS: Record<ApplicationStatus, string> = {
   approved_to_attend_exam: "Approved to Attend Exam",
   passed_with_exemption: "Passed with Exemption",
   application_approved: "Application Approved",
-  accepted: "Accepted",
+  accepted: "Eligible Candidate",
   reserved: "Seat Reserved",
   rejected: "Application Rejected",
 };
