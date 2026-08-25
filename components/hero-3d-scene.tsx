@@ -748,6 +748,7 @@ export default function Hero3DScene() {
   return (
     <div
       className="absolute inset-0 z-0 overflow-hidden"
+      suppressHydrationWarning
       style={{ opacity: mounted ? 1 : 0, transition: "opacity 1s ease-in-out" }}
     >
       <style dangerouslySetInnerHTML={{ __html: KEYFRAMES }} />

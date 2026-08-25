@@ -86,7 +86,7 @@ const navCtaStyle = {
 
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-background" suppressHydrationWarning>
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/90 shadow-sm backdrop-blur-md">
         <div className="flex items-center justify-between px-2.5 py-3 sm:px-4">
@@ -101,16 +101,40 @@ export default function LandingPage() {
           </Link>
 
           <nav className="hidden items-center gap-3 md:flex">
-            <Button asChild size="sm" className={navCtaClass} style={navCtaStyle}>
-              <a
-                href="https://drive.google.com/file/d/1xTw0IZ6-5izZHQIhPg4HiQPf-GdAnvUW/view?usp=sharing"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FileDown className="h-4 w-4" />
-                Exam Specifications
-              </a>
-            </Button>
+            {/* Master's exam sample questions Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" className={navCtaClass} style={navCtaStyle}>
+                  <FileDown className="h-4 w-4" />
+                  Master&apos;s exam sample questions
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <a
+                    href="/samples/AlKhwarizmi_Admission_Test_2026_AI_Masters(Sample).pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <Brain className="h-4 w-4" />
+                    Applied AI
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a
+                    href="/samples/AlKhwarizmi_Admission_Test_2026_MBA_Masters(Sample).pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <Briefcase className="h-4 w-4" />
+                    MBA
+                  </a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button asChild size="sm" className={navCtaClass} style={navCtaStyle}>
               <Link href="/transfer">
                 <ArrowLeftRight className="h-4 w-4" />
@@ -257,7 +281,7 @@ export default function LandingPage() {
 
             <AdmissionCountdown />
 
-            {/* Transfer + Exam Specifications - mobile only, above Apply buttons */}
+            {/* Transfer + Master's exam sample questions - mobile only, above Apply buttons */}
             <div className="mt-10 flex flex-col items-center gap-3 md:hidden">
               <Link href="/transfer" className="w-full max-w-xs">
                 <Button
@@ -273,25 +297,47 @@ export default function LandingPage() {
                   </span>
                 </Button>
               </Link>
-              <a
-                href="https://drive.google.com/file/d/1xTw0IZ6-5izZHQIhPg4HiQPf-GdAnvUW/view?usp=sharing"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full max-w-xs"
-              >
-                <Button
-                  size="lg"
-                  className="relative w-full overflow-hidden rounded-xl border-2 border-transparent bg-gradient-to-r from-sky-400 via-sky-300 to-white text-blue-700 font-semibold text-base transition-all duration-300 hover:border-sky-300/60 backdrop-blur-sm"
-                  style={{
-                    boxShadow: "0 0 30px rgba(56, 189, 248, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.4)",
-                  }}
-                >
-                  <span className="relative z-10 flex items-center">
-                    <FileDown className="mr-2 h-4 w-4" />
-                    Exam Specifications
-                  </span>
-                </Button>
-              </a>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    size="lg"
+                    className="relative w-full max-w-xs overflow-hidden rounded-xl border-2 border-transparent bg-gradient-to-r from-sky-400 via-sky-300 to-white text-blue-700 font-semibold text-base transition-all duration-300 hover:border-sky-300/60 backdrop-blur-sm"
+                    style={{
+                      boxShadow: "0 0 30px rgba(56, 189, 248, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.4)",
+                    }}
+                  >
+                    <span className="relative z-10 flex items-center justify-center gap-1.5">
+                      <FileDown className="h-4 w-4" />
+                      Master&apos;s exam sample questions
+                      <ChevronDown className="h-4 w-4" />
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="w-64">
+                  <DropdownMenuItem asChild>
+                    <a
+                      href="/samples/AlKhwarizmi_Admission_Test_2026_AI_Masters(Sample).pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <Brain className="h-4 w-4" />
+                      Applied AI
+                    </a>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <a
+                      href="/samples/AlKhwarizmi_Admission_Test_2026_MBA_Masters(Sample).pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <Briefcase className="h-4 w-4" />
+                      MBA
+                    </a>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             {/* BUTTONS */}
