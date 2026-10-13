@@ -51,8 +51,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user) {
-      if (user.role === "applicant") router.push("/dashboard");
-      else if (user.role === "admin") router.push("/admin");
+      if (user.role === "admin") router.push("/admin");
       else if (user.role === "superadmin") router.push("/superadmin");
     }
   }, [user, router]);
@@ -63,8 +62,7 @@ export default function LoginPage() {
     try {
       const data = await login(email, password);
       toast.success("Welcome back!");
-      if (data.user.role === "applicant") router.push("/dashboard");
-      else if (data.user.role === "admin") router.push("/admin");
+      if (data.user.role === "admin") router.push("/admin");
       else if (data.user.role === "superadmin") router.push("/superadmin");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Login failed");
@@ -92,6 +90,9 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-center text-sm font-medium text-amber-900 dark:text-amber-200">
+            Notice: Bachelor admissions for the 2026–2027 academic year are closed. Access is restricted to administrators and superadministrators only.
+          </div>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <Label htmlFor="email" className="text-foreground">

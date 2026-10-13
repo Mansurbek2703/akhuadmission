@@ -156,7 +156,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Password is correct - now check email verification
+    // Password is correct - check role: only admins and superadmins can log into the system
+    if (user.role !== "admin" && user.role !== "superadmin") {
+      return NextResponse.json(
+        {
+          error:
+            "Bachelor admission for the 2026-2027 academic year is closed. Access is restricted to administrators and superadministrators only.",
+        },
+        { status: 403 }
+      );
+    }
+
+    // Now check email verification
     if (!user.email_verified) {
       return NextResponse.json(
         {

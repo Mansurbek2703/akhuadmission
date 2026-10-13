@@ -18,7 +18,7 @@ export default function DashboardLayout({
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isLoading && (!user || user.role === "applicant")) {
       router.push("/login");
     }
     if (!isLoading && user && user.role !== "applicant") {
@@ -34,7 +34,7 @@ export default function DashboardLayout({
     );
   }
 
-  if (!user) return null;
+  if (!user || user.role === "applicant") return null;
 
   return (
     <div className="relative min-h-screen bg-background">

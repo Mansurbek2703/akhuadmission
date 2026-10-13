@@ -5,7 +5,7 @@ import { query } from "@/lib/db";
 export async function GET() {
   try {
     const session = await getSession();
-    if (!session) {
+    if (!session || (session.role !== "admin" && session.role !== "superadmin")) {
       return NextResponse.json({ user: null });
     }
 

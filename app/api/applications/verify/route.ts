@@ -64,9 +64,10 @@ export async function POST(req: NextRequest) {
       const docName = docNames[field] || "Document";
       const action = field.endsWith("_invalid") ? "invalid" : "verified";
 
-      if (email) {
-        await sendDocumentVerificationEmail(email, applicantName, docName, action);
-      }
+      // Email notification to applicants is disabled: admission closed, applicants do not receive emails
+      // if (email) {
+      //   await sendDocumentVerificationEmail(email, applicantName, docName, action);
+      // }
     }
 
     return NextResponse.json({ success: true });

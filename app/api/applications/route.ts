@@ -103,18 +103,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (session.role === "applicant") {
-      const result = await query(
-        `SELECT a.*, u.email as user_email, u.phone as user_phone, u.program as user_program
-         FROM applications a
-         JOIN users u ON a.user_id = u.id
-         WHERE a.user_id = $1
-         ORDER BY a.created_at DESC
-         LIMIT 1`,
-        [session.userId]
+    if (session.role !== "admin" && session.role !== "superadmin") {
+      return NextResponse.json(
+        { error: "Access denied. Bachelor admission for the 2026-2027 academic year is closed." },
+        { status: 403 }
       );
-      normalizeDates(result.rows);
-      return NextResponse.json({ application: result.rows[0] || null });
     }
 
     // Admin / Superadmin - auto transition "submitted" to "pending_review" when they view
@@ -255,15 +248,12 @@ export async function PUT(req: NextRequest) {
       fields.applicant_score = String(fields.applicant_score).trim();
     }
 
-    // Check ownership for applicants
-    if (session.role === "applicant") {
-      const check = await query(
-        "SELECT id FROM applications WHERE id = $1 AND user_id = $2",
-        [applicationId, session.userId]
+    // Only admins and superadmins can update applications
+    if (session.role !== "admin" && session.role !== "superadmin") {
+      return NextResponse.json(
+        { error: "Forbidden. Bachelor admission for the 2026-2027 academic year is closed." },
+        { status: 403 }
       );
-      if (check.rows.length === 0) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-      }
     }
 
     // Build dynamic update
@@ -458,41 +448,7 @@ export async function PUT(req: NextRequest) {
           );
         }
 
-        // Send email notification on status change
-        if (fields.status && applicant.email) {
-          sendStatusUpdateEmail(
-            applicant.email,
-            `${applicant.given_name || ""} ${applicant.surname || ""}`.trim() || "Applicant",
-            fields.status,
-            typeof fields.applicant_score === "string" ? fields.applicant_score : undefined
-          ).catch((err) =>
-            console.error("[APP] Failed to send status email:", err)
-          );
-        }
-
-        // Re-send accepted email when only the score is updated (no status change)
-        if (
-          !fields.status &&
-          typeof fields.applicant_score === "string" &&
-          fields.applicant_score.trim().length > 0 &&
-          applicant.email
-        ) {
-          const currentAppRow = await query(
-            "SELECT status FROM applications WHERE id = $1",
-            [applicationId]
-          );
-          const currentStatus = currentAppRow.rows[0]?.status;
-          if (currentStatus === "accepted") {
-            sendStatusUpdateEmail(
-              applicant.email,
-              `${applicant.given_name || ""} ${applicant.surname || ""}`.trim() || "Applicant",
-              "accepted",
-              fields.applicant_score.trim()
-            ).catch((err) =>
-              console.error("[APP] Failed to re-send accepted email:", err)
-            );
-          }
-        }
+        // Email notification to applicants is disabled: admission closed, applicants do not receive emails
 
         // Log status change to status_change_logs (safe if table not yet created)
         if (fields.status && fields.status !== oldApp?.status) {

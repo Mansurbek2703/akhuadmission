@@ -90,6 +90,9 @@ export default function RegisterPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-center text-sm font-medium text-amber-900 dark:text-amber-200">
+            Notice: Bachelor admissions for the 2026–2027 academic year are closed.
+          </div>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <Label htmlFor="email" className="text-foreground">
@@ -102,6 +105,7 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled
                 className="bg-card text-foreground"
               />
             </div>
@@ -126,6 +130,7 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled
                   minLength={8}
                   className="bg-card pr-10 text-foreground"
                 />
@@ -148,6 +153,7 @@ export default function RegisterPage() {
               <Select
                 value={program}
                 onValueChange={(v) => setProgram(v as Program)}
+                disabled
               >
                 <SelectTrigger className="bg-card text-foreground">
                   <SelectValue placeholder="Select your program" />
@@ -163,17 +169,10 @@ export default function RegisterPage() {
             </div>
             <Button
               type="submit"
-              className="mt-2 w-full bg-primary text-primary-foreground hover:bg-primary/90"
-              disabled={loading}
+              className="mt-2 w-full bg-muted text-muted-foreground cursor-not-allowed opacity-70"
+              disabled={true}
             >
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Creating Account...
-                </span>
-              ) : (
-                "Create Account"
-              )}
+              Admissions Closed
             </Button>
           </form>
           <p className="mt-4 text-center text-sm text-muted-foreground">

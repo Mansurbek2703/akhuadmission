@@ -87,6 +87,11 @@ const navCtaStyle = {
 export default function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background" suppressHydrationWarning>
+      {/* Notice Banner */}
+      <div className="bg-amber-500/15 border-b border-amber-500/30 px-4 py-2.5 text-center text-xs sm:text-sm font-semibold text-amber-900 dark:text-amber-200">
+        Notice: Bachelor admissions for the 2026–2027 academic year are closed.
+      </div>
+
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/90 shadow-sm backdrop-blur-md">
         <div className="flex items-center justify-between px-2.5 py-3 sm:px-4">
@@ -249,29 +254,10 @@ export default function LandingPage() {
         {/* CONTENT */}
         <div className="relative z-10 mx-auto max-w-[1500px] px-4 pb-6 pt-20 sm:pt-24 lg:px-12 lg:pb-10 lg:pt-8">
           <div className="mx-auto max-w-4xl text-center">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-200/60 bg-white/80 px-4 py-1.5 shadow-md backdrop-blur-sm">
-              <BookOpen
-                className="h-4 w-4"
-                style={{
-                  animation: "icon-color-pulse 3s ease-in-out infinite",
-                  background: "linear-gradient(90deg, rgb(239, 68, 68), rgb(34, 197, 94))",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
-              />
-              <span
-                className="text-sm font-medium"
-                style={{
-                  background: "linear-gradient(90deg, rgb(239, 68, 68) 0%, rgb(34, 197, 94) 100%)",
-                  backgroundSize: "200% 200%",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                  animation: "gradient-shift 4s ease infinite",
-                }}
-              >
-                2026/2027 Admissions Open
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-300/70 bg-amber-50/90 px-4 py-1.5 shadow-md backdrop-blur-sm dark:bg-amber-950/60 dark:border-amber-700/60">
+              <BookOpen className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              <span className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                Bachelor admissions for 2026–2027 are closed
               </span>
             </div>
 
