@@ -8,16 +8,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/notification-bell";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
   LayoutDashboard,
   MessageSquare,
   LogOut,
@@ -35,7 +25,6 @@ export function AdminNav() {
   const router = useRouter();
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const { data: unreadData } = useSWR(
     user ? "/api/chat/unread" : null,
     fetcher,
@@ -58,17 +47,12 @@ export function AdminNav() {
     router.push("/");
   };
 
-  const handleLogoClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setLeaveDialogOpen(true);
-  };
-
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-md shadow-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-8">
           <div className="flex items-center gap-6">
-            <a href="/" onClick={handleLogoClick} className="flex items-center gap-2.5 cursor-pointer">
+            <a href="https://akhu.uz" className="flex items-center gap-2.5 cursor-pointer">
               <Image
                 src="/logoEdited.png"
                 alt="Al-Khwarizmi University"
@@ -177,23 +161,6 @@ export function AdminNav() {
         )}
       </header>
 
-      {/* Leave confirmation dialog */}
-      <AlertDialog open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you leaving your account?</AlertDialogTitle>
-            <AlertDialogDescription>
-              You are about to leave the admin panel and go to the main page. Your session will remain active.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>No, stay here</AlertDialogCancel>
-            <AlertDialogAction onClick={() => router.push("/")}>
-              Yes, go to main page
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }

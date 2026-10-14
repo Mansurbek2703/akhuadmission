@@ -75,13 +75,15 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
       <Card className="w-full max-w-md border-border shadow-xl shadow-primary/5">
         <CardHeader className="text-center">
-          <Image
-            src="/logoEdited.png"
-            alt="Al-Khwarizmi University"
-            width={200}
-            height={150}
-            className="mx-auto mb-4 h-18 w-40 rounded-lg object-contain"
-          />
+          <a href="https://akhu.uz" className="inline-block mx-auto">
+            <Image
+              src="/logoEdited.png"
+              alt="Al-Khwarizmi University"
+              width={200}
+              height={150}
+              className="mx-auto mb-4 h-18 w-40 rounded-lg object-contain cursor-pointer transition-opacity hover:opacity-85"
+            />
+          </a>
           <CardTitle className="text-2xl font-bold text-foreground">
             Create Account
           </CardTitle>

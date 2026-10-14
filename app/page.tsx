@@ -95,7 +95,7 @@ export default function LandingPage() {
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/90 shadow-sm backdrop-blur-md">
         <div className="flex items-center justify-between px-2.5 py-3 sm:px-4">
-          <Link href="/" className="flex items-center gap-2.5">
+          <a href="https://akhu.uz" className="flex items-center gap-2.5">
             <Image
               src="/logoEdited.png"
               alt="Al-Khwarizmi University"
@@ -103,7 +103,7 @@ export default function LandingPage() {
               height={150}
               className="h-16 w-auto rounded-lg object-contain"
             />
-          </Link>
+          </a>
 
           <nav className="hidden items-center gap-3 md:flex">
             {/* Master's exam sample questions Dropdown */}
@@ -551,7 +551,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {/* Logo & Description */}
             <div className="space-y-4 sm:col-span-2 lg:col-span-1">
-              <Link href="/" className="inline-flex items-center gap-3">
+              <a href="https://akhu.uz" className="inline-flex items-center gap-3">
                 <div className="flex h-20 items-center justify-center">
                   <img
                     alt="Al-Khwarizmi University"
@@ -564,7 +564,7 @@ export default function LandingPage() {
                     Al-Khwarizmi University admission portal
                   </p>
                 </div>
-              </Link>
+              </a>
             </div>
 
             {/* Quick Links */}

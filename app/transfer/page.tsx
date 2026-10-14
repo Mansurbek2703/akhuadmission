@@ -68,7 +68,7 @@ export default function TransferPage() {
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/90 shadow-sm backdrop-blur-md">
         <div className="flex items-center justify-between px-2.5 py-3 sm:px-4">
-          <Link href="/" className="flex items-center gap-2.5">
+          <a href="https://akhu.uz" className="flex items-center gap-2.5">
             <Image
               src="/logoEdited.png"
               alt="Al-Khwarizmi University"
@@ -76,7 +76,7 @@ export default function TransferPage() {
               height={150}
               className="h-16 w-auto rounded-lg object-contain"
             />
-          </Link>
+          </a>
           <Link
             href="/"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
